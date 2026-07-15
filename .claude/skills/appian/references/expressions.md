@@ -544,7 +544,7 @@ If your expression requires any of these operations, search Appian docs FIRST:
 
 ```bash
 # Read configured version from SKILL.md Configuration section
-VERSION="26.5"
+VERSION="26.6"
 
 # Cache functions.json if not already cached
 if [ ! -f /tmp/appian-functions-$VERSION.json ]; then

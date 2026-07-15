@@ -33,10 +33,10 @@ MCP tool schemas describe **parameters** (what fields exist), but not **domain r
 
 ## Configuration
 
-**Appian Version:** 26.5
+**Appian Version:** 26.6
 
-**Supported Versions (as of 2026-06-25):**
-26.5, 26.3, 25.4, 25.3, 25.2, 25.1, 24.4, 24.3
+**Supported Versions (as of 2026-07-15):**
+26.6, 26.5, 26.3, 25.4, 25.3, 25.2, 25.1, 24.4, 24.3
 
 Update this version to match your Appian environment. This affects:
 - Documentation URL lookups
@@ -47,7 +47,7 @@ Update this version to match your Appian environment. This affects:
 
 **Maintenance:** Update this list quarterly when new Appian versions are released. Typically add the latest version and remove the oldest (2+ years old).
 
-**Last updated:** 2026-06-25
+**Last updated:** 2026-07-15
 
 ---
 
@@ -230,7 +230,7 @@ Read the **Appian Version** from the Configuration section above. Use this versi
 **First lookup in session (cache for reuse):**
 ```bash
 # Read configured version from Configuration section
-VERSION="26.5"  # Use the configured version
+VERSION="26.6"  # Use the configured version
 
 # Fetch and cache functions.json
 curl -s "https://docs.appian.com/suite/help/$VERSION/functions.json" \
@@ -247,7 +247,7 @@ fi
 
 # Look up function (case-insensitive)
 jq -r '.["a!queryrecordtype"]' /tmp/appian-functions-$VERSION.json
-# Returns: "/suite/help/26.5/fnc_system_queryrecordtype.html" if exists
+# Returns: "/suite/help/26.6/fnc_system_queryrecordtype.html" if exists
 # Returns: null if doesn't exist
 ```
 
@@ -287,5 +287,5 @@ From the documentation page, extract:
 ### Fallback behavior
 
 If configured version is not found or Configuration section is missing:
-1. Default to version 26.5 (latest)
-2. Suggest to user: "Using Appian 26.5 docs. To use a different version, update the Configuration section in skills/appian/SKILL.md"
+1. Default to version 26.6 (latest)
+2. Suggest to user: "Using Appian 26.6 docs. To use a different version, update the Configuration section in skills/appian/SKILL.md"
