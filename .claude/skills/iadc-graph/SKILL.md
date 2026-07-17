@@ -5,7 +5,7 @@ description: "MANDATORY skill for the IADC graph MCP (`iadc` server, tools surfa
 
 ## Why this matters
 
-The `iadc` MCP grounds review/impact reasoning in an **exact App Graph** built
+The `iadc` MCP grounds impact reasoning in an **exact App Graph** built
 from a real Appian export — not a guess from reading SAIL text. It answers
 "what calls this," "what breaks if I change this," and "is there a path from
 A to B" precisely, because the graph was built by parsing and resolving the
@@ -14,7 +14,7 @@ actual export, not by pattern-matching.
 The `iadc` server builds this graph for **any** Appian application you seed it
 with — `iadc` is the name of the graph product, not a particular app. Point it
 at your project's export or application UUID and it grounds the same
-review/impact reasoning against your graph.
+impact reasoning against your graph.
 
 It is **session-based**: nothing is queryable until you `seed` a graph and
 get back a `session_id`. Every other tool call is scoped to that session and

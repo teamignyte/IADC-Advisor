@@ -1,6 +1,6 @@
 # Appian Architect-in-a-Box
 
-This repo is a reusable **Claude Code bundle** that configures Claude as an **advisory Appian architect**. Its job is to interrogate and sharpen development planning, answer questions about an Appian application, and produce specs and ticket breakdowns — for a team's architects and new developers alike.
+This repo is a reusable **Claude Code bundle** that configures Claude as an **advisory Appian architect**. Its main job is to help a developer work out **how to build the ticket in front of them** in a specific Appian application — getting oriented in the app, sharpening the approach, and leaving an implementation note. It also answers questions about the application and, for net-new work, sharpens planning into specs and ticket breakdowns — for a team's architects and new developers alike.
 
 **It does not write code or build Appian objects.** Execution happens with full-access tools, outside this bundle. Everything here is advisory: inspect, reason, plan, hand off.
 
@@ -29,13 +29,17 @@ Configured in `.mcp.json` with **literal values** — copy `.mcp.json.example` �
 
 Ask **`/which-skill`** — it's the router over everything below.
 
-**Planning flow (main):** `/interrogate-with-docs` (or `/interrogate-me`) → `/to-spec` → `/to-tickets`. The tickets are the handoff point to developers outside this bundle. `/interrogating` is the shared interview primitive; `/domain-modeling` keeps `CONTEXT.md` and ADRs sharp underneath it.
+**Main flow — build a ticket:** `/groundwork` — from a Jira ticket or a described task, get oriented in the app (blast radius, objects, platform how-to), sharpen the approach by interview, and leave a short implementation note. A thin orchestrator over the inspection skills and `/interrogating`; it advises and hands off, it does not build. This is the 99% path.
+
+**Greenfield flow — shape net-new work:** `/interrogate-with-docs` (or `/interrogate-me`) → `/to-spec` → `/to-tickets`, for work that isn't a defined build yet. The tickets are the handoff point to developers outside this bundle — where each becomes a starting point for `/groundwork`. `/interrogating` is the shared interview primitive; `/domain-modeling` keeps `CONTEXT.md` and ADRs sharp underneath it.
 
 **On-ramp:** `/wayfinder` for huge, foggy efforts (charts a map of decision tickets, produces decisions/ADRs not deliverables).
 
+**Understand the app (no build in view):** `/orient` — a cited briefing on what the app does and how, composing the graph, live Appian, the board, and `CONTEXT.md`+ADRs (the packaged form of the inspection skills). For a new developer or catching up on an unfamiliar area; `/groundwork` is the counterpart when you *do* have a build in view.
+
 **Appian knowledge & inspection (read-only):** `/appian`, `/iadc-graph`, `/context7`, `/jira` (read the board for context).
 
-**Support:** `/research` (background agent, cited primary-source answers), `/handoff` (bridge a long session into a fresh one), `/teach` (multi-session learning / onboarding).
+**Support:** `/research` (background agent, cited primary-source answers), `/handoff` (bridge a long session into a fresh one).
 
 **Setup:** `/setup` — run once per project to wire MCPs, set the Jira project key and Appian/graph endpoints, and lay out the issue tracker + domain docs.
 

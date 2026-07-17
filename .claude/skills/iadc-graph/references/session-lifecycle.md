@@ -161,7 +161,7 @@ the freshened nodes/edges immediately.
 
 Per-uuid outcomes:
 - `"patched"` / `"deleted"` — applied.
-- `"rejected"` — that uuid isn't part of this session's package membership
+- `"rejected"` — that uuid isn't part of this session's application graph
   (reporting a change to an object the session never knew about is a no-op,
   not an error).
 - `"error"` — the live re-fetch or patch itself failed (LCP auth/network

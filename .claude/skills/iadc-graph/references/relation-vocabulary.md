@@ -23,7 +23,7 @@ Every edge also carries `provenance`: `"reference"` for the 16 relations in
 | `USES_CONSTANT` | `uses_constant` | Host artifact references a constant (`resolved_via=="object_uuid"`, `object_type=="constant"`). Reachable via either a SAIL `cons!` reference OR a processModel node input's static typed reference (`xsi:type` local-name `Constant`) — both land on this same relation; a host referencing the same constant both ways gets two separate occurrences on one edge, never a collision. |
 | `USES_RECORD_TYPE` | `uses_record_type` | Host artifact references a record type directly, or via a relationship (edge retargeted to the relationship's target RT, not the relationship's own UUID). |
 | `USES_RECORD_FIELD` | `uses_record_field` | Host artifact references a record field (`resolved_via` `table_uuid` or `cdt_name`); edge target is the leaf `recordField` node, never the owning record type. |
-| `INVOKES_RECORD_ACTION` | `invokes_record_action` | Host artifact invokes a record action; target is the same bare-UUID `recordAction` node `defines_action` points at when the action is declared in-package. |
+| `INVOKES_RECORD_ACTION` | `invokes_record_action` | Host artifact invokes a record action; target is the same bare-UUID `recordAction` node `defines_action` points at when the action is declared in-application. |
 | `CALLS_INTEGRATION` | `calls_integration` | Host artifact calls an outbound integration (`object_type=="outboundIntegration"`). Reachable via either a SAIL reference OR a processModel Call-Integration node input's static typed reference (`xsi:type` local-name `OutboundIntegration`) — both land on this same relation; an integration called by both a rule and a PM node input gets an in-edge from each, counted separately. |
 | `USES_TRANSLATION` | `uses_translation` | Host artifact references a translation string. |
 | `USES_AI_SKILL` | `uses_ai_skill` | Host processModel artifact references an AI Skill via a node input (`object_type=="aiSkill"`, `resolved_via=="object_uuid"`). The edge is sourced on the owning `processModel` node. |
@@ -41,8 +41,8 @@ Every edge also carries `provenance`: `"reference"` for the 16 relations in
 |---|---|---|
 | `USES_CONNECTED_SYSTEM` | `uses_connected_system` | `artifact.connected_system_uuid` is set (integrations / CS-backed record types). |
 | `SECURED_BY` | `secured_by` | One occurrence per `{group_uuid, role}` group-kind entry in `artifact.security`; multiple roles for the same group aggregate onto one edge. |
-| `DECLARES` | `declares` | Owning record type to its `recordRelationship` node, one per in-package relationship config. |
-| `TARGETS` | `targets` | `recordRelationship` node to its target record type (in-package artifact node, or external boundary node for `SYSTEM_*`/out-of-package targets). |
+| `DECLARES` | `declares` | Owning record type to its `recordRelationship` node, one per in-application relationship config. |
+| `TARGETS` | `targets` | `recordRelationship` node to its target record type (in-application artifact node, or external boundary node for `SYSTEM_*`/out-of-application targets). |
 | `HAS_FIELD` | `has_field` | Owning record type to a declared field node, for every field regardless of whether any SAIL references it. |
 | `HAS_VIEW` | `has_view` | Owning record type to a declared view node (`<a:detailViewCfg>` with a non-empty `urlStub`). |
 | `DEFINES_ACTION` | `defines_action` | Owning record type to a declared action node; same node `invokes_record_action` reuses when the action is also called from SAIL. |

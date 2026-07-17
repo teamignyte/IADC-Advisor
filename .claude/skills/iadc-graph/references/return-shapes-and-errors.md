@@ -342,7 +342,7 @@ or a bare list:
 ```
 
 - `"patched"` / `"deleted"` — no `detail` key.
-- `"rejected"` — uuid isn't in this session's package membership; `detail`
+- `"rejected"` — uuid isn't in this session's application graph; `detail`
   explains that.
 - `"error"` — the live re-fetch or patch itself raised (LCP auth/network
   failure, an object_type the patcher can't handle); `detail` is `str(exc)`.

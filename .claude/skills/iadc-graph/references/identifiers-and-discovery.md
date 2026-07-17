@@ -59,7 +59,7 @@ that into a real, verified `node_id`, in the order to reach for them:
 
 ### 1. Search inside the already-seeded graph (primary path)
 
-If the object you care about is plausibly part of the seeded package, this
+If the object you care about is plausibly part of the seeded application, this
 is the first thing to try — no other MCP involved:
 
 - **`find_nodes(session_id, query, kind?, object_type?, limit?)`** —
@@ -80,7 +80,7 @@ object_type?}, ...], "returned", "total_matching", "truncated"}`. **Read the
 If `truncated: true` and your match isn't in the returned page, narrow the
 query/filters rather than assuming it doesn't exist.
 
-If nothing matches, the object may not be part of this session's package —
+If nothing matches, the object may not be part of this session's application graph —
 move to step 2.
 
 ### 2. The Appian-MCP name→UUID handoff (object not yet in the seeded graph)
@@ -106,7 +106,7 @@ keyed by the Appian object UUID verbatim) — but it's only a *candidate*
 `node_id` until the graph confirms it. Feed it to `get_node(session_id,
 node_id)` or `find_nodes(session_id, query=<uuid>)` to check it's actually a
 node in this session's graph before treating it as one (it may not be, if
-the object is outside the seeded package — it would then show up, if at
+the object is outside the seeded application — it would then show up, if at
 all, as a boundary node under a different id per the priority rules above,
 or not be reachable at all).
 

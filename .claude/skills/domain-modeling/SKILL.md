@@ -63,6 +63,10 @@ When a term is resolved, update `CONTEXT.md` right there. Don't batch these up �
 
 `CONTEXT.md` should be totally devoid of implementation details. Do not treat `CONTEXT.md` as a spec, a scratch pad, or a repository for implementation decisions. It is a glossary and nothing else.
 
+### Don't persist a contradiction — and capture before the session ends
+
+Write a decision or term only once it's consistent with what's already captured. If something the user says conflicts with an existing `CONTEXT.md` entry or an ADR, surface the contradiction and let them resolve it *before* you write — never quietly append a second, conflicting version. And if the interview ends early, do a final pass before you stop: capture anything decided but not yet written, and flag any contradiction still open — so the docs are never left half-written or internally inconsistent.
+
 ### Offer ADRs sparingly
 
 Only offer to create an ADR when all three are true:
