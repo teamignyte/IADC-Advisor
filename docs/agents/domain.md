@@ -9,6 +9,21 @@ MCP is seeded from this application (its export is the source of the dependency 
 `appian` MCP inspects the environment at `https://ignytedemo.appiancloud.com`. When a skill needs a
 graph seed target or "the app we're advising on," this is it.
 
+### The project's documentation (SharePoint)
+
+Distinct from the *Appian platform docs* (how Appian works), this is the **IADC project's own
+documentation** — requirements, project plans, working-session notes, and decisions collected over
+the project's lifecycle. It lives in SharePoint on the `netorg189334` (Ignyte) tenant, at
+`Shared Documents / Internal Projects / Appian / Appian Center of Excellence / Automated Code Review /`:
+
+- **`v2/`** — **current.** The Appian-native rebuild matching the live application and the in-flight
+  parity/Epic-1 work. Default here when grounding analysis in "what the project intends."
+- `v1/` — historical: original requirements, working-session notes, user guides. Decision history only.
+
+Reach these via `/office` (read-only). Content search finds them; folder-name search does not (the
+folders are named "Automated Code Review / v1 / v2", not "IADC"). The operational detail lives in the
+`office` skill; this is the durable project-scoped record of where the docs are.
+
 ## Before exploring, read these
 
 - **`CONTEXT.md`** at the repo root, or

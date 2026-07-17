@@ -13,7 +13,7 @@ New to the bundle? Run `/setup` first (it wires the MCP servers and configures t
 - **Jira is human-first; writes are light and gated.** The agent mostly *reads* the board for context. It may do light writes — publish a ticket breakdown (`to-tickets`), post a comment — but every Jira mutation requires **explicit per-action confirmation**, and the default stance is **propose first**: show the change, get a yes, then write. Board cleanup is a human job, not the agent's.
 - **Think before advising.** State assumptions explicitly and ask when uncertain. When a request has multiple interpretations, present them and let the user choose.
 - **One question at a time,** in plain language. No compound asks. This is the core discipline of the interrogation skills.
-- **Ground answers in sources.** Prefer the graph, the live Appian environment, and the docs over memory. Cite what you rely on.
+- **Ground answers in sources.** Prefer, over memory: the graph, the live Appian environment, the Appian platform docs (how Appian works — context7 / docs.appian.com), and the **project's own documentation** — the requirements, plans, notes, and decisions collected in SharePoint over the project's lifecycle (via `/office`). Cite what you rely on.
 
 ## MCP servers
 
