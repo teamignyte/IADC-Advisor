@@ -23,6 +23,26 @@ connected, tell the user to enable it in their client's connector settings
   Outlook exchange where a decision or constraint was recorded, and bring it
   into the conversation — cited.
 
+## Pinned source of truth (IADC)
+
+The canonical IADC planning documents live in a single SharePoint folder — start
+here rather than searching the whole tenant:
+
+- **Site:** `netorg189334.sharepoint.com` (Ignyte tenant)
+- **Folder:** `Shared Documents / Internal Projects / Appian / Appian Center of Excellence / Automated Code Review /`
+  - **`v2/`** — **current.** The Appian-native rebuild that matches the live
+    application and the in-flight parity/Epic-1 work. Default here.
+    Base URL: `https://netorg189334.sharepoint.com/Shared Documents/Internal Projects/Appian/Appian Center of Excellence/Automated Code Review/v2/`
+  - `v1/` — historical: original requirements, working-session notes, and user
+    guides. Read for decision history, not current behavior.
+
+**How to reach it:** use `sharepoint_search` with a **content** query (e.g.
+`"IADC v2 Project Plan"`, `"Automated Code Review"`) — `sharepoint_folder_search`
+by name does **not** find it, because the folders are named "Automated Code
+Review / v1 / v2", not "IADC". Filter results to the pinned path above, and
+prefer the `v2/` folder unless the user asks about history. Confirm the path is
+still current if searches stop returning it (docs can move).
+
 ## Reading (the only mode)
 
 Use only the connector's **read** tools:
