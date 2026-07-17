@@ -29,6 +29,7 @@ Keep steps 1–3 in **one unbroken context window** so the interrogation, spec, 
 The default way to start when you've been handed a ticket.
 
 - **`/gumby`** — **the dialectic.** When you're working on a specific ticket and want to pressure-test the approach *before* building. A relentless, **one-question-at-a-time Socratic** interview that asks but doesn't answer — *you* do the reasoning — grounded in the live app (the Jira ticket, the graph, the Appian environment, the project's own docs) and captured to `CONTEXT.md`/ADRs. Say "I'm working on a ticket" and this is where you land. (Its sibling `/interrogate-with-docs` runs the same kind of interview but *proposes* answers as it goes — reach for Gumby when you want to think it through yourself.)
+- **`/pokey`** — **the build spec.** After Gumby, turns the sharpened plan into a developer-ready build spec (PRD context + ordered Appian build steps). It lays the spec out for your review and takes final questions, then writes it to the **local workspace** only once you approve. `ticket → /gumby → /pokey`. **Supersedes `/to-tickets` and `/to-spec`** for ticket-driven work.
 
 ## On-ramp
 

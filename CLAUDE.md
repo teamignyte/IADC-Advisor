@@ -29,9 +29,9 @@ Configured in `.mcp.json` with **literal values** — copy `.mcp.json.example` �
 
 Ask **`/which-skill`** — it's the router over everything below.
 
-**Working a ticket (the dialectic):** `/gumby` — the default way to start when you're handed a ticket. A pure-Socratic, one-question-at-a-time interview that **asks but doesn't answer** (you do the reasoning), grounds every question in the live app (Jira, graph, Appian env, project docs), and captures the result to `CONTEXT.md`/ADRs before you build. Its sibling `/interrogate-with-docs` runs the same kind of interview but *proposes* answers as it goes.
+**Working a ticket (dialectic → build spec):** `/gumby` — the default way to start when you're handed a ticket. A pure-Socratic, one-question-at-a-time interview that **asks but doesn't answer** (you do the reasoning), grounds every question in the live app (Jira, graph, Appian env, project docs), and captures the result to the project workspace before you build. Then **`/pokey`** turns the sharpened plan into a developer-ready **build spec** (PRD context + ordered Appian build steps), presented for review and written to the local workspace only on your approval. `ticket → /gumby → /pokey`. (`/interrogate-with-docs` is a sibling of Gumby that *proposes* answers as it goes.)
 
-**Planning flow (main):** `/interrogate-with-docs` (or `/interrogate-me`) → `/to-spec` → `/to-tickets`. The tickets are the handoff point to developers outside this bundle. `/interrogating` is the shared interview primitive; `/domain-modeling` keeps `CONTEXT.md` and ADRs sharp underneath it.
+**Planning flow (main):** `/interrogate-with-docs` (or `/interrogate-me`) → `/to-spec` → `/to-tickets`. The tickets are the handoff point to developers outside this bundle. `/interrogating` is the shared interview primitive; `/domain-modeling` keeps the glossary and ADRs sharp underneath it. _(For ticket-driven work, the `/to-spec`→`/to-tickets` tail is **superseded by `/pokey`** — see "Working a ticket" above.)_
 
 **On-ramp:** `/wayfinder` for huge, foggy efforts (charts a map of decision tickets, produces decisions/ADRs not deliverables).
 

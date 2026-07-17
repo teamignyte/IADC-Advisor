@@ -6,6 +6,10 @@ disable-model-invocation: true
 
 # To Tickets
 
+> **⚠️ Superseded by `/pokey`** for ticket-driven work. This bundle now *starts* from a ticket and
+> ends with a build spec (`ticket → /gumby → /pokey`), rather than splitting a plan back into
+> tickets. Kept for reference; slated for removal.
+
 Break a plan, spec, or conversation into a set of **tickets** — tracer-bullet vertical slices, each declaring the tickets that **block** it.
 
 The issue tracker and triage label vocabulary should have been provided to you — run `/setup` if not.

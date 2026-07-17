@@ -58,8 +58,9 @@ contradictions.
 5. **Synthesize and confirm.** Play back the sharpened approach and every decision.
    Recommendations are welcome *here* — the no-answers rule governs the interview, not the
    synthesis. **Do not act until the user confirms** it's a shared understanding.
-6. **Hand off.** Offer the next step — a blast-radius pass, `/to-spec`, or `/to-tickets` to
-   put the breakdown on the board with blocking edges.
+6. **Hand off to `/pokey`.** Once the approach is confirmed, the next step is **`/pokey`** — it
+   turns this conversation into a developer-ready build spec (offer a blast-radius pass first if
+   the change is risky). `ticket → /gumby → /pokey`.
 
 ## Relationship to the other skills
 
