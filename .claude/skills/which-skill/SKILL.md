@@ -24,6 +24,12 @@ The route most planning travels. You have an idea and want it sharpened into som
 
 Keep steps 1–3 in **one unbroken context window** so the interrogation, spec, and tickets all build on the same thinking. If a session gets too long before `/to-tickets`, don't push on degraded — `/handoff` and continue in a fresh thread (see Crossing sessions).
 
+## Working a specific ticket
+
+The default way to start when you've been handed a ticket.
+
+- **`/gumby`** — **the dialectic.** When you're working on a specific ticket and want to pressure-test the approach *before* building. A relentless, **one-question-at-a-time Socratic** interview that asks but doesn't answer — *you* do the reasoning — grounded in the live app (the Jira ticket, the graph, the Appian environment, the project's own docs) and captured to `CONTEXT.md`/ADRs. Say "I'm working on a ticket" and this is where you land. (Its sibling `/interrogate-with-docs` runs the same kind of interview but *proposes* answers as it goes — reach for Gumby when you want to think it through yourself.)
+
 ## On-ramp
 
 A starting situation that generates planning work, then merges onto the main flow.
