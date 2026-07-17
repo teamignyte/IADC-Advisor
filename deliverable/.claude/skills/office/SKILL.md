@@ -21,6 +21,4 @@ The design intent — captured here so whoever implements it knows the target:
 
 1. Choose and connect a Microsoft 365 / SharePoint MCP server (e.g. a Microsoft Graph-based server), wired into `.mcp.json` with read scopes and literal secrets like the other servers (and a placeholder entry in `.mcp.json.example`).
 2. Replace this stub with a real skill: the tool names, auth/permission model, how to locate a site/drive/document, and the read-only usage patterns.
-3. Update `CLAUDE.md` and `which-skill` to route to it, wire it into `/groundwork`'s Frame step (and drop the "paste the docs" fallback there), and drop the "not built" callout from `for_liam.md`.
-
-See `for_liam.md` at the repo root for why this was deferred.
+3. Update `CLAUDE.md` and `which-skill` to route to it, wire it into `/groundwork`'s Frame step (and drop the "paste the docs" fallback there), and clear this placeholder's "not built" framing.

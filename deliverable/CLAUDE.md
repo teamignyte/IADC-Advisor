@@ -17,13 +17,13 @@ New to the bundle? Run `/setup` first (it wires the MCP servers and configures t
 
 ## MCP servers
 
-Configured in `.mcp.json` with **literal values** — copy `.mcp.json.example` → `.mcp.json` (gitignored) and fill in the real credentials. Literal, not `${VAR}`, because the Windows Desktop app doesn't reliably expand `${VAR}` in `.mcp.json` (see `for_liam.md`). `/setup` walks you through it and verifies each server connects.
+Configured in `.mcp.json` with **literal values** — copy `.mcp.json.example` → `.mcp.json` (gitignored) and fill in the real credentials. Literal, not `${VAR}`, because the Windows Desktop app doesn't reliably expand `${VAR}` in `.mcp.json`. `/setup` walks you through it and verifies each server connects.
 
 - **`iadc`** (graph, HTTP) — an exact App Graph built from an Appian export. Answers "what calls this", "blast radius of this change", "path from A to B", the record model. Load the **`iadc-graph`** skill before calling it. Read-only by nature.
 - **`appian`** (stdio, **read-only**) — inspect the Appian environment. Runs with `LCP_TOOL_MODE=readonly`, so only `list*`/`get*` tools are exposed — no create/update/delete, and no environment-touching test tools. Load the **`appian`** skill first; its create/update material is advisory reference, not actions you take.
 - **`context7`** (HTTP) — semantic search over Appian documentation. First stop for "how do I…/what function…" questions; confirm version-sensitive answers against `docs.appian.com` via the `appian` skill. Load the **`context7`** skill.
 - **Jira** — connected as a **Claude connector** (the Atlassian connector; not in `.mcp.json`, no tokens here). All Jira access — `jira` (read for context) and `to-tickets` (publish a breakdown) — goes through it. Jira is **human-first**: reads are free, writes are light and gated (above).
-- **Office / SharePoint** — **not yet built** (see the `office` placeholder skill and `for_liam.md`).
+- **Office / SharePoint** — **not yet built** (see the `office` placeholder skill).
 
 ## Skills
 
@@ -47,7 +47,7 @@ Ask **`/which-skill`** — it's the router over everything below.
 
 - **Durable design (source of truth):** domain vocabulary in `CONTEXT.md`, decisions in `docs/adr/`. Maintained via `/interrogate-with-docs` and `/domain-modeling`.
 - **Bundle configuration:** `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, `docs/agents/domain.md` — written by `/setup`.
-- **This bundle, for its maintainers:** `for_liam.md` (purpose, the decisions behind it, what's built and what's deferred). User-facing overview: `README.md`.
+- **User-facing overview:** `README.md`.
 
 ## Working principles
 

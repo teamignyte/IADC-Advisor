@@ -17,7 +17,7 @@ denylist.
 
 ## Consequences
 
-- Dev docs (`CONTEXT.md`, `docs/adr/`, `for_liam.md`) sit at the root: auto-found, and
+- Dev docs (`CONTEXT.md` and `docs/adr/`) sit at the root: auto-found, and
   never shipped because they are outside `deliverable/`.
 - Client **usage docs** are unaffected: `deliverable/.gitignore` (secrets + OS cruft only)
   flattens to the client's root, so the client commits their own `CONTEXT.md` / ADRs.
