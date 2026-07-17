@@ -24,8 +24,8 @@ This repo, where the bundle is developed. Its root is the maintainer's dev
 environment — auto-discovered by Claude Code — and is never shipped.
 
 **Dev docs**:
-Design docs about *building the bundle* — this `CONTEXT.md`, `docs/adr/`, and
-`for_liam.md`. They sit at the workshop root, are shared among the bundle's
+Design docs about *building the bundle* — this `CONTEXT.md` and `docs/adr/`. They sit
+at the workshop root, are shared among the bundle's
 maintainers, and are never shipped.
 
 **Usage docs**:

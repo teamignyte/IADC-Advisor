@@ -42,17 +42,24 @@ board.
 ### 2. Locate & assess in *this app*
 
 This step is about the specific application, not the platform — you're finding where the
-work lands in the code that's actually there.
+work lands in the code that's actually there. Do it in the graph: it holds the **whole
+application**, so it can both find the objects and show what they touch.
 
-- Identify the Appian objects the work concerns. Resolve their **names to UUIDs** via the
-  `/appian` MCP first — the graph takes a node id, never a display name.
-- With the node id(s), run the **blast-radius check** via `/iadc-graph` (always — it's
-  cheap, and it's the whole reason the graph exists): what calls these objects, what they
-  depend on, the record model around them. This is what tells you the true size of the
-  change, so a "small" ticket that turns out to touch everything can't ambush you later.
-- Scale from here. Small and contained → note it and move on. Wide, or unfamiliar → open
-  the actual objects with `/appian` (record types, expression rules, interfaces, process
-  models) so the approach rests on what's really there rather than an assumption.
+- **Seed the graph once.** Load `/iadc-graph`, then `seed(application_uuid=…)` using the
+  application UUID from that skill's Configuration block — no live Appian-MCP lookup
+  needed. Poll `seed_status` to `ready` and reuse that one session for the whole run (mind
+  the 30-minute TTL).
+- **Find the objects in the graph.** `find_nodes` / `list_nodes` by name hand you the real
+  `node_id`s — the graph resolves its own nodes, so you don't go to the Appian MCP to turn
+  a name into a UUID.
+- **Run the blast-radius check** (always — it's cheap, and it's the whole reason the graph
+  exists): `callers_of` / `reachable` for what calls these objects and what they depend on,
+  plus the record model around them. This tells you the true size of the change, so a
+  "small" ticket that actually touches everything can't ambush you later.
+- **Scale from here.** Small and contained → note it and move on. Wide, or unfamiliar →
+  open the actual objects with `/appian` to read their internals (record types, expression
+  rules, interfaces, process models). That's the Appian MCP's job in this step — reading
+  what's *inside* an object, not finding it.
 
 ### 3. Appian *platform* how-to
 

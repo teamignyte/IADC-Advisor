@@ -39,7 +39,7 @@ Before touching a tool, read `CONTEXT.md` (the project's ubiquitous language) an
 
 ### 2. Seed the graph
 
-Load the **`/iadc-graph`** skill first — it is mandatory before any `iadc` call and carries the session lifecycle and node-id rules the tool schemas can't express. Then `seed` the configured application and poll `seed_status` until it's ready. Respect the 30-minute TTL, and `close` the session when you're done (step 6).
+Load the **`/iadc-graph`** skill first — it is mandatory before any `iadc` call and carries the session lifecycle and node-id rules the tool schemas can't express. Then `seed` the configured application — its UUID is in the `/iadc-graph` Configuration block (set by `/setup`), so there's no live lookup — and poll `seed_status` until it's ready. Respect the 30-minute TTL, and `close` the session when you're done (step 6).
 
 ### 3. Find what matters — don't dump the inventory
 
@@ -49,7 +49,7 @@ A newcomer needs the handful of objects that *run* the app, not an alphabetized 
 - Rank by **node degree** to surface the **hubs** (high fan-in / fan-out objects) — these are what to learn first.
 - `list_nodes` on entry-point kinds (**sites, portals**) for the **user-facing surfaces** — the top of the call chains, where the app is actually used. `shortest_path` from a surface down to a hub shows how a click reaches the core.
 
-For a scoped or single-object ask, resolve a starting `node_id` with `find_nodes` (or resolve an object name to its UUID via the `/appian` MCP first) and traverse out from there with `reachable` / `get_neighbors` instead of surveying the whole graph.
+For a scoped or single-object ask, resolve a starting `node_id` with `find_nodes` — the graph holds the whole application, so it resolves its own nodes by name — and traverse out from there with `reachable` / `get_neighbors` instead of surveying the whole graph.
 
 ### 4. Draw the data model
 
