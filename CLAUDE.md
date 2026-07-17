@@ -43,7 +43,7 @@ Ask **`/which-skill`** — it's the router over everything below.
 
 ## Documentation map
 
-- **Durable design (source of truth):** domain vocabulary in `CONTEXT.md`, decisions in `docs/adr/`. Maintained via `/interrogate-with-docs` and `/domain-modeling`.
+- **Durable design (source of truth):** the domain glossary and decision records (ADRs), maintained via `/gumby`, `/interrogate-with-docs`, and `/domain-modeling`. **In this instance they live in a local project workspace outside the repo — not in `CONTEXT.md`/`docs/adr/`** — see `docs/agents/domain.md` for the location (outputs are project artifacts, not bundle source).
 - **Bundle configuration:** `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, `docs/agents/domain.md` — written by `/setup`.
 - **This bundle, for its maintainers:** `for_liam.md` (purpose, the decisions behind it, what's built and what's deferred). User-facing overview: `README.md`.
 

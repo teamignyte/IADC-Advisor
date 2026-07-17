@@ -39,15 +39,22 @@ contradictions.
      under the pinned v2 folder. Read any match **before** interviewing: it may already
      answer, extend, or *contradict* the plan. Folder-name search is unreliable here, so
      also search by content/filename and read the ticket subfolder's contents directly.
-   - existing decisions (`CONTEXT.md`, `docs/adr/`).
+   - existing decisions — the project workspace's glossary and decision records (see
+     `docs/agents/domain.md` for the workspace location).
 3. **Run the dialectic.** Walk the decision tree from the root (usually *why / what problem
    is this solving*), resolving dependencies one at a time. **Surface contradictions the
    moment they appear** — between the ticket's AC, the user's answers, and what the code and
    docs actually say. Force precision with concrete scenarios ("A shares a rule with B; A
    deletes it — what happens to B?").
-4. **Capture as you go** (via `/domain-modeling`). The moment a term crystallizes, write it
-   to `CONTEXT.md`. When a decision is hard to reverse, surprising, and a real trade-off,
-   write an ADR. Capture inline — don't batch.
+4. **Capture as you go** (via `/domain-modeling`) — to the **local project workspace, never
+   the git repo** (outputs are project artifacts, not bundle source, and must not be
+   committed). The location is configured in `docs/agents/domain.md`: the glossary lives at
+   the workspace root (`CONTEXT.md`); each ticket's decision record(s)/ADRs go in a **folder
+   named after the ticket key** (e.g. `IV-207/`), created if it doesn't exist. Write a
+   glossary term the moment it crystallizes; write an ADR when a decision is hard to
+   reverse, surprising, and a real trade-off. Capture inline — don't batch.
+   _(SharePoint would be the firm's system of record, but its O365 connector exposes no
+   write scopes — so the workspace is local for now; `/office` stays read-only for grounding.)_
 5. **Synthesize and confirm.** Play back the sharpened approach and every decision.
    Recommendations are welcome *here* — the no-answers rule governs the interview, not the
    synthesis. **Do not act until the user confirms** it's a shared understanding.

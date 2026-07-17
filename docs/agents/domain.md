@@ -24,6 +24,23 @@ Reach these via `/office` (read-only). Content search finds them; folder-name se
 folders are named "Automated Code Review / v1 / v2", not "IADC"). The operational detail lives in the
 `office` skill; this is the durable project-scoped record of where the docs are.
 
+## Where decision outputs are written (the project workspace)
+
+Decision records, ADRs, and the domain glossary that `/gumby` and `/domain-modeling` produce are
+**not committed to this bundle repo** — they are project artifacts, written to a **local workspace
+outside the repo**:
+
+- **Base (configurable — change here to relocate):** `/mnt/c/Users/LiamCaracciolo/Documents/IADC/`
+- **Glossary:** `<base>/CONTEXT.md` — the project-wide ubiquitous language (cross-cutting, not
+  ticket-scoped).
+- **Per-ticket decisions:** `<base>/<TICKET-KEY>/` — e.g. `<base>/IV-207/` holds that ticket's
+  decision record(s)/ADRs. Create the folder if it doesn't exist.
+
+**Why local, not SharePoint:** SharePoint would be the firm's system of record, but its Microsoft 365
+connector exposes **no write scopes**, so the advisor cannot publish there. Local Documents is the
+interim home; if write scopes are ever granted, this base can point at the ticket's SharePoint
+subfolder instead. `/office` remains read-only, for grounding only.
+
 ## Before exploring, read these
 
 - **`CONTEXT.md`** at the repo root, or
