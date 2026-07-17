@@ -44,14 +44,30 @@ Each file covers what the tool schemas can't say. Load on demand:
 | Multi-step traversal patterns (blast radius, callers, path, record-model walks) | `references/traversal-recipes.md` |
 | Exact JSON shapes returned, and every error dict / empty-vs-not-found distinction | `references/return-shapes-and-errors.md` |
 
+## Configuration
+
+`/setup` fills these in for the application this bundle is pointed at — they are the
+graph's **seed target**. Read the UUID here rather than resolving it live through the
+Appian MCP.
+
+- **Application name:** `<PLACEHOLDER — set by /setup>`
+- **Nicknames:** `<PLACEHOLDER — e.g. CMS, "the case app"; optional>`
+- **Application UUID:** `<PLACEHOLDER — set by /setup>`
+
+Seeding uses `seed(application_uuid="<the UUID above>")`. If a developer names the app by a
+nickname, map it to the UUID here — name, nicknames, and UUID all live in this one block,
+so there's no cross-file lookup.
+
 ## MANDATORY first sequence
 
-1. **Seed — pick the right front door.**
-   - `seed(export_ref="<path>")` — server-local already-extracted export
-     directory. Synchronous; returns `state: "ready"` immediately.
-   - `seed(application_uuid="<uuid>")` — live Appian application UUID.
-     Asynchronous; returns `state: "queued"` immediately, before the build
-     finishes.
+1. **Seed — pick the right front door.** For this bundle the graph is a
+   **whole-application export**, and the **application UUID is in the Configuration block
+   above** (set by `/setup`) — you don't resolve it live.
+   - `seed(application_uuid="<uuid from Configuration>")` — the normal path here.
+     Asynchronous; returns `state: "queued"` immediately, before the build finishes.
+   - `seed(export_ref="<path>")` — only when you're co-located with the MCP server and
+     already have an extracted export directory on its disk. Synchronous; returns
+     `state: "ready"` immediately.
 2. **If you used `application_uuid`**, poll `seed_status(session_id)` until
    `state` is `"ready"` or `"ready_with_warnings"` (both queryable — stop and
    read on), or one of the failure states — `"export_failed"`,

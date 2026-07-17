@@ -37,7 +37,7 @@ Servers this bundle expects (collect each value with the user, write it into `.m
 
 - **Jira project key** (e.g. `IV`) — used by the `jira` and `to-tickets` skills.
 - **Appian version** (e.g. `26.6`) — used by `/appian` for version-exact `docs.appian.com` lookups. Write it into the **Configuration block of `appian/SKILL.md`**, which is the single source of truth `/appian` reads — don't leave it to drift from the skill's default.
-- **Graph seed target** — which Appian application the `iadc` graph is built from.
+- **Application identity (graph seed target)** — the Appian application the `iadc` graph is built from. Ask for the **full application name** and any **nicknames** the team uses; get the **application UUID** either by resolving the name via the `appian` MCP (`listApplications`) or from the user directly — both are fine, and this is the one time a live lookup is worth it. Write name, nicknames, and UUID **together** into the **Configuration block of `iadc-graph/SKILL.md`**, so seeding reads the UUID there and never needs the Appian MCP again.
 
 ### 4. Issue tracker
 
