@@ -17,14 +17,14 @@ The architect **advises and plans**; your developers build. It reads and reasons
 - **Answer "how does our app work"** by traversing an exact dependency graph of your Appian application (what calls this, what breaks if I change it, how these objects relate).
 - **Answer "how does Appian work"** with semantic search over the Appian documentation, confirmed against the official docs at your environment's version.
 - **Inspect your Appian environment** directly (read-only) to ground advice in the real configuration.
-- **Read your requirements and design documents** from SharePoint / OneDrive, and pull context from Teams and Outlook. _(Planned — the Office/SharePoint integration isn't built yet.)_
+- **Read your requirements and design documents** from SharePoint / OneDrive, and pull context from Teams and Outlook (read-only, via the Microsoft 365 connector) — so the architect can ground planning in what the spec actually says.
 - **Read your Jira board for context** — what's planned, in flight, decided, blocked, or already tracked — so the architect's planning and answers are grounded in the work your team is actually tracking. (Jira stays human-first; the architect reads, and writes only light comments on request.)
 - **Research a question** against primary sources in the background, and **teach** a concept over multiple sessions.
 
 ## Getting started
 
 1. **Clone** this repo and open it in Claude Code.
-2. **Run `/setup`.** It walks you through connecting the MCP servers (graph, Appian, docs) and the Jira connector, setting your Jira project key and Appian/graph endpoints, and laying out your issue tracker and domain docs — then verifies everything connects.
+2. **Run `/setup`.** It walks you through connecting the MCP servers (graph, Appian, docs) and the Jira + Microsoft 365 connectors, setting your Jira project key and Appian/graph endpoints, and laying out your issue tracker and domain docs — then verifies everything connects.
 3. **Ask `/which-skill`** any time you're not sure which flow fits your situation. It's the router over the whole toolkit.
 
 ## The main flow

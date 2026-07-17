@@ -38,6 +38,7 @@ The domain skills that let the architect answer questions and ground plans in th
 - **`/iadc-graph`** — traverse the application's dependency graph (the `iadc` MCP) to answer structural questions: what calls this, what's the blast radius of a change, how do these objects relate, what's the record model.
 - **`/context7`** — semantic search over Appian documentation (first stop for "how do I…/what's the function for…"). Confirm version-sensitive answers against the authoritative `docs.appian.com` via `/appian`.
 - **`/jira`** — read the Jira board (via the Jira MCP) for context: what's planned, in flight, decided, blocked, or already tracked. Grounds the advisor's planning and answers in what the team is actually tracking. Read-mostly; light gated comments only (Jira is human-first here).
+- **`/office`** — read Microsoft 365 (via the connector) for context: SharePoint/OneDrive requirements and design docs, and Teams/Outlook discussion where decisions were recorded. Grounds planning in what the spec actually says. Read-only — find, read, cite; never send or edit.
 
 ## Vocabulary underneath
 
