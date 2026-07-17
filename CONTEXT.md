@@ -15,7 +15,7 @@ that turns Claude into an advisory Appian architect. The product this repo produ
 _Avoid_: tool, app, plugin
 
 **Deliverable**:
-The subset of the repo that ships to a client: everything under `bundle/`, and only
+The subset of the repo that ships to a client: everything under `deliverable/`, and only
 that. Its contents flatten to the client's repo root on install.
 _Avoid_: release, dist
 

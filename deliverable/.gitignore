@@ -1,0 +1,11 @@
+# Secrets — never commit
+# The real .mcp.json holds literal credentials; commit .mcp.json.example instead.
+.mcp.json
+!.mcp.json.example
+
+# Credential store (git PAT, keys) — never commit
+.secrets/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db

@@ -1,9 +1,6 @@
-# Secrets — never commit
-# The real .mcp.json holds literal credentials; commit .mcp.json.example instead.
-.mcp.json
-!.mcp.json.example
+# Workshop dev environment — the deliverable is in deliverable/ (which carries its own .gitignore).
 
-# Credential store (git PAT, keys) — never commit
+# Secrets for workshop git operations — never commit
 .secrets/
 
 # OS / editor cruft
