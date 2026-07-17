@@ -29,11 +29,17 @@ contradictions.
 
 1. **Get the ticket.** Pull it from Jira (`/jira`) by key, or take what the user pastes.
    Read the full detail — acceptance criteria, parent epic, links, comments.
-2. **Ground before probing.** Look up the facts the questions will stand on: the live
-   objects (`/appian`), the dependency graph and blast radius (`/iadc-graph`), the
-   project's own documentation (`/office` — the pinned source-of-truth folder), and
-   existing decisions (`CONTEXT.md`, `docs/adr/`). Never ask what the environment can tell
-   you — and let the grounding expose where the ticket's assumptions don't match reality.
+2. **Ground before probing.** Look up the facts the questions will stand on — never ask
+   what the environment can tell you, and let the grounding expose where the ticket's
+   assumptions don't match reality:
+   - the live objects (`/appian`) and the dependency graph / blast radius (`/iadc-graph`);
+   - **the project's own documentation (`/office`).** **Always search SharePoint by the
+     ticket number/key** (e.g. `IV-207`) — related design and spec docs are routinely
+     named after the ticket (`IV-207 Design.pdf`) and belong in the ticket's subfolder
+     under the pinned v2 folder. Read any match **before** interviewing: it may already
+     answer, extend, or *contradict* the plan. Folder-name search is unreliable here, so
+     also search by content/filename and read the ticket subfolder's contents directly.
+   - existing decisions (`CONTEXT.md`, `docs/adr/`).
 3. **Run the dialectic.** Walk the decision tree from the root (usually *why / what problem
    is this solving*), resolving dependencies one at a time. **Surface contradictions the
    moment they appear** — between the ticket's AC, the user's answers, and what the code and
