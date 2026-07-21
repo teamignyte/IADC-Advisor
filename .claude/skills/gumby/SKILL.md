@@ -19,6 +19,9 @@ contradictions.
   `/interrogating` (which recommends as it goes). _Escape hatch:_ if the user says "just
   tell me what you think," give your read, then resume probing.
 - **One question at a time.** No compound asks. Wait for the answer before the next one.
+- **Streamlined and numbered.** Lead with the question itself, numbered (`Q1`, `Q2`, …).
+  Keep any preamble to a short clause — and only when a fact or contradiction genuinely needs
+  surfacing. No long wind-ups; the question does the work.
 - **Decisions are the user's; facts are yours.** If something can be looked up — a record
   type's fields, what calls an object, what the spec says — look it up; don't ask. Put
   only genuine decisions to the user.
