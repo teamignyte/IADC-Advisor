@@ -31,21 +31,18 @@ pulls requirements before sharpening a plan.
 
 `/setup` fills this in for the project this bundle is pointed at — the pinned
 source-of-truth location the advisor searches first, rather than scanning the
-whole tenant. Rewritten per-client; the values below are this instance's.
+whole tenant. If it's still a placeholder, ask the user for the site/folder (or
+search the tenant), read from there, and offer to record it via `/setup`.
 
-- **Tenant / site:** `netorg189334.sharepoint.com` (Ignyte tenant)
-- **Pinned folder:** `Shared Documents / Internal Projects / Appian / Appian Center of Excellence / Automated Code Review /`
-  - **`v2/`** — **current.** The Appian-native rebuild that matches the live
-    application and the in-flight parity/Epic-1 work. Default here.
-    Base URL: `https://netorg189334.sharepoint.com/Shared Documents/Internal Projects/Appian/Appian Center of Excellence/Automated Code Review/v2/`
-  - `v1/` — historical: original requirements, working-session notes, and user
-    guides. Read for decision history, not current behavior.
-- **How to reach it:** use `sharepoint_search` with a **content** query (e.g.
-  `"IADC v2 Project Plan"`, `"Automated Code Review"`) — `sharepoint_folder_search`
-  by name does **not** find it, because the folders are named "Automated Code
-  Review / v1 / v2", not "IADC". Filter results to the pinned path above, and
-  prefer `v2/` unless the user asks about history. Confirm the path is still
-  current if searches stop returning it (docs can move).
+- **Tenant / site:** `<PLACEHOLDER — set by /setup>`
+- **Pinned folder:** `<PLACEHOLDER — set by /setup; the folder holding the project's requirements/design docs, plus any current/historical subfolders and their base URLs>`
+
+**How to reach it:** prefer `sharepoint_search` with a **content** query (words
+from the project or plan title) over `sharepoint_folder_search` by name —
+folder-name search is unreliable when the folder isn't named after the project.
+Filter results to the pinned path above, and prefer the current subfolder unless
+the user asks about history. Confirm the path is still current if searches stop
+returning it (docs can move).
 
 ## Reading (the only mode)
 
