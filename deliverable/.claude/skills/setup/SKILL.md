@@ -19,7 +19,7 @@ Read the current state; don't assume:
 - `.mcp.json` at the repo root — which servers are defined, which values are still `<...>` placeholders.
 - `.mcp.json` — does the real (gitignored) file exist yet, or only `.mcp.json.example`?
 - `CLAUDE.md` at the repo root — does an `## Agent skills` block already exist?
-- `CONTEXT.md`, `CONTEXT-MAP.md`, `docs/adr/`, `docs/agents/` — prior domain/config output.
+- `outputs/` (glossary `CONTEXT.md`, `CONTEXT-MAP.md`, `adr/`) and `docs/agents/` — prior domain/config output.
 - `git remote -v` — is there a remote, and where?
 
 ### 2. Wire the MCP servers
@@ -71,7 +71,7 @@ Defaults are five canonical roles: `needs-triage`, `needs-info`, `ready-for-agen
 
 ### 6. Domain docs
 
-Default to **single-context** — one `CONTEXT.md` + `docs/adr/` at the repo root. Offer **multi-context** (a root `CONTEXT-MAP.md` pointing to per-context `CONTEXT.md` files) only if exploration found monorepo signals. Seed from [domain.md](./domain.md).
+Default to **single-context** — one `outputs/CONTEXT.md` + `outputs/adr/` in the git-ignored outputs workspace. Offer **multi-context** (an `outputs/CONTEXT-MAP.md` pointing to per-context `CONTEXT.md` files) only if exploration found monorepo signals. Seed the consuming-side config (`docs/agents/domain.md`) from [domain.md](./domain.md).
 
 ### 7. Confirm and write
 

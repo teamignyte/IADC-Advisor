@@ -35,7 +35,7 @@ Sequenced so each layer tells the next one where to look — cheap context first
 
 ### 1. Read the cheap grounding first
 
-Before touching a tool, read `CONTEXT.md` (the project's ubiquitous language) and the ADR index in `docs/adr/`, plus `docs/agents/domain.md` if present. This costs almost nothing and gives you the team's **vocabulary and the "why"** up front — so when the graph shows you an object, you already have the team's name for it and any decision that shaped it. Load `/domain-modeling` if you need to reason about the language itself.
+Before touching a tool, read the project glossary (`outputs/CONTEXT.md`, the project's ubiquitous language) and the ADRs alongside it in the `outputs/` workspace, plus `docs/agents/domain.md` if present. This costs almost nothing and gives you the team's **vocabulary and the "why"** up front — so when the graph shows you an object, you already have the team's name for it and any decision that shaped it. Load `/domain-modeling` if you need to reason about the language itself.
 
 ### 2. Seed the graph
 
@@ -57,7 +57,7 @@ For a scoped or single-object ask, resolve a starting `node_id` with `find_nodes
 
 ### 5. Bind structure to meaning, and add direction
 
-- **Meaning:** map each hub back to its `CONTEXT.md` term and any ADR that explains its shape. This is the step the graph alone can't do — the graph shows the wiring, the docs say *why* the wiring is like that. Confirm any Appian platform mechanic against `/context7` (then `docs.appian.com` at the environment's version via `/appian`) rather than asserting it from memory.
+- **Meaning:** map each hub back to its glossary term (`outputs/CONTEXT.md`) and any ADR that explains its shape. This is the step the graph alone can't do — the graph shows the wiring, the docs say *why* the wiring is like that. Confirm any Appian platform mechanic against `/context7` (then `docs.appian.com` at the environment's version via `/appian`) rather than asserting it from memory.
 - **Direction:** load `/jira` and read the board (read-only) for work in flight or planned against those hubs, so orientation includes where the app is *going*, not just its frozen structure.
 
 ### 6. Synthesize one cited briefing

@@ -9,35 +9,38 @@ Actively build and sharpen the project's domain model as you design. This is the
 
 ## File structure
 
-Most repos have a single context:
+These are **generated project artifacts, not committed bundle source** — they live in the
+**git-ignored `outputs/` workspace** (see `outputs/README.md`). Most projects have a single
+context:
 
 ```
-/
-├── CONTEXT.md
-├── docs/
-│   └── adr/
-│       ├── 0001-event-sourced-orders.md
-│       └── 0002-postgres-for-write-model.md
-└── src/
+outputs/
+├── CONTEXT.md                        ← the project glossary
+├── adr/
+│   ├── 0001-event-sourced-orders.md
+│   └── 0002-postgres-for-write-model.md
+└── <TICKET-KEY>/                     ← per-ticket decision records/ADRs (from /gumby, /pokey)
 ```
 
-If a `CONTEXT-MAP.md` exists at the root, the repo has multiple contexts. The map points to where each one lives:
+If a `CONTEXT-MAP.md` exists at the workspace root, the project has multiple contexts. The
+map points to where each one lives:
 
 ```
-/
+outputs/
 ├── CONTEXT-MAP.md
-├── docs/
-│   └── adr/                          ← system-wide decisions
-├── src/
-│   ├── ordering/
-│   │   ├── CONTEXT.md
-│   │   └── docs/adr/                 ← context-specific decisions
-│   └── billing/
-│       ├── CONTEXT.md
-│       └── docs/adr/
+├── adr/                              ← system-wide decisions
+├── ordering/
+│   ├── CONTEXT.md
+│   └── adr/                          ← context-specific decisions
+└── billing/
+    ├── CONTEXT.md
+    └── adr/
 ```
 
-Create files lazily — only when you have something to write. If no `CONTEXT.md` exists, create one when the first term is resolved. If no `docs/adr/` exists, create it when the first ADR is needed.
+Create files lazily — only when you have something to write. If no `CONTEXT.md` exists, create
+one under `outputs/` when the first term is resolved; create an `adr/` folder when the first ADR
+is needed. (The `outputs/` base is git-ignored by default — see `outputs/README.md` to change
+that if your team wants the model version-controlled.)
 
 ## During the session
 
