@@ -1,24 +1,71 @@
 ---
-name: office
-description: "[PLACEHOLDER — NOT YET IMPLEMENTED] Intended to read Microsoft Office / SharePoint / OneDrive documents and Teams / Outlook context so the architect can ground planning in requirements and design docs. The MCP server and this skill's real content have not been built yet. Do not attempt to use it — there is no Office/SharePoint MCP connected."
+name: "office"
+description: "Read Microsoft 365 context — SharePoint/OneDrive documents (requirements, specs, process docs) and Teams/Outlook discussion — through the Microsoft 365 connector, to ground the Appian advisor's planning and answers in source-of-truth documents. Read-only: inspect and cite, never send, upload, edit, or delete. Load when the architect needs to find or read a spec, requirements doc, or a decision recorded in Teams/Outlook. Verbs: read the spec, find requirements, what does the doc say, SharePoint doc, Teams thread, meeting notes."
 ---
 
-# office — placeholder (not yet implemented)
+Pull **context from Microsoft 365** to ground the Appian advisor. Like the Jira
+board, this surface is **human-first and read-only**: your job is to **find and
+read** source-of-truth documents and discussion — via the Microsoft 365
+connector — so planning and answers rest on what the spec actually says, not
+memory. You never send, upload, edit, move, or delete anything.
 
-**This is a stub.** The Microsoft Office / SharePoint integration for this bundle has **not been built**. There is no Office/SharePoint MCP server connected, and this skill has no working content. Do not attempt to call Office/SharePoint/Teams/Outlook tools — they do not exist in this bundle.
+Access is through the **Microsoft 365 Claude connector** (OAuth), not `.mcp.json`
+— there are no tokens or env vars to configure here. If the connector isn't
+connected, tell the user to enable it in their client's connector settings
+(`/setup` covers this) and fall back to what they can paste in or point you at.
 
-If a user asks the architect to read a SharePoint document, a OneDrive file, or Teams/Outlook context, tell them this capability is planned but not yet available, and fall back to what they can paste in or point you at directly.
+## What this is for
 
-## Intended purpose (when built)
+- **Ground planning in requirements.** Before interrogating a plan or writing a
+  spec, find and read the SharePoint/OneDrive docs that state the requirements,
+  and answer "what did the spec say" from the document, not recollection.
+- **Recover decisions from discussion.** Pull the relevant Teams thread or
+  Outlook exchange where a decision or constraint was recorded, and bring it
+  into the conversation — cited.
 
-The design intent — captured here so whoever implements it knows the target:
+The ticket-first flow consumes this: `/gumby` grounds every question against
+these docs (searching SharePoint by the ticket key), and `/interrogate-with-docs`
+pulls requirements before sharpening a plan.
 
-- **Read-only** access to SharePoint sites and OneDrive documents (Word, Excel, PDF) holding requirements, design specs, and process docs — so the architect can ground planning and answer "what did the spec say" from source-of-truth documents.
-- Plus **collaboration context**: Teams messages and Outlook threads (meeting notes, decisions, email discussions), also read-only.
-- **Consumed by `/groundwork`.** The main flow's context-gathering step (Frame) is designed to pull requirements and design context from SharePoint/OneDrive and Teams/Outlook. Until this MCP exists, `/groundwork` falls back to asking the developer to paste or point at those docs.
+## Configuration
 
-## To implement
+`/setup` fills this in for the project this bundle is pointed at — the pinned
+source-of-truth location the advisor searches first, rather than scanning the
+whole tenant. Rewritten per-client; the values below are this instance's.
 
-1. Choose and connect a Microsoft 365 / SharePoint MCP server (e.g. a Microsoft Graph-based server), wired into `.mcp.json` with read scopes and literal secrets like the other servers (and a placeholder entry in `.mcp.json.example`).
-2. Replace this stub with a real skill: the tool names, auth/permission model, how to locate a site/drive/document, and the read-only usage patterns.
-3. Update `CLAUDE.md` and `which-skill` to route to it, wire it into `/groundwork`'s Frame step (and drop the "paste the docs" fallback there), and clear this placeholder's "not built" framing.
+- **Tenant / site:** `netorg189334.sharepoint.com` (Ignyte tenant)
+- **Pinned folder:** `Shared Documents / Internal Projects / Appian / Appian Center of Excellence / Automated Code Review /`
+  - **`v2/`** — **current.** The Appian-native rebuild that matches the live
+    application and the in-flight parity/Epic-1 work. Default here.
+    Base URL: `https://netorg189334.sharepoint.com/Shared Documents/Internal Projects/Appian/Appian Center of Excellence/Automated Code Review/v2/`
+  - `v1/` — historical: original requirements, working-session notes, and user
+    guides. Read for decision history, not current behavior.
+- **How to reach it:** use `sharepoint_search` with a **content** query (e.g.
+  `"IADC v2 Project Plan"`, `"Automated Code Review"`) — `sharepoint_folder_search`
+  by name does **not** find it, because the folders are named "Automated Code
+  Review / v1 / v2", not "IADC". Filter results to the pinned path above, and
+  prefer `v2/` unless the user asks about history. Confirm the path is still
+  current if searches stop returning it (docs can move).
+
+## Reading (the only mode)
+
+Use only the connector's **read** tools:
+
+- **SharePoint / OneDrive** — `sharepoint_search`, `sharepoint_folder_search`
+  to locate a site/drive/document; `read_resource` to read its contents.
+- **Outlook** — `outlook_email_search`, `outlook_calendar_search` for email
+  threads and meeting context.
+- **Teams** — `teams_list_chats`, `chat_message_search` for discussion.
+
+Summarize what's relevant back into the conversation and **cite the document
+title or thread** so the architect can trace it.
+
+## Never write
+
+This surface is strictly read-only. Do **not** call any tool that sends,
+creates, uploads, updates, moves, copies, renames, or deletes — e.g.
+`outlook_send_mail`, `outlook_create_*`, `sharepoint_upload_file`,
+`sharepoint_update_file`, `sharepoint_delete_item`, `sharepoint_move_item`,
+`sharepoint_create_folder`. If a user asks the architect to send mail or edit a
+document, decline: that's execution, outside this advisory bundle. Reading and
+citing is the whole job.

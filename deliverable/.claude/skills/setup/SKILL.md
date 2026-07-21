@@ -32,6 +32,7 @@ Servers this bundle expects (collect each value with the user, write it into `.m
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
 - **`context7`** — HTTP docs search. Keyless works; add a `CONTEXT7_API_KEY` header only for higher rate limits.
 - **Jira** — connected as a **Claude connector** (the Atlassian connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. Jira is **human-first**: the architect reads via the connector and does only light, gated writes. the `jira` and `to-tickets` skills both go through this connector; the project key lives in `docs/agents/issue-tracker.md` (step 4), not an env var.
+- **Office / Microsoft 365** — connected as a **Claude connector** (the Microsoft 365 connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. This surface is **read-only**: the `office` skill finds and reads SharePoint/OneDrive documents and Teams/Outlook discussion to ground planning, and never sends, uploads, or edits. Optional — skip if the project has no SharePoint/M365 source docs. If used, record the pinned source-of-truth site/folder in the **Configuration block of `office/SKILL.md`**.
 
 ### 3. Set project values
 
@@ -80,7 +81,7 @@ Show the user a draft of the `docs/agents/*.md` files and the `## Agent skills` 
 This is the payoff — confirm the configuration actually works, don't just write files:
 
 1. **`.mcp.json` exists** (copied from `.mcp.json.example`), parses as JSON, and has real values filled in — no `<placeholder>` strings left.
-2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the connector is connected.
+2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call).
 3. **Skill frontmatter is valid** — every `.claude/skills/*/SKILL.md` has a `name` and `description`.
 
 Report what connected and what didn't, with the specific fix for each failure (missing env var, connector not enabled, wrong endpoint).

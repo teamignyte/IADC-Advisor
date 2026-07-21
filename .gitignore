@@ -3,6 +3,9 @@
 # Secrets for workshop git operations — never commit
 .secrets/
 
+# Live MCP config holds literal credentials — never commit (only .mcp.json.example ships, inside deliverable/)
+.mcp.json
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db
