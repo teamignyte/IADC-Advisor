@@ -1,6 +1,6 @@
 ---
 name: orient
-description: Get oriented in an Appian application when you have NO ticket or build in view — you just need to understand what the app does and how it does it. Composes the dependency graph, the live environment, the Jira board, and the domain docs (CONTEXT.md + ADRs) into one cited briefing. Use this for a new developer landing on the app, for catching up on an unfamiliar area ("what is the Claims record model", "how does billing hang together"), or for a single-object dossier. Do NOT use it when you have a ticket or a defined task in hand — that's /groundwork, which orients you *toward a build*.
+description: Get oriented in an Appian application when you have NO ticket or build in view — you just need to understand what the app does and how it does it. Composes the dependency graph, the live environment, the Jira board, and the domain docs (the glossary + ADRs) into one cited briefing. Use this for a new developer landing on the app, for catching up on an unfamiliar area ("what is the Claims record model", "how does billing hang together"), or for a single-object dossier. Do NOT use it when you have a ticket or a defined task in hand — that's /gumby, which orients you *toward a build*.
 disable-model-invocation: true
 argument-hint: "an area or object to orient on, or nothing for the whole app"
 ---
@@ -15,7 +15,7 @@ This skill produces that map as a single **cited briefing**. It doesn't intervie
 
 The line is **do you have a build in view?**
 
-- **A ticket or a described task in hand** — "how do I build TICKET-123", "what's my approach for adding X" → **`/groundwork`**. That skill also orients you in the app, but *toward a build*, and ends in an implementation note. Orientation there is a means; here it's the whole point.
+- **A ticket or a described task in hand** — "how do I build TICKET-123", "what's my approach for adding X" → **`/gumby`** (then `/pokey`). That flow also orients you in the app, but *toward a build*, and ends in a build spec. Orientation there is a means; here it's the whole point.
 - **Just understanding, no build** — "what is this app", "how does the Claims model work", "explain this object to me" → **you're in the right place.**
 - **A single Appian platform question** with no app attached — "what does `a!queryEntity` do" → that's **`/context7`** + `/appian`, not this.
 
@@ -78,4 +78,4 @@ Offer the natural next move rather than stopping cold:
 
 - **Zoom into one object** — the single-object dossier: attributes (`get_node`), who calls it (`callers_of`), what it reaches (`reachable`), and the platform mechanics behind it (`/context7`). This is just orient re-run at object scope.
 - **Go deeper on the Appian platform** — `/context7` + `/appian` for how the platform itself works.
-- **A build has emerged** — if orientation surfaced a concrete task, that's the handoff to **`/groundwork`**.
+- **A build has emerged** — if orientation surfaced a concrete task, that's the handoff to **`/gumby`** (then `/pokey`).

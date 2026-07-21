@@ -29,15 +29,15 @@ Configured in `.mcp.json` with **literal values** — copy `.mcp.json.example` �
 
 Ask **`/which-skill`** — it's the router over everything below.
 
-**Main flow — build a ticket:** `/groundwork` — from a Jira ticket or a described task, get oriented in the app (blast radius, objects, platform how-to), sharpen the approach by interview, and leave a short implementation note. A thin orchestrator over the inspection skills and `/interrogating`; it advises and hands off, it does not build. This is the 99% path.
+**Main flow — a ticket → the dialectic → a build spec:** `ticket → /gumby → /pokey`. **`/gumby`** is the default way to start when you're handed a ticket: a pure-Socratic, one-question-at-a-time interview that **asks but doesn't answer** (you do the reasoning), is **orient-led** (grounds in the app first) and **adaptive** (scales to blast radius), and captures the sharpened glossary and decisions as it goes. Then **`/pokey`** synthesizes that into a developer-ready **build spec** (PRD context + ordered Appian build steps), presented for review and written only on your approval. Pokey **replaces** splitting the work into subtickets. This is the 99% path. (`/interrogate-with-docs` is a sibling of Gumby that *proposes* answers as it goes.)
 
-**Greenfield flow — shape net-new work:** `/interrogate-with-docs` (or `/interrogate-me`) → `/to-spec` → `/to-tickets`, for work that isn't a defined build yet. The tickets are the handoff point to developers outside this bundle — where each becomes a starting point for `/groundwork`. `/interrogating` is the shared interview primitive; `/domain-modeling` keeps `CONTEXT.md` and ADRs sharp underneath it.
+**Greenfield flow — shape net-new work:** `/interrogate-with-docs` (or `/interrogate-me`) → `/to-spec` → `/to-tickets`, for work that isn't a defined build yet. The tickets are the handoff point to developers outside this bundle — where each becomes a starting point for `/gumby`. `/interrogating` is the shared interview primitive; `/domain-modeling` keeps the glossary and ADRs sharp underneath it. _(For a defined ticket, `/gumby → /pokey` supersedes the `/to-spec → /to-tickets` tail.)_
 
 **On-ramp:** `/wayfinder` for huge, foggy efforts (charts a map of decision tickets, produces decisions/ADRs not deliverables).
 
-**Understand the app (no build in view):** `/orient` — a cited briefing on what the app does and how, composing the graph, live Appian, the board, and `CONTEXT.md`+ADRs (the packaged form of the inspection skills). For a new developer or catching up on an unfamiliar area; `/groundwork` is the counterpart when you *do* have a build in view.
+**Understand the app (no build in view):** `/orient` — a cited briefing on what the app does and how, composing the graph, live Appian, the board, and the glossary+ADRs (the packaged form of the inspection skills). For a new developer or catching up on an unfamiliar area; `/gumby` is the counterpart when you *do* have a build in view.
 
-**Appian knowledge & inspection (read-only):** `/appian`, `/iadc-graph`, `/context7`, `/jira` (read the board for context).
+**Appian knowledge & inspection (read-only):** `/appian`, `/iadc-graph`, `/context7`, `/jira` (read the board for context), `/office` (read SharePoint/OneDrive docs and Teams/Outlook context).
 
 **Support:** `/research` (background agent, cited primary-source answers), `/handoff` (bridge a long session into a fresh one).
 
@@ -45,7 +45,7 @@ Ask **`/which-skill`** — it's the router over everything below.
 
 ## Documentation map
 
-- **Durable design (source of truth):** domain vocabulary in `CONTEXT.md`, decisions in `docs/adr/`. Maintained via `/interrogate-with-docs` and `/domain-modeling`.
+- **Project decision outputs (source of truth):** the domain glossary, decision records/ADRs, and build specs the planning skills produce are written to the **git-ignored `outputs/` workspace** — glossary at `outputs/CONTEXT.md`, per-ticket decisions and specs under `outputs/<TICKET-KEY>/`. They are project artifacts, not committed bundle source. Maintained via `/gumby`, `/pokey`, `/interrogate-with-docs`, and `/domain-modeling`. See `outputs/README.md`.
 - **Bundle configuration:** `docs/agents/issue-tracker.md`, `docs/agents/triage-labels.md`, `docs/agents/domain.md` — written by `/setup`.
 - **User-facing overview:** `README.md`.
 
