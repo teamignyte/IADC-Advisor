@@ -31,12 +31,12 @@ The architect **advises and plans**; your developers build. It reads and reasons
 ## The main flow
 
 ```
-your ticket  →  /groundwork  →  implementation note  →  (you build)
+your ticket  →  /gumby  →  /pokey  →  build spec  →  (you build)
 ```
 
-You have a ticket (or a described task). `/groundwork` orients you in the app — what the change touches, its blast radius, the objects involved, the Appian platform how-to — then sharpens your approach by interview and leaves a short implementation note. It advises; you build.
+You have a ticket (or a described task). **`/gumby`** orients you in the app — what the change touches, its blast radius, the objects involved, the project's own docs — then runs a one-question-at-a-time Socratic dialectic that *asks but doesn't answer*, so you sharpen the approach yourself. When it's confirmed, **`/pokey`** turns the conversation into a developer-ready **build spec** (the context plus an ordered list of Appian build steps), shown for your review and written only on your approval. It advises; you build.
 
-**No ticket yet — shaping net-new work?** Use the greenfield flow: `/interrogate-with-docs → /to-spec → /to-tickets`, then hand the tickets to your team (who each start them with `/groundwork`). For an effort too big to hold in one session, start with `/wayfinder`; when its map clears it merges into `/to-spec`.
+**No ticket yet — shaping net-new work?** Use the greenfield flow: `/interrogate-with-docs → /to-spec → /to-tickets`, then hand the tickets to your team (who each start them with `/gumby`). For an effort too big to hold in one session, start with `/wayfinder`; when its map clears it merges into `/to-spec`.
 
 ## Configuration & secrets
 

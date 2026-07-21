@@ -1,6 +1,6 @@
 ---
 name: orient
-description: Get oriented in an Appian application when you have NO ticket or build in view — you just need to understand what the app does and how it does it. Composes the dependency graph, the live environment, the Jira board, and the domain docs (CONTEXT.md + ADRs) into one cited briefing. Use this for a new developer landing on the app, for catching up on an unfamiliar area ("what is the Claims record model", "how does billing hang together"), or for a single-object dossier. Do NOT use it when you have a ticket or a defined task in hand — that's /groundwork, which orients you *toward a build*.
+description: Get oriented in an Appian application when you have NO ticket or build in view — you just need to understand what the app does and how it does it. Composes the dependency graph, the live environment, the Jira board, and the domain docs (the glossary + ADRs) into one cited briefing. Use this for a new developer landing on the app, for catching up on an unfamiliar area ("what is the Claims record model", "how does billing hang together"), or for a single-object dossier. Do NOT use it when you have a ticket or a defined task in hand — that's /gumby, which orients you *toward a build*.
 disable-model-invocation: true
 argument-hint: "an area or object to orient on, or nothing for the whole app"
 ---
@@ -15,7 +15,7 @@ This skill produces that map as a single **cited briefing**. It doesn't intervie
 
 The line is **do you have a build in view?**
 
-- **A ticket or a described task in hand** — "how do I build TICKET-123", "what's my approach for adding X" → **`/groundwork`**. That skill also orients you in the app, but *toward a build*, and ends in an implementation note. Orientation there is a means; here it's the whole point.
+- **A ticket or a described task in hand** — "how do I build TICKET-123", "what's my approach for adding X" → **`/gumby`** (then `/pokey`). That flow also orients you in the app, but *toward a build*, and ends in a build spec. Orientation there is a means; here it's the whole point.
 - **Just understanding, no build** — "what is this app", "how does the Claims model work", "explain this object to me" → **you're in the right place.**
 - **A single Appian platform question** with no app attached — "what does `a!queryEntity` do" → that's **`/context7`** + `/appian`, not this.
 
@@ -35,7 +35,7 @@ Sequenced so each layer tells the next one where to look — cheap context first
 
 ### 1. Read the cheap grounding first
 
-Before touching a tool, read `CONTEXT.md` (the project's ubiquitous language) and the ADR index in `docs/adr/`, plus `docs/agents/domain.md` if present. This costs almost nothing and gives you the team's **vocabulary and the "why"** up front — so when the graph shows you an object, you already have the team's name for it and any decision that shaped it. Load `/domain-modeling` if you need to reason about the language itself.
+Before touching a tool, read the project glossary (`outputs/CONTEXT.md`, the project's ubiquitous language) and the ADRs alongside it in the `outputs/` workspace, plus `docs/agents/domain.md` if present. This costs almost nothing and gives you the team's **vocabulary and the "why"** up front — so when the graph shows you an object, you already have the team's name for it and any decision that shaped it. Load `/domain-modeling` if you need to reason about the language itself.
 
 ### 2. Seed the graph
 
@@ -57,7 +57,7 @@ For a scoped or single-object ask, resolve a starting `node_id` with `find_nodes
 
 ### 5. Bind structure to meaning, and add direction
 
-- **Meaning:** map each hub back to its `CONTEXT.md` term and any ADR that explains its shape. This is the step the graph alone can't do — the graph shows the wiring, the docs say *why* the wiring is like that. Confirm any Appian platform mechanic against `/context7` (then `docs.appian.com` at the environment's version via `/appian`) rather than asserting it from memory.
+- **Meaning:** map each hub back to its glossary term (`outputs/CONTEXT.md`) and any ADR that explains its shape. This is the step the graph alone can't do — the graph shows the wiring, the docs say *why* the wiring is like that. Confirm any Appian platform mechanic against `/context7` (then `docs.appian.com` at the environment's version via `/appian`) rather than asserting it from memory.
 - **Direction:** load `/jira` and read the board (read-only) for work in flight or planned against those hubs, so orientation includes where the app is *going*, not just its frozen structure.
 
 ### 6. Synthesize one cited briefing
@@ -78,4 +78,4 @@ Offer the natural next move rather than stopping cold:
 
 - **Zoom into one object** — the single-object dossier: attributes (`get_node`), who calls it (`callers_of`), what it reaches (`reachable`), and the platform mechanics behind it (`/context7`). This is just orient re-run at object scope.
 - **Go deeper on the Appian platform** — `/context7` + `/appian` for how the platform itself works.
-- **A build has emerged** — if orientation surfaced a concrete task, that's the handoff to **`/groundwork`**.
+- **A build has emerged** — if orientation surfaced a concrete task, that's the handoff to **`/gumby`** (then `/pokey`).

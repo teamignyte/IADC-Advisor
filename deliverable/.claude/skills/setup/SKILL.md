@@ -19,7 +19,7 @@ Read the current state; don't assume:
 - `.mcp.json` at the repo root — which servers are defined, which values are still `<...>` placeholders.
 - `.mcp.json` — does the real (gitignored) file exist yet, or only `.mcp.json.example`?
 - `CLAUDE.md` at the repo root — does an `## Agent skills` block already exist?
-- `CONTEXT.md`, `CONTEXT-MAP.md`, `docs/adr/`, `docs/agents/` — prior domain/config output.
+- `outputs/` (glossary `CONTEXT.md`, `CONTEXT-MAP.md`, `adr/`) and `docs/agents/` — prior domain/config output.
 - `git remote -v` — is there a remote, and where?
 
 ### 2. Wire the MCP servers
@@ -32,12 +32,14 @@ Servers this bundle expects (collect each value with the user, write it into `.m
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
 - **`context7`** — HTTP docs search. Keyless works; add a `CONTEXT7_API_KEY` header only for higher rate limits.
 - **Jira** — connected as a **Claude connector** (the Atlassian connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. Jira is **human-first**: the architect reads via the connector and does only light, gated writes. the `jira` and `to-tickets` skills both go through this connector; the project key lives in `docs/agents/issue-tracker.md` (step 4), not an env var.
+- **Office / Microsoft 365** — connected as a **Claude connector** (the Microsoft 365 connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. This surface is **read-only**: the `office` skill finds and reads SharePoint/OneDrive documents and Teams/Outlook discussion to ground planning, and never sends, uploads, or edits. Optional — skip if the project has no SharePoint/M365 source docs. (Its pinned source-of-truth folder is a project value — step 3.)
 
 ### 3. Set project values
 
 - **Jira project key** (e.g. `IV`) — used by the `jira` and `to-tickets` skills.
 - **Appian version** (e.g. `26.6`) — used by `/appian` for version-exact `docs.appian.com` lookups. Write it into the **Configuration block of `appian/SKILL.md`**, which is the single source of truth `/appian` reads — don't leave it to drift from the skill's default.
 - **Application identity (graph seed target)** — the Appian application the `iadc` graph is built from. Ask for the **full application name** and any **nicknames** the team uses; get the **application UUID** either by resolving the name via the `appian` MCP (`listApplications`) or from the user directly — both are fine, and this is the one time a live lookup is worth it. Write name, nicknames, and UUID **together** into the **Configuration block of `iadc-graph/SKILL.md`**, so seeding reads the UUID there and never needs the Appian MCP again.
+- **Office source-of-truth folder** (only if the Microsoft 365 connector is used) — the SharePoint/OneDrive **site** and the **pinned folder** holding the project's requirements/design docs (plus any current/historical subfolders and their base URLs), so `/office` searches there first instead of the whole tenant. Write these into the **Configuration block of `office/SKILL.md`**. Skip if the project has no M365 source docs.
 
 ### 4. Issue tracker
 
@@ -69,7 +71,7 @@ Defaults are five canonical roles: `needs-triage`, `needs-info`, `ready-for-agen
 
 ### 6. Domain docs
 
-Default to **single-context** — one `CONTEXT.md` + `docs/adr/` at the repo root. Offer **multi-context** (a root `CONTEXT-MAP.md` pointing to per-context `CONTEXT.md` files) only if exploration found monorepo signals. Seed from [domain.md](./domain.md).
+Default to **single-context** — one `outputs/CONTEXT.md` + `outputs/adr/` in the git-ignored outputs workspace. Offer **multi-context** (an `outputs/CONTEXT-MAP.md` pointing to per-context `CONTEXT.md` files) only if exploration found monorepo signals. Seed the consuming-side config (`docs/agents/domain.md`) from [domain.md](./domain.md).
 
 ### 7. Confirm and write
 
@@ -80,7 +82,7 @@ Show the user a draft of the `docs/agents/*.md` files and the `## Agent skills` 
 This is the payoff — confirm the configuration actually works, don't just write files:
 
 1. **`.mcp.json` exists** (copied from `.mcp.json.example`), parses as JSON, and has real values filled in — no `<placeholder>` strings left.
-2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the connector is connected.
+2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call).
 3. **Skill frontmatter is valid** — every `.claude/skills/*/SKILL.md` has a `name` and `description`.
 
 Report what connected and what didn't, with the specific fix for each failure (missing env var, connector not enabled, wrong endpoint).

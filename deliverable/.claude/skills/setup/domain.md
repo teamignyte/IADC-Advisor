@@ -4,43 +4,45 @@ How the engineering skills should consume this repo's domain documentation when 
 
 ## Before exploring, read these
 
-- **`CONTEXT.md`** at the repo root, or
-- **`CONTEXT-MAP.md`** at the repo root if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- **`docs/adr/`** — read ADRs that touch the area you're about to work in. In multi-context repos, also check `src/<context>/docs/adr/` for context-scoped decisions.
+The domain docs are **generated project artifacts** — they live in the git-ignored `outputs/`
+workspace (see `outputs/README.md`), not committed bundle source:
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill (reached via `/interrogate-with-docs`) creates them lazily when terms or decisions actually get resolved.
+- **`outputs/CONTEXT.md`** — the project glossary, or
+- **`outputs/CONTEXT-MAP.md`** if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
+- **`outputs/adr/`** (and per-context/per-ticket `adr/` folders) — read ADRs that touch the area you're about to work in.
+
+If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill (reached via `/gumby` or `/interrogate-with-docs`) creates them lazily when terms or decisions actually get resolved.
 
 ## File structure
 
-Single-context repo (most repos):
+Single-context project (most projects):
 
 ```
-/
+outputs/
 ├── CONTEXT.md
-├── docs/adr/
+├── adr/
 │   ├── 0001-event-sourced-orders.md
 │   └── 0002-postgres-for-write-model.md
-└── src/
+└── <TICKET-KEY>/                      ← per-ticket decision records/specs
 ```
 
-Multi-context repo (presence of `CONTEXT-MAP.md` at the root):
+Multi-context project (presence of `CONTEXT-MAP.md`):
 
 ```
-/
+outputs/
 ├── CONTEXT-MAP.md
-├── docs/adr/                          ← system-wide decisions
-└── src/
-    ├── ordering/
-    │   ├── CONTEXT.md
-    │   └── docs/adr/                  ← context-specific decisions
-    └── billing/
-        ├── CONTEXT.md
-        └── docs/adr/
+├── adr/                               ← system-wide decisions
+├── ordering/
+│   ├── CONTEXT.md
+│   └── adr/                           ← context-specific decisions
+└── billing/
+    ├── CONTEXT.md
+    └── adr/
 ```
 
 ## Use the glossary's vocabulary
 
-When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
+When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `outputs/CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
 
 If the concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/domain-modeling`).
 
