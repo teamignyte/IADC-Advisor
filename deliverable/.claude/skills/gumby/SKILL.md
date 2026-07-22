@@ -40,17 +40,22 @@ contradictions.
 ## The arc
 
 1. **Get the ticket.** Pull it from Jira (`/jira`) by key, or take what the user pastes.
-   Read the full detail — acceptance criteria, parent epic, links, comments.
+   Read the full detail — acceptance criteria, parent epic, comments — and **pull every
+   document the ticket itself points to**: file **attachments** on the issue, **remote /
+   web links**, **linked Confluence pages**, and any URLs in the description or comments.
+   A ticket's own attached and linked documents are the most direct source of truth for the
+   work — gather and read them before you reach further afield.
 2. **Ground before probing.** Look up the facts the questions will stand on — never ask
    what the environment can tell you, and let the grounding expose where the ticket's
    assumptions don't match reality:
    - the live objects (`/appian`) and the dependency graph / blast radius (`/iadc-graph`);
-   - **the project's own documentation (`/office`).** **Always search SharePoint by the
-     ticket number/key** (e.g. `IV-207`) — related design and spec docs are routinely
-     named after the ticket (`IV-207 Design.pdf`) and belong in the ticket's subfolder
-     under the pinned source-of-truth folder. Read any match **before** interviewing: it
-     may already answer, extend, or *contradict* the plan. Folder-name search is unreliable
-     here, so also search by content/filename and read the ticket subfolder directly.
+   - **the project's own documentation (`/office`).** First read the documents the **ticket
+     itself references** (the attachments and links from step 1). Then **also search SharePoint
+     by the ticket number/key** (e.g. `<TICKET-KEY>`) — related design and spec docs are routinely
+     named after the ticket (`<TICKET-KEY> Design.pdf`) and belong in the ticket's subfolder under the
+     pinned source-of-truth folder. Read every match **before** interviewing: it may already
+     answer, extend, or *contradict* the plan. Folder-name search is unreliable here, so also
+     search by content/filename and read the ticket subfolder directly.
    - existing decisions — the outputs workspace's glossary and prior decision records
      (see *Where outputs go* below).
 3. **Run the dialectic.** Walk the decision tree from the root (usually *why / what problem
