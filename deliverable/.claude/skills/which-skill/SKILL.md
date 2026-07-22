@@ -12,12 +12,13 @@ A **flow** is a path through the skills. Most work runs along the **main flow**;
 
 ## The main flow: a ticket → the dialectic → a build spec
 
-The route most work travels. You have a **ticket, or a described task**, and you need to work out **how** to build it in this Appian app. Two skills, in order:
+The route most work travels. You have a **ticket, or a described task**, and you need to work out **how** to build it in this Appian app:
 
-1. **`/gumby`** — start here. A relentless, one-question-at-a-time **Socratic dialectic** that pressure-tests your approach to the ticket. It's **orient-led** (grounds you in the app first — blast radius, objects, the project's own docs — *then* interrogates) and **adaptive** (a one-line change gets a quick pass; a wide-blast-radius change gets the full treatment). Unlike `/interrogate-with-docs`, Gumby **asks but does not answer** — *you* do the reasoning. It captures the sharpened glossary and decisions as it goes.
-2. **`/pokey`** — once the approach is confirmed, Pokey synthesizes the Gumby conversation into a **developer-ready build spec**: the PRD context *plus* an ordered, executable list of Appian configuration steps. It presents the spec for review and writes it only on your approval. This is the handoff artifact — it **replaces** splitting the work into subtickets.
+1. **`/gumby`** — start here. A relentless, one-question-at-a-time **Socratic dialectic** that pressure-tests your approach to the ticket. It's **orient-led** (grounds you in the app first — blast radius, objects, the project's own docs — *then* interrogates) and **adaptive** (a one-line change gets a quick pass; a wide-blast-radius change gets the full treatment). Unlike `/interrogate-with-docs`, Gumby **asks but does not answer** — *you* do the reasoning. Questions you can't own (architectural gaps) it **escalates to the project lead** rather than forcing an answer. It captures the sharpened glossary and decisions as it goes.
+2. **`/gumby-reconcile <TICKET>`** — only if Gumby escalated a gap. Async: when the lead replies (Slack/Jira), run this to pull their answer back in, resolve the decision, and flip the ticket from `BLOCKED` to `READY`. Re-run until nothing's open.
+3. **`/pokey`** — once the approach is confirmed *and the ticket is `READY`*, Pokey synthesizes the Gumby conversation into a **developer-ready build spec**: the PRD context *plus* an ordered, executable list of Appian configuration steps. It presents the spec for review and writes it only on your approval, and it **replaces** splitting the work into subtickets. (While the ticket is `BLOCKED` on an open escalation, Pokey produces only a *provisional* spec.)
 
-`ticket → /gumby → /pokey`. Gumby uses the inspection skills below (`/jira`, `/iadc-graph`, `/appian`, `/context7`, `/office`) and the `/interrogating` primitive as its steps; reach for one directly when you only need the single thing it does — but when you're working out how to *build* something, start with `/gumby`.
+`ticket → /gumby → (/gumby-reconcile) → /pokey`. Gumby uses the inspection skills below (`/jira`, `/iadc-graph`, `/appian`, `/context7`, `/office`) and the `/interrogating` primitive as its steps; reach for one directly when you only need the single thing it does — but when you're working out how to *build* something, start with `/gumby`.
 
 ## When the work isn't a defined build
 

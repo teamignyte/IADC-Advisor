@@ -103,10 +103,14 @@ for real delivery.
    Recommendations are welcome *here* — the no-answers rule governs the interview, not the
    synthesis. Flag every open **architectural gap** and confirm the drafted escalation(s) to the
    lead (see *Escalate the gaps*). **Do not act until the builder confirms** it's a shared
-   understanding.
-6. **Hand off to `/pokey`.** Once the approach is confirmed, the next step is **`/pokey`** — it
-   turns this conversation into a build spec **you then implement** (offer a blast-radius pass
-   first if the change is risky). `ticket → /gumby → /pokey → you build`.
+   understanding. Then run a quick **auto-reconcile** (see *Readiness & reconcile*): check whether
+   any escalation sent this session already has a reply, fold it in, and refresh the **`Status:`** line.
+6. **Hand off — when ready.** Once the approach is confirmed *and the ticket is* **`READY`** (no
+   open escalations), hand off to **`/pokey`** — it turns this conversation into a build spec **you
+   then implement** (offer a blast-radius pass first if the change is risky). If gaps are still
+   open, the ticket stays **not ready for dev**: tell the builder to run **`/gumby-reconcile
+   <TICKET-KEY>`** once the lead replies, and note that `/pokey` will produce only a **provisional**
+   spec until then. `ticket → /gumby → (/gumby-reconcile) → /pokey → you build`.
 
 ## Escalate the gaps
 
@@ -119,7 +123,9 @@ it:
    Slack/Jira connector posts **as the logged-in user**, so the *content* must make clear it's
    agent-sent, not a personal note. Then give the specific decision needed, the options and their
    trade-offs, and your recommendation if you have one. One decision per message; make it
-   answerable in a reply.
+   answerable in a reply. **Close by telling the lead exactly what to do:** just reply in this
+   thread — the developer is notified automatically and will pick it up, so **no further action is
+   required** on their side.
 2. **Pick the recipient — never guess one.** The recipient is the **Project lead** configured
    below. If it's unset, or the gap clearly belongs to someone else (a data-model call vs. a
    product question), **ask the builder who it should go to** — never look up or resolve a Slack
@@ -129,9 +135,14 @@ it:
    explicit yes. There is **no auto-send.** Channel: **Slack** (`slack_send_message`; stage it
    with `slack_send_message_draft` first if useful) or, alternatively, a **Jira comment** on the
    ticket tagging the lead (via `/jira`). If no channel/lead is configured, fall back to
-   **hand-off** — give the builder the drafted text to send themselves.
-4. **Record** the gap under an *Open / escalated* heading in `decisions.md`, noting who it went
-   to, so it's tracked until answered.
+   **hand-off** — give the builder the drafted text to send themselves. Prefer a destination the
+   **developer also sees** (a shared channel, or @-mention the dev) so the lead's in-thread reply
+   notifies them automatically. **Capture the send's `channel_id` + `message_ts`** — reconcile needs
+   them to find the reply later.
+4. **Record** the gap under *Open / escalated* in `decisions.md`: the question, its **provisional
+   lean** (so planning continues on a marked assumption), **who** it went to, and the **thread
+   pointer** (the Slack `channel_id` + `message_ts`, or the Jira comment id) so the reply can be
+   found. Then refresh the ticket's **`Status:`** line (see *Readiness & reconcile*).
 
 Office/M365 is **read-only** and is *not* a send channel. Slack sends and Jira comments are the
 only outward writes here, and both are **gated**.
@@ -140,6 +151,27 @@ only outward writes here, and both are **gated**.
 
 - **Escalation channel:** `<set by /setup — Slack | Jira comment | hand-off>`
 - **Project lead (Slack channel/handle, or Jira account):** `<set by /setup>`
+
+## Readiness & reconcile
+
+An escalation is **asynchronous** — the lead may answer in seconds or days — so Gumby never
+dead-waits. It proceeds on the provisional lean and tracks readiness explicitly.
+
+- **Status line.** The first line of `outputs/<TICKET-KEY>/decisions.md` is a status:
+  `Status: READY` (no open escalations) or `Status: BLOCKED — N open escalation(s)`. Gumby and
+  `/gumby-reconcile` keep it current; `/pokey` reads it. Optionally mirror it to a gated Jira
+  **`needs-info`** label so the board shows the block.
+- **Auto-reconcile (end of pass).** After synthesis, check each escalation raised this session for
+  a reply already back — `slack_read_thread` on the stored `channel_id`+`message_ts`, or the Jira
+  comment — and fold any answers in before you finish.
+- **`/gumby-reconcile <TICKET-KEY>` (later).** When the lead replies after the session, the builder
+  runs this. It reads the ticket's *Open / escalated* items, checks their threads, and for each
+  reply **plays back its reading** ("Liam replied A → recording *scope = visible set*; right?"),
+  records the resolved decision, re-checks impact (flagging any `/pokey` step that changes), and
+  refreshes the status. Re-run until nothing is open.
+- **Readiness gate.** While `Status: BLOCKED` the ticket is **not ready for development**:
+  `/pokey` produces only a clearly-marked **provisional** spec — never a final build-ready one —
+  until every escalation is resolved.
 
 ## Where outputs go
 

@@ -23,13 +23,23 @@ follows to build it. It is the handoff artifact — it replaces splitting work i
 - **Gitignored outputs workspace, not the tracker.** Output goes to the gitignored `outputs/`
   workspace in the repo — never committed as bundle source, and (absent O365 write scopes) not
   SharePoint. Same workspace Gumby captures to.
+- **Readiness gate — check the ticket's `Status:` first.** Read the first line of
+  `outputs/<TICKET-KEY>/decisions.md`. On **`READY`** (no open escalations) you produce the final,
+  build-ready spec. On **`BLOCKED`** you may still produce a spec, but it is **PROVISIONAL** — every
+  decision riding on an unresolved escalation is flagged *assumed, pending `<lead>`*, and you must
+  **not** stamp it build-ready. Point the builder at **`/gumby-reconcile <TICKET-KEY>`** to clear the
+  block, then finalize.
 
 ## Process
 
-1. **Synthesize.** Pull the plan together from the Gumby thread, the decision record/ADR, and
-   the glossary (`outputs/CONTEXT.md`). Reuse the grounding Gumby already did (record model,
-   dependency order, blast radius); re-check the live app (`/appian`, `/iadc-graph`) only where
-   a build step needs a fact you don't have. Use the glossary's vocabulary; respect existing ADRs.
+1. **Check readiness, then synthesize.** First read the **`Status:`** line of
+   `outputs/<TICKET-KEY>/decisions.md`: `READY` → you'll produce the final build-ready spec;
+   `BLOCKED — N open escalation(s)` → a **provisional** spec only (see the readiness gate in
+   Posture), until `/gumby-reconcile <TICKET-KEY>` clears the block. Then pull the plan together
+   from the Gumby thread, `decisions.md`, and the glossary (`outputs/CONTEXT.md`). Reuse the
+   grounding Gumby already did (record model, dependency order, blast radius); re-check the live
+   app (`/appian`, `/iadc-graph`) only where a build step needs a fact you don't have. Use the
+   glossary's vocabulary; respect existing ADRs.
 2. **Order the build steps** in Appian dependency order (data model → relationships → rules →
    interfaces → process models → record actions/views → migration → tests). Each step names the
    object and is concrete enough to execute, with a **"done when"** check.
@@ -38,7 +48,10 @@ follows to build it. It is the handoff artifact — it replaces splitting work i
 4. **Iterate** on their questions and adjustments until they're happy.
 5. **On approval, write it.** Confirm the target path, write to
    `outputs/<TICKET-KEY>/<TICKET-KEY> Spec.md` (create the ticket folder if it doesn't
-   exist — same workspace Gumby uses), and verify it landed. Report the path.
+   exist — same workspace Gumby uses), and verify it landed. Report the path. **If the ticket is
+   `BLOCKED`,** title it `<TICKET-KEY> Spec (PROVISIONAL).md` and open with a
+   `> PROVISIONAL — pending escalations:` banner listing each assumed-pending decision; re-run once
+   `/gumby-reconcile` flips the status to `READY` to produce the final spec.
 6. **Hand off.** The developer executes the build steps outside this bundle; the spec is the
    source of record for the build.
 
