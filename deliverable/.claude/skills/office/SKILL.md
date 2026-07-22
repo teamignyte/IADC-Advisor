@@ -29,20 +29,30 @@ pulls requirements before sharpening a plan.
 
 ## Configuration
 
-`/setup` fills this in for the project this bundle is pointed at — the pinned
-source-of-truth location the advisor searches first, rather than scanning the
-whole tenant. If it's still a placeholder, ask the user for the site/folder (or
-search the tenant), read from there, and offer to record it via `/setup`.
+The advisor searches a **pinned source-of-truth folder** first, rather than scanning the
+whole tenant. `/setup` records this **per instance** — this template ships with placeholders
+only; a prospect's real site/folder lives in the configured instance, never in the template.
 
-- **Tenant / site:** `<PLACEHOLDER — set by /setup>`
-- **Pinned folder:** `<PLACEHOLDER — set by /setup; the folder holding the project's requirements/design docs, plus any current/historical subfolders and their base URLs>`
+Managing more than one prospect from an instance? List each as a profile row and switch by
+changing the **Active prospect** line — that single edit is the whole toggle.
 
-**How to reach it:** prefer `sharepoint_search` with a **content** query (words
-from the project or plan title) over `sharepoint_folder_search` by name —
-folder-name search is unreliable when the folder isn't named after the project.
-Filter results to the pinned path above, and prefer the current subfolder unless
-the user asks about history. Confirm the path is still current if searches stop
-returning it (docs can move).
+- **Active prospect:** `<set by /setup>`
+
+### Prospect profiles
+
+| Prospect | Tenant / site | Pinned folder (source of truth) |
+|---|---|---|
+| `<set by /setup>` | `<set by /setup>` | `<set by /setup>` |
+
+Use the row whose **Prospect** matches the **Active prospect** line. If nothing is configured
+yet, ask the user for the site/folder (or search the tenant), read from there, and offer to
+record it via `/setup`.
+
+**How to reach it:** prefer `sharepoint_search` with a **content** query (words from the
+project or plan title) over `sharepoint_folder_search` by name — folder-name search is
+unreliable when the folder isn't named after the project. Filter results to the **active**
+profile's pinned folder, and confirm the path is still current if searches stop returning it
+(docs can move).
 
 ## Reading (the only mode)
 
