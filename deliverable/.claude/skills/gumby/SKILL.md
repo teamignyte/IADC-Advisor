@@ -114,7 +114,10 @@ When the dialectic surfaces an **architectural gap** — a decision the builder 
 force an answer. Capture it and **draft a crisp question to the project lead** so they can unblock
 it:
 
-1. **Draft** a short message: the ticket, the specific decision needed, the options and their
+1. **Draft** a short message. Open with a line that **identifies it as an automated escalation
+   from the advisor** — e.g. `🤖 *Architect Agent — escalation on <TICKET-KEY>*` — because the
+   Slack/Jira connector posts **as the logged-in user**, so the *content* must make clear it's
+   agent-sent, not a personal note. Then give the specific decision needed, the options and their
    trade-offs, and your recommendation if you have one. One decision per message; make it
    answerable in a reply.
 2. **Pick the recipient — never guess one.** The recipient is the **Project lead** configured
