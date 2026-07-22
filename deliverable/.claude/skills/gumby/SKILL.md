@@ -117,14 +117,17 @@ it:
 1. **Draft** a short message: the ticket, the specific decision needed, the options and their
    trade-offs, and your recommendation if you have one. One decision per message; make it
    answerable in a reply.
-2. **Route it — gated (propose → confirm → send):**
-   - **Slack** (the send channel) — draft with `slack_send_message_draft`, or send with
-     `slack_send_message`, to the lead's configured channel/handle. Never send without showing
-     the builder the draft and getting an explicit yes.
-   - **Jira comment** — alternatively post the question as a gated comment on the ticket, tagging
-     the lead, via `/jira`.
-   - **Hand off** — if neither is configured, give the builder the drafted text to send themselves.
-3. **Record** the gap under an *Open / escalated* heading in `decisions.md`, noting who it went
+2. **Pick the recipient — never guess one.** The recipient is the **Project lead** configured
+   below. If it's unset, or the gap clearly belongs to someone else (a data-model call vs. a
+   product question), **ask the builder who it should go to** — never look up or resolve a Slack
+   user yourself.
+3. **Confirm both, then send — gated.** Show the builder the **drafted message *and* the named
+   recipient** together ("send this to `<recipient>` on Slack? — y/n") and send only on an
+   explicit yes. There is **no auto-send.** Channel: **Slack** (`slack_send_message`; stage it
+   with `slack_send_message_draft` first if useful) or, alternatively, a **Jira comment** on the
+   ticket tagging the lead (via `/jira`). If no channel/lead is configured, fall back to
+   **hand-off** — give the builder the drafted text to send themselves.
+4. **Record** the gap under an *Open / escalated* heading in `decisions.md`, noting who it went
    to, so it's tracked until answered.
 
 Office/M365 is **read-only** and is *not* a send channel. Slack sends and Jira comments are the
