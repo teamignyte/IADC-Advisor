@@ -37,6 +37,24 @@ contradictions.
 - **Advise, don't execute.** Gumby plans and captures; it never builds Appian objects or
   writes application code.
 
+## Demo mode
+
+A capped, fast pass for live demos — **off by default.** Real work wants the full dialectic;
+this exists only so a demo doesn't turn into a long back-and-forth.
+
+- **Demo mode:** `off`
+- **Max questions:** `4`
+
+**When `on`:** announce it up front ("running in demo mode — a few sharp questions, then I'll
+synthesize"), then ask only the **highest-leverage** questions, up to *Max questions*, and go
+straight to **Synthesize and confirm** (step 5). Pick the ones that move the plan most —
+typically the root *why / what problem*, the **blast-radius** check, the sharpest
+**contradiction** the grounding surfaced, and the one **key decision** the build hinges on.
+Still ground first (step 2) and still capture (step 4); just stop interrogating at the cap.
+
+**When `off`:** the full relentless dialectic — no cap. This is the default and the right mode
+for real delivery.
+
 ## The arc
 
 1. **Get the ticket.** Pull it from Jira (`/jira`) by key, or take what the user pastes.
