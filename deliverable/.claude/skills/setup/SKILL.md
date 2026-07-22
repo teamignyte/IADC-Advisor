@@ -33,6 +33,7 @@ Servers this bundle expects (collect each value with the user, write it into `.m
 - **`context7`** — HTTP docs search. Keyless works; add a `CONTEXT7_API_KEY` header only for higher rate limits.
 - **Jira** — connected as a **Claude connector** (the Atlassian connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. Jira is **human-first**: the architect reads via the connector and does only light, gated writes. the `jira` and `to-tickets` skills both go through this connector; the project key lives in `docs/agents/issue-tracker.md` (step 4), not an env var.
 - **Office / Microsoft 365** — connected as a **Claude connector** (the Microsoft 365 connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. This surface is **read-only**: the `office` skill finds and reads SharePoint/OneDrive documents and Teams/Outlook discussion to ground planning, and never sends, uploads, or edits. Optional — skip if the project has no SharePoint/M365 source docs. (Its pinned source-of-truth folder is a project value — step 3.)
+- **Slack** — connected as a **Claude connector** (not in `.mcp.json`). Used only for **escalation**: `/gumby` can draft and — **gated** (propose → confirm → send) — send an architectural-gap question to the project lead's Slack channel. Point the user at their client's connector settings. Optional — skip if escalations go via a Jira comment or by handing the drafted text to the builder.
 
 ### 3. Set project values
 
@@ -40,6 +41,8 @@ Servers this bundle expects (collect each value with the user, write it into `.m
 - **Appian version** (e.g. `26.6`) — used by `/appian` for version-exact `docs.appian.com` lookups. Write it into the **Configuration block of `appian/SKILL.md`**, which is the single source of truth `/appian` reads — don't leave it to drift from the skill's default.
 - **Application identity (graph seed target)** — the Appian application the `iadc` graph is built from. Ask for the **full application name** and any **nicknames** the team uses; get the **application UUID** either by resolving the name via the `appian` MCP (`listApplications`) or from the user directly — both are fine, and this is the one time a live lookup is worth it. Write name, nicknames, and UUID **together** into the **Configuration block of `iadc-graph/SKILL.md`**, so seeding reads the UUID there and never needs the Appian MCP again.
 - **Office source-of-truth folder** (only if the Microsoft 365 connector is used) — the SharePoint/OneDrive **site** and the **pinned folder** holding the project's requirements/design docs, so `/office` searches there first instead of the whole tenant. Write it as a **profile row** in the Configuration block of `office/SKILL.md` and set the **Active prospect** line. (Running several prospects from one instance? Add a row per prospect and toggle via that one line.) Skip if the project has no M365 source docs.
+- **Audience** — who the advisor is talking to. Default **`developer`** (the person who will build the ticket); set to `lead`/`architect` if the primary user owns architectural decisions. Record it on the **`Audience` line in `CLAUDE.md`**'s operating posture. It shapes how `/gumby` pitches questions and whether it escalates gaps vs. asks the user directly.
+- **Escalation target** (only if `/gumby` will escalate architectural gaps) — the **channel** (`Slack` | `Jira comment` | `hand-off`) and the **project lead** (Slack channel/handle, or Jira account). Record both in the **Configuration block of `gumby/SKILL.md`**. Skip for a lead/architect audience with no one to escalate to.
 
 ### 4. Issue tracker
 
@@ -82,7 +85,7 @@ Show the user a draft of the `docs/agents/*.md` files and the `## Agent skills` 
 This is the payoff — confirm the configuration actually works, don't just write files:
 
 1. **`.mcp.json` exists** (copied from `.mcp.json.example`), parses as JSON, and has real values filled in — no `<placeholder>` strings left.
-2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call).
+2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call). For Slack (if used for escalation), confirm the Slack connector is connected.
 3. **Skill frontmatter is valid** — every `.claude/skills/*/SKILL.md` has a `name` and `description`.
 
 Report what connected and what didn't, with the specific fix for each failure (missing env var, connector not enabled, wrong endpoint).
