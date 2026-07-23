@@ -19,24 +19,24 @@ dependency graph. You can also invoke it directly ("diagram how these records re
 
 ## Save and present
 
-A diagram is worth both keeping and seeing, so do both.
+A diagram is a **Markdown file** — a fenced ` ```mermaid ` block, nothing more. That one file is
+both what you present and what you save; there is no separate HTML page to build.
 
-- **Present it — as an artifact.** Publish the diagram as an artifact; Claude renders Mermaid
-  natively, so the reader sees the picture, not the source. That render *is* your validation — a
-  syntax error shows up immediately, so fix it against the gotchas below and re-render.
-- **Mind where it goes.** An artifact is default-private but hosted off the local machine, whereas
-  the rest of this bundle keeps everything local and git-ignored. For a sensitive client's
-  app-architecture diagram, skip the hosted artifact and rely on the saved `.md` — it renders
-  wherever Mermaid does (GitHub, VS Code, the repo), no upload required.
-- **Save it — offer first, never auto-write.** Like every write in this bundle, propose the save
-  and write only on a yes. Then:
+- **Present it — as Markdown.** Publish the `.md` as an artifact. Claude renders Mermaid natively
+  from a ` ```mermaid ` fence, so the diagram *is* the content — **do not** hand-build an HTML/CSS
+  page or reach for a page-design skill around it. The render is also your validation: a syntax
+  error shows immediately, so fix it against the gotchas below and re-render.
+- **Save it — same file, offer first, never auto-write.** The artifact and the saved file are the
+  same Markdown. Propose the save and write only on a yes. Then:
   - If the diagram belongs to an artifact you're writing anyway — a `/to-spec` build spec, a
-    `/pressure-test` `decisions.md` — **embed it there** as a fenced ` ```mermaid ` block, rather
-    than as a separate file.
-  - Otherwise save a standalone file: `outputs/diagrams/<slug>.md` (no ticket in view) or
-    `outputs/<TICKET-KEY>/diagrams/<slug>.md` (ticket-scoped). Create the folder lazily — only when
-    you have something to write.
+    `/pressure-test` `decisions.md` — **embed it there** as a ` ```mermaid ` block, not a separate file.
+  - Otherwise save a standalone `outputs/diagrams/<slug>.md` (no ticket in view) or
+    `outputs/<TICKET-KEY>/diagrams/<slug>.md` (ticket-scoped). Create the folder lazily.
   - Verify it landed and report the path.
+- **Mind where it goes.** An artifact is default-private but hosted off the local machine, whereas
+  the rest of this bundle stays local and git-ignored. For a sensitive client's app-architecture
+  diagram, skip the hosted artifact — the saved `.md` renders wherever Mermaid does (GitHub, VS
+  Code, the repo) with no upload.
 
 ## Choose the diagram type
 
