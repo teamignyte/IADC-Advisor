@@ -118,10 +118,17 @@ for real delivery.
    deletes it — what happens to B?"). This stays with the dev and about the build; it does **not**
    re-open the scoping gaps already escalated in step 4.
 6. **Capture as you go** (via `/domain-modeling`) — to the **gitignored outputs workspace** (see
-   below), never committed. Glossary terms into `outputs/CONTEXT.md`; each resolved decision into
-   `outputs/<TICKET-KEY>/decisions.md` as it lands — don't batch. Reserve a numbered ADR
-   (`outputs/adr/`) only for a **cross-cutting, architectural** decision (hard to reverse, surprising,
-   a real trade-off); ticket-scoped decisions stay in `decisions.md`.
+   below), never committed. Glossary terms into `outputs/CONTEXT.md`. Every **substantive decision**
+   gets captured **twice, as it lands** (don't batch):
+   - a **numbered ADR** in `outputs/adr/NNNN-slug.md` — project-wide sequential numbering, so the
+     ADR sequence is the **chronological history of every decision** (see `/domain-modeling`'s
+     ADR-FORMAT); and
+   - a **rollup entry** in the ticket's `outputs/<TICKET-KEY>/decisions.md` that states the decision
+     and **links its ADR number** — `decisions.md` is the per-ticket index over the ADRs.
+
+   A substantive decision is any resolved choice that had a real alternative (what you put to the
+   dev, each resolved escalation, a design call that shapes the build). A trivial advisor's-call
+   mechanic with no real alternative is noted in `decisions.md` only — no ADR.
 7. **Synthesize and confirm.** Play back the sharpened approach and every decision. Recommendations
    are welcome *here* — the no-answers rule governs the interview, not the synthesis. Then run a quick
    **auto-reconcile** (see *Readiness & reconcile*): check whether any escalation from step 4 already
@@ -205,10 +212,13 @@ The glossary, decision logs, and ADRs Pressure-test produces are **project artif
 
 - **Glossary:** `outputs/CONTEXT.md` — the project-wide ubiquitous language (cross-cutting, not
   ticket-scoped).
-- **Per-ticket decisions:** `outputs/<TICKET-KEY>/decisions.md` — the running log of this
-  ticket's resolved decisions and open/escalated items. Create the folder if it doesn't exist.
-- **Cross-cutting ADRs:** `outputs/adr/000N-slug.md` — reserved for architectural decisions that
-  reach beyond one ticket. Ticket-scoped decisions belong in `decisions.md`, not a per-ticket ADR pile.
+- **ADRs — the chronological decision history:** `outputs/adr/NNNN-slug.md`, one per **substantive
+  decision**, **project-wide sequential numbering** in the order decisions are made. This single
+  ascending sequence is the durable record of *every* decision across all tickets. Lightweight — a
+  paragraph each.
+- **Per-ticket decisions (the rollup):** `outputs/<TICKET-KEY>/decisions.md` — the `Status:` line,
+  this ticket's resolved decisions (**each linking its ADR number**), and its open/escalated items.
+  It's the per-ticket index over the ADRs, not a separate record. Create the folder if it doesn't exist.
 
 `outputs/` is git-ignored, so these stay close at hand without landing in version control.
 (SharePoint would be the firm's system of record, but its Microsoft 365 connector is read-only —

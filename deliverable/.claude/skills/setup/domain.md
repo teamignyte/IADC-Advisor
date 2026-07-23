@@ -9,7 +9,7 @@ workspace (see `outputs/README.md`), not committed bundle source:
 
 - **`outputs/CONTEXT.md`** — the project glossary, or
 - **`outputs/CONTEXT-MAP.md`** if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
-- **`outputs/adr/`** (and per-context/per-ticket `adr/` folders) — read ADRs that touch the area you're about to work in.
+- **`outputs/adr/`** — the chronological, project-wide ADR history (one per substantive decision); read the ADRs that touch the area you're about to work in. A ticket's `outputs/<TICKET-KEY>/decisions.md` rolls up and links the ADRs made for that ticket.
 
 If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill (reached via `/pressure-test` or `/interrogate-with-docs`) creates them lazily when terms or decisions actually get resolved.
 
