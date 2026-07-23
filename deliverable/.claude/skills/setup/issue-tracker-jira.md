@@ -78,7 +78,7 @@ prefixes, or `SN:` prefixes — the workstream is a **label** (see above), never
 
 ### State lives in Jira, not the body
 Don't carry `Source:`, `Status:`, or `Type:` header lines in the description: status is the **column**,
-readiness is a **triage label**. New tickets (via `to-tickets` / `to-spec`) follow this shape. Retrofit
+readiness is a **triage label**. New tickets (via `to-tickets`) follow this shape. Retrofit
 only issues that are **not yet complete** — never rewrite Done tickets.
 
 ### Formatting (ADF)

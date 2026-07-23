@@ -1,5 +1,10 @@
 # Re-point the main flow to start from an existing ticket
 
+> **Superseded by [ADR-0006](0006-rename-spine-skills-and-collapse-greenfield.md).** The spine
+> described here (entry point `groundwork`) was later reshaped — the entry point became `gumby`,
+> then `pressure-test` — and the greenfield `to-spec → to-tickets` tail collapsed to `to-tickets`.
+> Kept for history; the current spine is `ticket → /pressure-test → (/reconcile) → /to-spec`.
+
 The documented main flow ran idea → `interrogate` → `to-spec` → `to-tickets`: produce
 a backlog and hand off. But ~99% of real use is the *other side* of that handoff — a
 developer already holds a ticket and needs help figuring out how to build it in this

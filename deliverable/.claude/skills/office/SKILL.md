@@ -23,7 +23,7 @@ connected, tell the user to enable it in their client's connector settings
   Outlook exchange where a decision or constraint was recorded, and bring it
   into the conversation — cited.
 
-The ticket-first flow consumes this: `/gumby` grounds every question against
+The ticket-first flow consumes this: `/pressure-test` grounds every question against
 these docs (searching SharePoint by the ticket key), and `/interrogate-with-docs`
 pulls requirements before sharpening a plan.
 

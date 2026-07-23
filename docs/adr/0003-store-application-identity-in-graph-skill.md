@@ -1,6 +1,6 @@
 # Store the application identity in the graph skill; seed from it, don't resolve it live
 
-`/groundwork` and `/orient` seed the `iadc` graph from a whole-application export, which
+`/pressure-test` and `/orient` seed the `iadc` graph from a whole-application export, which
 needs the Appian **application UUID**. Rather than resolve that UUID live through the
 Appian MCP on every run, `/setup` captures the application name, nicknames, and UUID once
 and writes them into a **Configuration block in `iadc-graph/SKILL.md`**; seeding reads the

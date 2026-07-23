@@ -19,7 +19,7 @@ outputs/
 ├── adr/
 │   ├── 0001-event-sourced-orders.md
 │   └── 0002-postgres-for-write-model.md
-└── <TICKET-KEY>/                     ← per-ticket decision records/ADRs (from /gumby, /pokey)
+└── <TICKET-KEY>/                     ← per-ticket decision records/ADRs (from /pressure-test, /to-spec)
 ```
 
 If a `CONTEXT-MAP.md` exists at the workspace root, the project has multiple contexts. The

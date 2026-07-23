@@ -141,3 +141,5 @@ so there's no cross-file lookup.
 | `graph_overview` | Graph-wide counts by kind/object_type/relation/provenance | `session_id` |
 | `reachable` | Full/depth-bounded transitive closure (blast radius) | `session_id`, `node_id`, `direction`, `depth?`, `limit` |
 | `record_model` | One-call record type substructure: fields, views, actions, relationships | `session_id`, `record_type_id` |
+
+**Rendering to a diagram.** These return shapes map straight onto Mermaid — hand them to `/to-diagram`: `record_model` → an **ERD**; `reachable` / `callers_of` / `get_neighbors` / `get_in_edges` → a **dependency flowchart** (blast radius); `shortest_path` → a **path / sequence**. `/orient`, `/pressure-test`, and `/to-spec` lean on this to turn what the graph returns into a picture.

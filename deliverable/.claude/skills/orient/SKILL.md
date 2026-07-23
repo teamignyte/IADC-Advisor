@@ -1,6 +1,6 @@
 ---
 name: orient
-description: Get oriented in an Appian application when you have NO ticket or build in view — you just need to understand what the app does and how it does it. Composes the dependency graph, the live environment, the Jira board, and the domain docs (the glossary + ADRs) into one cited briefing. Use this for a new developer landing on the app, for catching up on an unfamiliar area ("what is the Claims record model", "how does billing hang together"), or for a single-object dossier. Do NOT use it when you have a ticket or a defined task in hand — that's /gumby, which orients you *toward a build*.
+description: Get oriented in an Appian application when you have NO ticket or build in view — you just need to understand what the app does and how it does it. Composes the dependency graph, the live environment, the Jira board, and the domain docs (the glossary + ADRs) into one cited briefing. Use this for a new developer landing on the app, for catching up on an unfamiliar area ("what is the Claims record model", "how does billing hang together"), or for a single-object dossier. Do NOT use it when you have a ticket or a defined task in hand — that's /pressure-test, which orients you *toward a build*.
 disable-model-invocation: true
 argument-hint: "an area or object to orient on, or nothing for the whole app"
 ---
@@ -15,7 +15,7 @@ This skill produces that map as a single **cited briefing**. It doesn't intervie
 
 The line is **do you have a build in view?**
 
-- **A ticket or a described task in hand** — "how do I build TICKET-123", "what's my approach for adding X" → **`/gumby`** (then `/pokey`). That flow also orients you in the app, but *toward a build*, and ends in a build spec. Orientation there is a means; here it's the whole point.
+- **A ticket or a described task in hand** — "how do I build TICKET-123", "what's my approach for adding X" → **`/pressure-test`** (then `/to-spec`). That flow also orients you in the app, but *toward a build*, and ends in a build spec. Orientation there is a means; here it's the whole point.
 - **Just understanding, no build** — "what is this app", "how does the Claims model work", "explain this object to me" → **you're in the right place.**
 - **A single Appian platform question** with no app attached — "what does `a!queryEntity` do" → that's **`/context7`** + `/appian`, not this.
 
@@ -23,7 +23,7 @@ Orient is the *packaged, narrated* form of what `/iadc-graph` + `/appian` + `/ji
 
 ## Read-only, always
 
-Everything here inspects. The graph and Appian MCPs are read-only by nature; Jira is read-only for orientation (no comments, no writes — orientation is not a board action). The only thing orient ever writes is the briefing it hands back to you.
+Everything here inspects. The graph and Appian MCPs are read-only by nature; Jira is read-only for orientation (no comments, no writes — orientation is not a board action). The only thing orient writes on its own is the briefing it hands back to you; any diagram it draws (via `/to-diagram`) is *presented*, and saved to `outputs/` only if you approve — so orientation stays a read-only act.
 
 ## Scope the ask first
 
@@ -53,7 +53,7 @@ For a scoped or single-object ask, resolve a starting `node_id` with `find_nodes
 
 ### 4. Draw the data model
 
-`record_model` → render a **Mermaid ERD**. The record model is the backbone a new developer orients around fastest, and the ERD is the single most reusable artifact this skill produces — worth including whenever the data model is in scope.
+`record_model` → render a **Mermaid ERD** via `/to-diagram`. The record model is the backbone a new developer orients around fastest, and the ERD is the single most reusable artifact this skill produces — worth including whenever the data model is in scope.
 
 ### 5. Bind structure to meaning, and add direction
 
@@ -65,8 +65,10 @@ For a scoped or single-object ask, resolve a starting `node_id` with `find_nodes
 Close the graph session, then hand back a single narrated document, top-down:
 
 1. **What the app does** — one paragraph, in the team's own vocabulary.
-2. **The shape** — the hubs and how they connect; the user-facing surfaces.
-3. **The data model** — the Mermaid ERD.
+2. **The shape** — the hubs and how they connect; the user-facing surfaces. Render this as a
+   **topology flowchart** via `/to-diagram` (hubs as nodes, their edges between them, the
+   user-facing surfaces pinned at the top).
+3. **The data model** — the Mermaid ERD (from step 4, via `/to-diagram`).
 4. **Why it's built this way** — the decisions (ADRs) behind the structure.
 5. **Where it's heading** — what's in flight on the board.
 
@@ -78,4 +80,4 @@ Offer the natural next move rather than stopping cold:
 
 - **Zoom into one object** — the single-object dossier: attributes (`get_node`), who calls it (`callers_of`), what it reaches (`reachable`), and the platform mechanics behind it (`/context7`). This is just orient re-run at object scope.
 - **Go deeper on the Appian platform** — `/context7` + `/appian` for how the platform itself works.
-- **A build has emerged** — if orientation surfaced a concrete task, that's the handoff to **`/gumby`** (then `/pokey`).
+- **A build has emerged** — if orientation surfaced a concrete task, that's the handoff to **`/pressure-test`** (then `/to-spec`).

@@ -11,7 +11,7 @@
 Thumbs.db
 
 # Generated planning artifacts — glossary, decision records/ADRs, and build specs
-# that /gumby, /pokey, and /domain-modeling write. Project outputs, not bundle source;
+# that /pressure-test, /to-spec, and /domain-modeling write. Project outputs, not bundle source;
 # kept close at hand but never committed. The folder itself is tracked via .gitkeep.
 /outputs/*
 !/outputs/.gitkeep

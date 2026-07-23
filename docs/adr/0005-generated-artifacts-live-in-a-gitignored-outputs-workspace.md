@@ -1,7 +1,7 @@
 # Generated planning artifacts live in a gitignored `outputs/` workspace
 
 The advisory skills produce **project artifacts** — the domain glossary, decision
-records/ADRs, and build specs from `/gumby`, `/pokey`, `/interrogate-with-docs`, and
+records/ADRs, and build specs from `/pressure-test`, `/to-spec`, `/interrogate-with-docs`, and
 `/domain-modeling`. These are working outputs *about the client's Appian application*, not
 part of the shipped bundle. They now land in a **gitignored `outputs/` workspace** at the
 deliverable root: the glossary at `outputs/CONTEXT.md`, per-ticket decision records and
@@ -21,7 +21,7 @@ the disposition of the *generated* domain docs changes here.
 - **They can hold app-specific detail** the client may not want in version control by
   default. Gitignored-by-default is the safer floor; committing is an opt-in a team can
   choose.
-- **One location for both flows.** The ticket flow (`/gumby` → `/pokey`) and the greenfield
+- **One location for both flows.** The ticket flow (`/pressure-test` → `/to-spec`) and the greenfield
   flow (`/interrogate-with-docs` → `/domain-modeling`) now share a single glossary/ADR home
   instead of splitting between a committed `CONTEXT.md` and a separate workspace.
 

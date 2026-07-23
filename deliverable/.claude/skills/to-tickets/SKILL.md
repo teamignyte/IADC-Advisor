@@ -47,6 +47,8 @@ Present the proposed breakdown as a numbered list. For each ticket, show:
 - **Blocked by**: which other tickets (if any) must complete first
 - **What it delivers**: the end-to-end behaviour this ticket makes work
 
+Render the blocking edges as a **dependency DAG** with `/to-diagram` (nodes = tickets, arrows = "blocks", the ready-to-start *frontier* highlighted) and show it alongside the list — a wall of `#42, #43, #44` is illegible; the graph makes the structure reviewable before you publish.
+
 Ask the user:
 
 - Does the granularity feel right? (too coarse / too fine)

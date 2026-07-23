@@ -1,13 +1,13 @@
 ---
-name: gumby
-description: "The dialectic. Pressure-test and sharpen the approach to a specific ticket or work item through a relentless, one-question-at-a-time Socratic interview — questions only, NO proposed answers, so the builder does the reasoning. Launch this whenever the user says they're working on / picked up / were assigned a ticket, or wants to verify or sharpen an approach before building. Grounds every question in the live app (the Jira ticket, the iadc graph, the Appian environment, the project's own docs) and captures the resulting glossary and decisions to the gitignored outputs workspace. Verbs: I'm working on a ticket, just got assigned, picking up a ticket, help me think through this ticket, verify my approach, pressure-test my plan, dialectic, socratic, Gumby."
+name: pressure-test
+description: "The dialectic. Pressure-test and sharpen the approach to a specific ticket or work item through a relentless, one-question-at-a-time Socratic interview — questions only, NO proposed answers, so the builder does the reasoning. Launch this whenever the user says they're working on / picked up / were assigned a ticket, or wants to verify or sharpen an approach before building. Grounds every question in the live app (the Jira ticket, the iadc graph, the Appian environment, the project's own docs) and captures the resulting glossary and decisions to the gitignored outputs workspace. Verbs: I'm working on a ticket, just got assigned, picking up a ticket, help me think through this ticket, verify my approach, pressure-test my plan, dialectic, socratic, gumby."
 ---
 
-# Gumby — the dialectic
+# Pressure-test — the dialectic
 
-Gumby is how you start when you've **picked up a specific ticket** and want the approach right
+Pressure-test is how you start when you've **picked up a specific ticket** and want the approach right
 *before* building. It runs a **relentless, one-question-at-a-time Socratic interview** — but
-unlike `/interrogating`, Gumby **does not propose answers**. It asks; *you* reason; it probes
+unlike `/interrogating`, Pressure-test **does not propose answers**. It asks; *you* reason; it probes
 the next layer. The output is an approach you arrived at yourself and are ready to build,
 stress-tested against the live app and the ticket's own contradictions.
 
@@ -43,7 +43,7 @@ them**, not forced onto you — see *Escalate the gaps*.
   they don't have — product intent, a cross-team contract, a wide-blast-radius model change — is
   an **architectural gap**: name it and **escalate to the lead** rather than pressing the builder
   to invent an answer. (If `Audience` is a lead/architect, they own these too — ask directly.)
-- **Advise, don't execute.** Gumby plans and captures; it never builds Appian objects or
+- **Advise, don't execute.** Pressure-test plans and captures; it never builds Appian objects or
   writes application code.
 
 ## Demo mode
@@ -75,7 +75,9 @@ for real delivery.
 2. **Ground before probing.** Look up the facts the questions will stand on — never ask
    what the environment can tell you, and let the grounding expose where the ticket's
    assumptions don't match reality:
-   - the live objects (`/appian`) and the dependency graph / blast radius (`/iadc-graph`);
+   - the live objects (`/appian`) and the dependency graph / blast radius (`/iadc-graph`) — when
+     the blast radius is wide, render it as a fan-in diagram with `/to-diagram` and keep it with
+     the ticket's `decisions.md`;
    - **the project's own documentation (`/office`).** First read the documents the **ticket
      itself references** (the attachments and links from step 1). Then **also search SharePoint
      by the ticket number/key** (e.g. `<TICKET-KEY>`) — related design and spec docs are routinely
@@ -106,11 +108,11 @@ for real delivery.
    understanding. Then run a quick **auto-reconcile** (see *Readiness & reconcile*): check whether
    any escalation sent this session already has a reply, fold it in, and refresh the **`Status:`** line.
 6. **Hand off — when ready.** Once the approach is confirmed *and the ticket is* **`READY`** (no
-   open escalations), hand off to **`/pokey`** — it turns this conversation into a build spec **you
+   open escalations), hand off to **`/to-spec`** — it turns this conversation into a build spec **you
    then implement** (offer a blast-radius pass first if the change is risky). If gaps are still
-   open, the ticket stays **not ready for dev**: tell the builder to run **`/gumby-reconcile
-   <TICKET-KEY>`** once the lead replies, and note that `/pokey` will produce only a **provisional**
-   spec until then. `ticket → /gumby → (/gumby-reconcile) → /pokey → you build`.
+   open, the ticket stays **not ready for dev**: tell the builder to run **`/reconcile
+   <TICKET-KEY>`** once the lead replies, and note that `/to-spec` will produce only a **provisional**
+   spec until then. `ticket → /pressure-test → (/reconcile) → /to-spec → you build`.
 
 ## Escalate the gaps
 
@@ -154,28 +156,28 @@ only outward writes here, and both are **gated**.
 
 ## Readiness & reconcile
 
-An escalation is **asynchronous** — the lead may answer in seconds or days — so Gumby never
+An escalation is **asynchronous** — the lead may answer in seconds or days — so Pressure-test never
 dead-waits. It proceeds on the provisional lean and tracks readiness explicitly.
 
 - **Status line.** The first line of `outputs/<TICKET-KEY>/decisions.md` is a status:
-  `Status: READY` (no open escalations) or `Status: BLOCKED — N open escalation(s)`. Gumby and
-  `/gumby-reconcile` keep it current; `/pokey` reads it. Optionally mirror it to a gated Jira
+  `Status: READY` (no open escalations) or `Status: BLOCKED — N open escalation(s)`. Pressure-test and
+  `/reconcile` keep it current; `/to-spec` reads it. Optionally mirror it to a gated Jira
   **`needs-info`** label so the board shows the block.
 - **Auto-reconcile (end of pass).** After synthesis, check each escalation raised this session for
   a reply already back — `slack_read_thread` on the stored `channel_id`+`message_ts`, or the Jira
   comment — and fold any answers in before you finish.
-- **`/gumby-reconcile <TICKET-KEY>` (later).** When the lead replies after the session, the builder
+- **`/reconcile <TICKET-KEY>` (later).** When the lead replies after the session, the builder
   runs this. It reads the ticket's *Open / escalated* items, checks their threads, and for each
   reply **plays back its reading** ("Liam replied A → recording *scope = visible set*; right?"),
-  records the resolved decision, re-checks impact (flagging any `/pokey` step that changes), and
+  records the resolved decision, re-checks impact (flagging any `/to-spec` step that changes), and
   refreshes the status. Re-run until nothing is open.
 - **Readiness gate.** While `Status: BLOCKED` the ticket is **not ready for development**:
-  `/pokey` produces only a clearly-marked **provisional** spec — never a final build-ready one —
+  `/to-spec` produces only a clearly-marked **provisional** spec — never a final build-ready one —
   until every escalation is resolved.
 
 ## Where outputs go
 
-The glossary, decision logs, and ADRs Gumby produces are **project artifacts, not bundle source**
+The glossary, decision logs, and ADRs Pressure-test produces are **project artifacts, not bundle source**
 — written to the **gitignored `outputs/` workspace**, never committed:
 
 - **Glossary:** `outputs/CONTEXT.md` — the project-wide ubiquitous language (cross-cutting, not
@@ -194,10 +196,10 @@ so `/office` stays read-only, for grounding only.)
 - Built on the `/interrogating` discipline, run in **pure-Socratic (no-recommendation) mode**.
 - Uses `/domain-modeling` to keep the glossary and ADRs sharp underneath.
 - Grounds through `/jira`, `/appian`, `/iadc-graph`, and `/office`.
-- **Sibling to `/interrogate-with-docs`:** reach for **Gumby** when you're pressure-testing
+- **Sibling to `/interrogate-with-docs`:** reach for **Pressure-test** when you're pressure-testing
   a *specific ticket* and want to do the reasoning yourself; reach for
   `/interrogate-with-docs` when you want the interview to *propose* answers as it sharpens a
   broader plan.
-- **The ticket-first entry point.** Gumby is where the main flow starts when you have a
-  defined piece of work: `ticket → /gumby → /pokey`. It orients you in the app and sharpens
-  the *thinking*; `/pokey` turns the result into the build spec.
+- **The ticket-first entry point.** Pressure-test is where the main flow starts when you have a
+  defined piece of work: `ticket → /pressure-test → /to-spec`. It orients you in the app and sharpens
+  the *thinking*; `/to-spec` turns the result into the build spec.

@@ -36,15 +36,28 @@ bundle never ships them.
 ### Flow and posture
 
 **Spine** (a.k.a. the main flow):
-The primary path most work travels through the skills. Per `docs/adr/0002`, the spine
-starts from a defined unit of work — a ticket or a description of it — and produces
-implementation guidance.
+The primary path most work travels through the skills. Per `docs/adr/0006` (which superseded
+`docs/adr/0002`), it starts from a defined unit of work — a ticket or a description of it — and
+runs `ticket → /pressure-test → (/reconcile) → /to-spec`, ending in a build spec.
 
-**Groundwork** (`/groundwork`):
-The skill that *is* the spine's entry point — from a ticket or a description of the work it gathers
-context, inspects the Appian app, sharpens the developer's approach, and yields
-implementation guidance. A thin orchestrator over the inspection and interrogation
-skills.
+**Pressure-test** (`/pressure-test`):
+The spine's entry point — the **dialectic**. A relentless, one-question-at-a-time Socratic
+interview that *asks but does not answer*: it grounds in the app first, then sharpens the
+developer's approach to a defined ticket. (Formerly `gumby`.)
+
+**Reconcile** (`/reconcile`):
+Closes the loop when `/pressure-test` escalated an architectural gap to the project lead — folds the
+reply into the ticket's decisions and flips it `BLOCKED → READY`. (Formerly `gumby-reconcile`.)
+
+**To-spec** (`/to-spec`):
+Turns the sharpened plan into a developer-ready **build spec** — PRD context plus an ordered,
+executable list of Appian build steps — written to the `outputs/` workspace on approval. (Formerly
+`pokey`; distinct from the retired greenfield PRD skill of the same name — see `docs/adr/0006`.)
+
+**To-diagram** (`/to-diagram`):
+The shared **diagram primitive** — renders a Mermaid diagram (app topology, ERD, blast radius,
+build-step DAG, status lifecycle, …), saves it to `outputs/`, and presents it as an artifact.
+Pulled in by `/orient`, `/pressure-test`, `/to-spec`, and `/to-tickets`. See `docs/adr/0007`.
 
 **On-ramp**:
 A starting situation that generates planning work and then merges onto the spine —
