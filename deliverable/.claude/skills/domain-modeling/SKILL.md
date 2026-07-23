@@ -16,10 +16,10 @@ context:
 ```
 outputs/
 ├── CONTEXT.md                        ← the project glossary
-├── adr/
+├── adr/                              ← chronological history: one ADR per substantive decision
 │   ├── 0001-event-sourced-orders.md
 │   └── 0002-postgres-for-write-model.md
-└── <TICKET-KEY>/                     ← per-ticket decision records/ADRs (from /pressure-test, /to-spec)
+└── <TICKET-KEY>/                     ← per-ticket rollup: decisions.md (links its ADRs) + build spec
 ```
 
 If a `CONTEXT-MAP.md` exists at the workspace root, the project has multiple contexts. The
@@ -70,12 +70,12 @@ When a term is resolved, update `CONTEXT.md` right there. Don't batch these up �
 
 Write a decision or term only once it's consistent with what's already captured. If something the user says conflicts with an existing `CONTEXT.md` entry or an ADR, surface the contradiction and let them resolve it *before* you write — never quietly append a second, conflicting version. And if the interview ends early, do a final pass before you stop: capture anything decided but not yet written, and flag any contradiction still open — so the docs are never left half-written or internally inconsistent.
 
-### Offer ADRs sparingly
+### Write an ADR for each substantive decision
 
-Only offer to create an ADR when all three are true:
-
-1. **Hard to reverse** — the cost of changing your mind later is meaningful
-2. **Surprising without context** — a future reader will wonder "why did they do it this way?"
-3. **The result of a real trade-off** — there were genuine alternatives and you picked one for specific reasons
-
-If any of the three is missing, skip the ADR. Use the format in [ADR-FORMAT.md](./ADR-FORMAT.md).
+Record **every substantive decision as its own ADR**, as it's made — the `outputs/adr/` sequence is
+the project's chronological decision history. A substantive decision is any resolved choice that had
+a real alternative (what was put to the developer or the lead, each resolved escalation, a design
+call that shapes the build). Keep each ADR lightweight — a paragraph is fine; the value is that the
+decision and its *why* are on the record. The only thing you skip is a trivial advisor's-call
+mechanic with no real alternative (note it in `decisions.md` instead). Use the format in
+[ADR-FORMAT.md](./ADR-FORMAT.md).

@@ -1,8 +1,8 @@
 # ADR Format
 
-ADRs live in the git-ignored `outputs/` workspace — under `outputs/adr/` (or the relevant context/ticket subfolder, e.g. `outputs/<TICKET-KEY>/`) — and use sequential numbering: `0001-slug.md`, `0002-slug.md`, etc.
+ADRs live in the git-ignored **`outputs/adr/`** workspace and use **project-wide sequential numbering** — `0001-slug.md`, `0002-slug.md`, … — assigned in the order decisions are made. That single ascending sequence **is the chronological history of every decision on the project**, across all tickets. (Per-ticket `decisions.md` files roll these up and link back to them by number — the ADRs are the durable record; `decisions.md` is the index.)
 
-Create the `adr/` directory lazily — only when the first ADR is needed.
+Create the `outputs/adr/` directory lazily — only when the first ADR is needed.
 
 ## Template
 
@@ -26,17 +26,20 @@ Only include these when they add genuine value. Most ADRs won't need them.
 
 Scan the target `adr/` folder for the highest existing number and increment by one.
 
-## When to offer an ADR
+## When to write an ADR — every substantive decision
 
-All three of these must be true:
+Write an ADR for **each substantive decision, as it is made** — so the `outputs/adr/` sequence
+becomes a complete chronological record. A "substantive decision" is any resolved choice that had a
+real alternative: what was put to the developer or the lead, each resolved escalation, and any
+design call that shapes the build. When in doubt, write it — a lightweight one-paragraph ADR is
+cheap, and the value is the *history*.
 
-1. **Hard to reverse** — the cost of changing your mind later is meaningful
-2. **Surprising without context** — a future reader will look at the code and wonder "why on earth did they do it this way?"
-3. **The result of a real trade-off** — there were genuine alternatives and you picked one for specific reasons
+**The one exclusion:** trivial **advisor's-call mechanics** with no real alternative — "use the
+existing `LARGE` batch-size constant", "name the field to match the column" — don't each need an
+ADR. Note those in the ticket's `decisions.md` and move on. If it had a genuine fork, it's a
+decision; if it was the obvious mechanical way, it isn't.
 
-If a decision is easy to reverse, skip it — you'll just reverse it. If it's not surprising, nobody will wonder why. If there was no real alternative, there's nothing to record beyond "we did the obvious thing."
-
-### What qualifies
+### What a substantive decision looks like
 
 - **Architectural shape.** "We're using a monorepo." "The write model is event-sourced, the read model is projected into Postgres."
 - **Integration patterns between contexts.** "Ordering and Billing communicate via domain events, not synchronous HTTP."

@@ -30,9 +30,12 @@ It's the same discipline as `/pressure-test` — read-mostly, gated writes, capt
    *"Liam replied 'A' → recording scope = visible/filtered set only; correct?"* If the reply is
    unclear or partial, treat the gap as **still open** and (with the builder) draft a follow-up
    rather than guessing.
-4. **Record the resolution.** Move the item from *Open / escalated* to the resolved decisions in
-   `decisions.md`, noting the lead's answer and who gave it. Update `/domain-modeling` (glossary /
-   a cross-cutting ADR) if the answer warrants it.
+4. **Record the resolution.** A resolved escalation **is a substantive decision**, so capture it the
+   same way `/pressure-test` captures decisions (via `/domain-modeling`): write its own **numbered
+   ADR** in `outputs/adr/NNNN-slug.md` (next in the project-wide chronological sequence), noting the
+   lead's answer and who gave it; then move the item in `decisions.md` from *Open / escalated* to the
+   resolved rollup, **linking that ADR number**. Update the glossary (`outputs/CONTEXT.md`) too if the
+   answer introduces or sharpens a term.
 5. **Re-check impact.** Compare the answer to the provisional lean Pressure-test proceeded on:
    - **Same as the lean** → nothing downstream changes; say so.
    - **Different** → flag exactly what shifts — which acceptance criteria, and which `/to-spec` build
