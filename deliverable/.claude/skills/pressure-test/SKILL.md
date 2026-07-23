@@ -24,18 +24,26 @@ them**, not forced onto you — see *Escalate the gaps*.
   `/interrogating` (which recommends as it goes). _Escape hatch:_ if the user says "just
   tell me what you think," give your read, then resume probing.
 - **One question at a time.** No compound asks. Wait for the answer before the next one.
-- **Streamlined and numbered.** Lead with the question itself, numbered (`Q1`, `Q2`, …).
-  Keep any preamble to a short clause — and only when a fact or contradiction genuinely needs
-  surfacing. No long wind-ups; the question does the work.
+- **Short and direct — one idea per question.** Numbered (`Q1`, `Q2`, …), each a single line the
+  dev can answer in a sentence. No multi-clause setups, no embedded mini-essay, no long wind-up —
+  if a fact is needed to frame the question you already looked it up (facts are yours). A question
+  that takes three sentences to ask is really several questions; split it. Err on the side of too
+  short.
+- **Aim for comprehension, not extraction.** Each question moves the *developer's* understanding one
+  concrete step toward the **implementation** — "where would this live?", "what happens to X when Y?",
+  "what would you check first?" — so the plan takes shape in their head and they arrive at the best
+  approach themselves. You're building their grasp of the build, not quizzing them. Genuine
+  scoping/product decisions are **not** dialectic fodder — they're surfaced up front and escalated
+  (see the arc), never smuggled into the interview.
 - **Orient before you interrogate.** Ground yourself in the app *first* (the arc below):
   a developer — especially one new to this app — often has nothing to interrogate yet.
   Interrogation is how a plan gets *hardened*, not the opening move.
 - **Adaptive — scale to the work.** The floor is three things that always happen: get the
-  ticket (step 1), a blast-radius check (part of step 2), and capture (step 4). Scale
+  ticket (step 1), a blast-radius check (part of step 2), and capture (step 6). Scale
   everything else to the size and risk of the change. A one-line label change gets a fast
-  pass; a change whose blast radius fans across the app, or one in unfamiliar territory,
-  earns the full dialectic. Running the whole pipeline on trivial work just trains people
-  to skip the skill.
+  pass — no scoping gaps to surface, a question or two, done; a change whose blast radius fans
+  across the app, or one in unfamiliar territory, earns the full treatment. Running the whole
+  pipeline on trivial work just trains people to skip the skill.
 - **Right person for the question; facts are yours.** If something can be looked up — a record
   type's fields, what calls an object, what the spec says — look it up; don't ask. Of the genuine
   decisions that remain, put to the builder only the ones they can **own**: how to implement it,
@@ -54,12 +62,13 @@ this exists only so a demo doesn't turn into a long back-and-forth.
 - **Demo mode:** `off`
 - **Max questions:** `4`
 
-**When `on`:** announce it up front ("running in demo mode — a few sharp questions, then I'll
-synthesize"), then ask only the **highest-leverage** questions, up to *Max questions*, and go
-straight to **Synthesize and confirm** (step 5). Pick the ones that move the plan most —
-typically the root *why / what problem*, the **blast-radius** check, the sharpest
-**contradiction** the grounding surfaced, and the one **key decision** the build hinges on.
-Still ground first (step 2) and still capture (step 4); just stop interrogating at the cap.
+**When `on`:** still surface + escalate the scoping gaps up front (steps 3–4), then announce the cap
+("running in demo mode — a few sharp questions, then I'll synthesize"), ask only the
+**highest-leverage** comprehension questions up to *Max questions*, and go straight to **Synthesize
+and confirm** (step 7). Pick the ones that move the plan most — typically the root *why / what
+problem*, the **blast-radius** check, the sharpest **contradiction** the grounding surfaced, and the
+one **key decision** the build hinges on. Still ground first (step 2) and still capture (step 6);
+just stop interrogating at the cap.
 
 **When `off`:** the full relentless dialectic — no cap. This is the default and the right mode
 for real delivery.
@@ -88,38 +97,48 @@ for real delivery.
      search by content/filename and read the ticket subfolder directly.
    - existing decisions — the outputs workspace's glossary and prior decision records
      (see *Where outputs go* below).
-3. **Run the dialectic — and sort as you go.** Walk the decision tree from the root (usually
-   *why / what problem is this solving*), resolving dependencies one at a time. **Surface
-   contradictions the moment they appear** — between the ticket's AC, the answers, and what the
-   code and docs actually say; force precision with concrete scenarios ("A shares a rule with B;
-   A deletes it — what happens to B?"). As each decision surfaces, **sort it**: one the builder
-   can **own** (how to implement, understanding the change) you put to them; an **architectural
-   gap** that needs the lead you set aside to escalate (see *Escalate the gaps*) rather than
-   pressing for a guess.
-4. **Capture as you go** (via `/domain-modeling`) — to the **gitignored outputs workspace**
-   (see below), never as committed repo source (project artifacts, not bundle source). Write
-   glossary terms into `outputs/CONTEXT.md` the moment they crystallize, and log each resolved
-   decision into the ticket's `outputs/<TICKET-KEY>/decisions.md` as you go — don't batch.
-   Reserve a numbered ADR (`outputs/adr/`) only for a **cross-cutting, architectural** decision
-   (hard to reverse, surprising, a real trade-off); ticket-scoped decisions stay in `decisions.md`.
-5. **Synthesize and confirm.** Play back the sharpened approach and every decision.
-   Recommendations are welcome *here* — the no-answers rule governs the interview, not the
-   synthesis. Flag every open **architectural gap** and confirm the drafted escalation(s) to the
-   lead (see *Escalate the gaps*). **Do not act until the builder confirms** it's a shared
-   understanding. Then run a quick **auto-reconcile** (see *Readiness & reconcile*): check whether
-   any escalation sent this session already has a reply, fold it in, and refresh the **`Status:`** line.
-6. **Hand off — when ready.** Once the approach is confirmed *and the ticket is* **`READY`** (no
-   open escalations), hand off to **`/to-spec`** — it turns this conversation into a build spec **you
-   then implement** (offer a blast-radius pass first if the change is risky). If gaps are still
-   open, the ticket stays **not ready for dev**: tell the builder to run **`/reconcile
-   <TICKET-KEY>`** once the lead replies, and note that `/to-spec` will produce only a **provisional**
-   spec until then. `ticket → /pressure-test → (/reconcile) → /to-spec → you build`.
+3. **Surface the scoping questions — to the developer first.** From the grounding and the ticket's
+   own open questions, list the genuine **scoping / product / architectural decisions** the work
+   hinges on — the ones needing intent or authority a developer may not hold (e.g. *"does 'mark all
+   as read' mean the whole inbox or just the filtered view?"*). Put the **whole list to the dev up
+   front**, before any dialectic: for each, *do you know the answer, or is it yours to make?* A dev
+   often knows more than the ticket says — capture whatever they can answer as a decision right here.
+   (Trivial work surfaces none of these — skip straight to the dialectic.)
+4. **Escalate what's left — to the lead, up front.** Whatever the dev *can't* answer is an
+   **architectural gap**: escalate it **now**, before the dialectic (see *Escalate the gaps*), so the
+   lead has the most time to reply. Record each as *Open / escalated* in `decisions.md`, set the
+   **`Status:`** line, and proceed on a **provisional lean** — never dead-wait. Replies get folded in
+   later (see *Readiness & reconcile*).
+5. **Build comprehension with the developer — the dialectic.** The main event, and where the short,
+   direct, one-at-a-time questions (see Posture) do their work: walk the dev to the best
+   **implementation** — how it fits the existing objects, what order to build in, what breaks nearby,
+   the edge cases — so they arrive at the plan themselves. Move from the root outward, one dependency
+   at a time. **Surface contradictions the moment they appear** — between the AC, the dev's answers,
+   and what the code and docs actually say — with a concrete scenario ("A shares a rule with B; A
+   deletes it — what happens to B?"). This stays with the dev and about the build; it does **not**
+   re-open the scoping gaps already escalated in step 4.
+6. **Capture as you go** (via `/domain-modeling`) — to the **gitignored outputs workspace** (see
+   below), never committed. Glossary terms into `outputs/CONTEXT.md`; each resolved decision into
+   `outputs/<TICKET-KEY>/decisions.md` as it lands — don't batch. Reserve a numbered ADR
+   (`outputs/adr/`) only for a **cross-cutting, architectural** decision (hard to reverse, surprising,
+   a real trade-off); ticket-scoped decisions stay in `decisions.md`.
+7. **Synthesize and confirm.** Play back the sharpened approach and every decision. Recommendations
+   are welcome *here* — the no-answers rule governs the interview, not the synthesis. Then run a quick
+   **auto-reconcile** (see *Readiness & reconcile*): check whether any escalation from step 4 already
+   has a reply, fold it in, and refresh the **`Status:`** line. **Do not act until the developer
+   confirms** it's a shared understanding.
+8. **Hand off — when ready.** Once the approach is confirmed *and the ticket is* **`READY`** (no open
+   escalations), hand off to **`/to-spec`** — it turns this conversation into a build spec **you then
+   implement** (offer a blast-radius pass first if the change is risky). If gaps are still open, the
+   ticket stays **not ready for dev**: tell the developer to run **`/reconcile <TICKET-KEY>`** once the
+   lead replies, and note that `/to-spec` produces only a **provisional** spec until then.
+   `ticket → /pressure-test → (/reconcile) → /to-spec → you build`.
 
 ## Escalate the gaps
 
-When the dialectic surfaces an **architectural gap** — a decision the builder can't own — don't
-force an answer. Capture it and **draft a crisp question to the project lead** so they can unblock
-it:
+When the up-front triage (arc step 3) leaves an **architectural gap** — a scoping/product decision
+the developer can't answer or own — don't force an answer. Capture it and **draft a crisp question
+to the project lead** so they can unblock it:
 
 1. **Draft** a short message. Open with a line that **identifies it as an automated escalation
    from the advisor** — e.g. `🤖 *Architect Agent — escalation on <TICKET-KEY>*` — because the
