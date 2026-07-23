@@ -143,8 +143,11 @@ to the project lead** so they can unblock it:
 1. **Draft** a short message. Open with a line that **identifies it as an automated escalation
    from the advisor** — e.g. `🤖 *Architect Agent — escalation on <TICKET-KEY>*` — because the
    Slack/Jira connector posts **as the logged-in user**, so the *content* must make clear it's
-   agent-sent, not a personal note. Then give the specific decision needed, the options and their
-   trade-offs, and your recommendation if you have one. One decision per message; make it
+   agent-sent, not a personal note. Then give the specific decision needed and the options with their
+   trade-offs — **stated neutrally, with no recommendation and no steer.** The call is the lead's; lay
+   out the options even-handedly and let them decide, rather than nudging them toward one. (You *do*
+   hold a **provisional lean** internally so planning can continue — see step 4 — but that lean stays
+   in `decisions.md`; it is **not** put in the message to the lead.) One decision per message; make it
    answerable in a reply. **Close by telling the lead exactly what to do:** just reply in this
    thread — the developer is notified automatically and will pick it up, so **no further action is
    required** on their side.
