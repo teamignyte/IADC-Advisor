@@ -23,28 +23,42 @@ follows to build it. It is the handoff artifact — it replaces splitting work i
 - **Gitignored outputs workspace, not the tracker.** Output goes to the gitignored `outputs/`
   workspace in the repo — never committed as bundle source, and (absent O365 write scopes) not
   SharePoint. Same workspace Pressure-test captures to.
-- **Readiness gate — check the ticket's `Status:` first.** Read the first line of
-  `outputs/<TICKET-KEY>/decisions.md`. On **`READY`** (no open escalations) you produce the final,
-  build-ready spec. On **`BLOCKED`** you may still produce a spec, but it is **PROVISIONAL** — every
-  decision riding on an unresolved escalation is flagged *assumed, pending `<lead>`*, and you must
-  **not** stamp it build-ready. Point the builder at **`/reconcile <TICKET-KEY>`** to clear the
-  block, then finalize.
+- **Readiness gate — reconcile, then check the ticket's `Status:`.** If escalations are open, run
+  **`/reconcile <TICKET-KEY>`** first (step 1) to pull any late Slack replies, then read the
+  `Status:` line of `outputs/<TICKET-KEY>/decisions.md`. On **`READY`** (no open escalations) you
+  produce the final, build-ready spec. On **`BLOCKED`** you may still produce a spec, but it is
+  **PROVISIONAL** — every decision riding on an unresolved escalation is flagged *assumed, pending
+  `<lead>`*, and you must **not** stamp it build-ready; the builder re-runs once the lead replies.
 
 ## Process
 
-1. **Check readiness, then synthesize.** First read the **`Status:`** line of
-   `outputs/<TICKET-KEY>/decisions.md`: `READY` → you'll produce the final build-ready spec;
-   `BLOCKED — N open escalation(s)` → a **provisional** spec only (see the readiness gate in
-   Posture), until `/reconcile <TICKET-KEY>` clears the block. Then pull the plan together
-   from the Pressure-test thread, `decisions.md`, and the glossary (`outputs/CONTEXT.md`). Reuse the
-   grounding Pressure-test already did (record model, dependency order, blast radius); re-check the live
-   app (`/appian`, `/iadc-graph`) only where a build step needs a fact you don't have. Use the
-   glossary's vocabulary; respect existing ADRs.
-2. **Order the build steps** in Appian dependency order (data model → relationships → rules →
-   interfaces → process models → record actions/views → migration → tests). Each step names the
-   object and is concrete enough to execute, with a **"done when"** check. Render the ordered steps
-   as a **build-step dependency DAG** with `/to-diagram` — what gates what, what can run in
-   parallel — and inline it in the spec.
+1. **Reconcile first, then check readiness.** Before anything else, if the ticket's `decisions.md`
+   shows any **open escalations**, **run `/reconcile <TICKET-KEY>`** — the lead may have answered on
+   Slack since the pressure-test session, and folding that reply in now can flip a `BLOCKED` ticket
+   to `READY` (so you produce the final spec instead of a provisional one). Then read the **`Status:`**
+   line: `READY` → produce the final build-ready spec; still `BLOCKED — N open escalation(s)` → a
+   **provisional** spec only (see the readiness gate in Posture). Then pull the plan together from the
+   Pressure-test thread, `decisions.md`, and the glossary (`outputs/CONTEXT.md`). Reuse the grounding
+   Pressure-test already did (record model, dependency order, blast radius); re-check the live app
+   (`/appian`, `/iadc-graph`) only where a build step needs a fact you don't have. Use the glossary's
+   vocabulary; respect existing ADRs.
+2. **Name every object — split NEW vs. MODIFY — in dependency order.** This is the heart of the
+   spec: don't describe the work abstractly ("update the interface"), say **exactly which Appian
+   objects the build touches**, each tagged **[NEW]** (create) or **[MODIFY]** (change an existing
+   object):
+   - **[NEW]** — the exact name (following the app's naming convention), the type (record type,
+     field, expression rule, interface, process model, constant, record action/view, site page, …),
+     and what it must contain or do.
+   - **[MODIFY]** — the exact name **as it exists in the app/graph**, and the *precise* change: the
+     field added and its type, the specific rule branch or expression altered, the process node
+     inserted and how it's wired — never just "update X".
+
+   Confirm exact names and current shape against `/iadc-graph` + `/appian` rather than guessing.
+   Then order the steps in **Appian dependency order** (data model → relationships → constants →
+   rules → interfaces → process models → record actions/views → data migration → tests) so **every
+   object exists before anything that references it**. Each step carries a **"done when"** check.
+   Render the ordered steps as a **build-step dependency DAG** with `/to-diagram` — what gates what,
+   what can run in parallel — and inline it in the spec.
 3. **Present the full spec in the conversation** for review. Lay out the plan, then **explicitly
    invite final clarifying questions.** Do **not** write anything yet.
 4. **Iterate** on their questions and adjustments until they're happy.
@@ -73,14 +87,23 @@ The approach, from the user's perspective.
 The resolved decisions from Pressure-test, each on a line, linked to the decision record/ADR.
 
 ## Build steps
-An **ordered** list, in Appian dependency order. Each step:
-- **What:** the object to create/modify (record type, relationship, rule, interface, process
-  model, record action, migration) and the specifics.
+
+Open with an **object inventory** — a table of every Appian object the build touches, split into
+**New (create)** and **Existing (modify)**, each with its exact name and type:
+
+| Object | Type | New / Modify |
+|---|---|---|
+| `<exact name>` | record type / field / rule / interface / process model / constant / action / view | NEW or MODIFY |
+
+Then the **ordered** steps, in Appian dependency order — each step:
+- **Object:** the exact name + type, tagged **[NEW]** or **[MODIFY]**.
+- **Change:** precisely what to create or alter — the field and its type, the specific rule logic,
+  the process node and its wiring — concrete enough to execute without guessing, never "update X".
 - **Done when:** the observable check that the step is complete.
 
-Concrete enough that the developer just follows it. Include data-migration steps explicitly.
-Inline the **build-step dependency DAG** here (via `/to-diagram`), plus a **target-state ERD** for
-the data-model steps.
+Order so every object exists before anything that references it. Include data-migration steps
+explicitly. Inline the **build-step dependency DAG** here (via `/to-diagram`), plus a
+**target-state ERD** for the data-model steps.
 
 ## Testing
 The object tests / checks to add or run (the app has a deterministic-test harness). Test
