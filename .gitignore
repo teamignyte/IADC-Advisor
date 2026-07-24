@@ -1,10 +1,12 @@
-# Workshop dev environment — the deliverable is in deliverable/ (which carries its own .gitignore).
+# Workshop dev environment — the plugin ships from iadc-advisor/ (see docs/adr/0009).
 
 # Secrets for workshop git operations — never commit
 .secrets/
 
-# Live MCP config holds literal credentials — never commit (only .mcp.json.example ships, inside deliverable/)
+# Live MCP config holds literal credentials — never commit (the template ships
+# inside the plugin as a /setup asset)
 .mcp.json
+iadc-advisor/.mcp.json
 
 # OS / editor cruft
 .DS_Store
