@@ -30,23 +30,14 @@ pulls requirements before sharpening a plan.
 ## Configuration
 
 The advisor searches a **pinned source-of-truth folder** first, rather than scanning the
-whole tenant. `/setup` records this **per instance** — this template ships with placeholders
-only; a prospect's real site/folder lives in the configured instance, never in the template.
+whole tenant. Read the **`Office source of truth`** entry (site + folder) and the
+**`Active prospect`** line from the ambient **Project configuration** (from
+`docs/agents/project.md`, written by `/setup`). Managing several prospects from one
+instance? List each as a row under that entry in `project.md` and switch by changing the
+**Active prospect** line — that single edit is the whole toggle.
 
-Managing more than one prospect from an instance? List each as a profile row and switch by
-changing the **Active prospect** line — that single edit is the whole toggle.
-
-- **Active prospect:** `<set by /setup>`
-
-### Prospect profiles
-
-| Prospect | Tenant / site | Pinned folder (source of truth) |
-|---|---|---|
-| `<set by /setup>` | `<set by /setup>` | `<set by /setup>` |
-
-Use the row whose **Prospect** matches the **Active prospect** line. If nothing is configured
-yet, ask the user for the site/folder (or search the tenant), read from there, and offer to
-record it via `/setup`.
+If nothing is configured yet, ask the user for the site/folder (or search the tenant),
+read from there, and offer to record it via `/setup`.
 
 **How to reach it:** prefer `sharepoint_search` with a **content** query (words from the
 project or plan title) over `sharepoint_folder_search` by name — folder-name search is

@@ -33,17 +33,19 @@ MCP tool schemas describe **parameters** (what fields exist), but not **domain r
 
 ## Configuration
 
-**Appian Version:** 26.6
+**Appian version:** read the **`Appian version`** line from the ambient **Project
+configuration** (injected at session start from `docs/agents/project.md`; written by
+`/setup`). Never hardcoded here — this file is shared across projects.
 
 **Supported Versions (as of 2026-07-15):**
 26.6, 26.5, 26.3, 25.4, 25.3, 25.2, 25.1, 24.4, 24.3
 
-Update this version to match your Appian environment. This affects:
+Set it via `/setup` (or edit `docs/agents/project.md`). This affects:
 - Documentation URL lookups
 - Function availability checks
 - Version-specific guidance
 
-**To change:** Edit the version number above.
+**To change:** edit the `Appian version` line in `docs/agents/project.md`, or re-run `/setup`.
 
 **Maintenance:** Update this list quarterly when new Appian versions are released. Typically add the latest version and remove the oldest (2+ years old).
 
@@ -223,14 +225,14 @@ When you encounter a function not documented in function-reference.md, use this 
 
 ### Step 1: Read configured version
 
-Read the **Appian Version** from the Configuration section above. Use this version for all documentation URLs.
+Read the **`Appian version`** line from the ambient **Project configuration**. Use this version for all documentation URLs.
 
 ### Step 2: Check functions.json for function existence
 
 **First lookup in session (cache for reuse):**
 ```bash
-# Read configured version from Configuration section
-VERSION="26.6"  # Use the configured version
+# Use the Appian version from the ambient Project configuration
+VERSION="26.6"  # example — substitute the configured version
 
 # Fetch and cache functions.json
 curl -s "https://docs.appian.com/suite/help/$VERSION/functions.json" \
@@ -286,6 +288,6 @@ From the documentation page, extract:
 
 ### Fallback behavior
 
-If configured version is not found or Configuration section is missing:
+If the Project configuration has no `Appian version` line:
 1. Default to version 26.6 (latest)
-2. Suggest to user: "Using Appian 26.6 docs. To use a different version, update the Configuration section in skills/appian/SKILL.md"
+2. Suggest to user: "Using Appian 26.6 docs. To use a different version, set the `Appian version` line in docs/agents/project.md or re-run /setup."

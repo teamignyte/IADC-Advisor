@@ -97,7 +97,7 @@ These functions exist and work correctly but have caveats:
 For detailed usage patterns, examples, and gotchas, see the sections below.
 
 **Documentation URLs:** Full documentation available at `https://docs.appian.com/suite/help/{VERSION}/{filename}`  
-Where **{VERSION}** is the Appian version configured in [SKILL.md Configuration section](../SKILL.md#configuration) (currently 26.6), and **{filename}** is from the Documentation column below.
+Where **{VERSION}** is the Appian version from the ambient Project configuration (`docs/agents/project.md`), and **{filename}** is from the Documentation column below.
 
 | Function | Signature | Returns | Documentation | Purpose |
 |----------|-----------|---------|---------------|---------|

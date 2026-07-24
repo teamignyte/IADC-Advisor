@@ -46,32 +46,29 @@ Each file covers what the tool schemas can't say. Load on demand:
 
 ## Configuration
 
-`/setup` fills these in for the application this bundle is pointed at — they are the
-graph's **seed target**. Read the UUID here rather than resolving it live through the
-Appian MCP.
+The graph's **seed target** comes from the ambient **Project configuration** (injected at
+session start from `docs/agents/project.md`; written by `/setup`): the **`Application`**
+entry — full name, **Nicknames**, and **UUID**. Read the UUID from there rather than
+resolving it live through the Appian MCP.
 
-- **Application name:** `<PLACEHOLDER — set by /setup>`
-- **Nicknames:** `<PLACEHOLDER — e.g. CMS, "the case app"; optional>`
-- **Application UUID:** `<PLACEHOLDER — set by /setup>`
-
-Seeding uses `seed(application_uuid="<the UUID above>")`. If a developer names the app by a
-nickname, map it to the UUID here — name, nicknames, and UUID all live in this one block,
-so there's no cross-file lookup.
+Seeding uses `seed(application_uuid="<UUID from the Project configuration>")`. If a
+developer names the app by a nickname, map it to the UUID via the **Nicknames** line
+there — never via a live lookup.
 
 ## MANDATORY first sequence
 
 1. **Seed — pick the right front door.** For this bundle the graph is a
-   **whole-application export**, and the **application UUID is in the Configuration block
-   above** (set by `/setup`) — you don't resolve it live.
-   - **Read the UUID straight from the Configuration block. Do NOT call the Appian MCP
+   **whole-application export**, and the **application UUID is in the Project configuration**
+   (set by `/setup`) — you don't resolve it live.
+   - **Read the UUID straight from the Project configuration. Do NOT call the Appian MCP
      (`listApplications` / `getApplication`) to find or confirm the seed UUID — it is already
      saved above, and a live lookup here is a defect, not diligence.** Even if the developer
      names the app in prose or by a nickname, map that to the UUID via the **Nicknames** line in
-     the Configuration block — never via the Appian MCP. (The Appian MCP resolves *object* names
+     the Project configuration — never via the Appian MCP. (The Appian MCP resolves *object* names
      to node UUIDs — a different job, once you're already in the graph — not the app seed target.)
-     If the Configuration UUID is still a `<PLACEHOLDER>`, the bundle isn't set up: ask the user
+     If the Project configuration has no Application UUID (or `/setup` hasn't run), the bundle isn't set up: ask the user
      for the UUID (or run `/setup`), rather than reaching for a live lookup.
-   - `seed(application_uuid="<uuid from Configuration>")` — the normal path here.
+   - `seed(application_uuid="<uuid from Project configuration>")` — the normal path here.
      Asynchronous; returns `state: "queued"` immediately, before the build finishes.
    - `seed(export_ref="<path>")` — only when you're co-located with the MCP server and
      already have an extracted export directory on its disk. Synchronous; returns

@@ -543,7 +543,7 @@ If your expression requires any of these operations, search Appian docs FIRST:
 **Step 1: Search functions.json by keyword**
 
 ```bash
-# Read configured version from SKILL.md Configuration section
+# Use the Appian version from the ambient Project configuration
 VERSION="26.6"
 
 # Cache functions.json if not already cached
@@ -1676,7 +1676,7 @@ If expression validation fails with function-related errors and the function is 
 5. **Re-validate** with `validateExpression` tool
 6. **Optional:** If function is commonly used, suggest adding to function-reference.md
 
-**Version:** Uses the configured version from SKILL.md Configuration section.
+**Version:** Uses the Appian version from the ambient Project configuration.
 
 **Automatic vs Manual:** Automatically fetch docs when function not found. No user prompt needed - fetching is fast and non-disruptive.
 

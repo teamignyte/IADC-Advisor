@@ -39,7 +39,7 @@ Before touching a tool, read the project glossary (`outputs/CONTEXT.md`, the pro
 
 ### 2. Seed the graph
 
-Load the **`/iadc-graph`** skill first — it is mandatory before any `iadc` call and carries the session lifecycle and node-id rules the tool schemas can't express. Then `seed` the configured application — its UUID is in the `/iadc-graph` Configuration block (set by `/setup`), so there's no live lookup — and poll `seed_status` until it's ready. Respect the 30-minute TTL, and `close` the session when you're done (step 6).
+Load the **`/iadc-graph`** skill first — it is mandatory before any `iadc` call and carries the session lifecycle and node-id rules the tool schemas can't express. Then `seed` the configured application — its UUID is in the ambient **Project configuration** (the `Application` entry, written by `/setup`), so there's no live lookup — and poll `seed_status` until it's ready. Respect the 30-minute TTL, and `close` the session when you're done (step 6).
 
 ### 3. Find what matters — don't dump the inventory
 

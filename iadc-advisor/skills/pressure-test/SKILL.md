@@ -11,8 +11,7 @@ unlike `/interrogating`, Pressure-test **does not propose answers**. It asks; *y
 the next layer. The output is an approach you arrived at yourself and are ready to build,
 stress-tested against the live app and the ticket's own contradictions.
 
-**Who it's talking to.** By default the **developer who will build the ticket** (the `Audience`
-in `CLAUDE.md` — developer unless configured otherwise). The questions are there to sharpen
+**Who it's talking to.** By default the **developer who will build the ticket** (the `Audience` line in the ambient **Project configuration** — developer unless configured otherwise; a personal `project.local.md` override wins). The questions are there to sharpen
 *your* understanding and readiness to implement — not to extract decisions above your authority.
 A decision that genuinely needs the project lead (an **architectural gap**) is **routed to
 them**, not forced onto you — see *Escalate the gaps*.
@@ -85,7 +84,7 @@ for real delivery.
    what the environment can tell you, and let the grounding expose where the ticket's
    assumptions don't match reality:
    - the live objects (`/appian`) and the dependency graph / blast radius (`/iadc-graph`) — seed
-     the graph from the **application UUID in the `/iadc-graph` Configuration block**, never from a
+     the graph from the **application UUID in the Project configuration**, never from a
      live `listApplications` lookup; when the blast radius is wide, render it as a fan-in diagram
      with `/to-diagram` and keep it with the ticket's `decisions.md`;
    - **the project's own documentation (`/office`).** First read the documents the **ticket
@@ -181,8 +180,10 @@ only outward writes here, and both are **gated**.
 
 ### Configuration
 
-- **Escalation channel:** `<set by /setup — Slack | Jira comment | hand-off>`
-- **Project lead (Slack channel/handle, or Jira account):** `<set by /setup>`
+Escalation is configured in the ambient **Project configuration** (from
+`docs/agents/project.md`, written by `/setup`): the **`Escalation`** line (channel —
+Slack | Jira comment | hand-off) and **`Project lead`** (Slack channel/handle, or Jira
+account). If unset, ask the user where escalations should go and suggest running `/setup`.
 
 ## Readiness & reconcile
 
