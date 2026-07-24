@@ -30,20 +30,21 @@ pulls requirements before sharpening a plan.
 ## Configuration
 
 The advisor searches a **pinned source-of-truth folder** first, rather than scanning the
-whole tenant. Read the **`Office source of truth`** entry (site + folder) and the
-**`Active prospect`** line from the ambient **Project configuration** (from
-`docs/agents/project.md`, written by `/setup`). Managing several prospects from one
-instance? List each as a row under that entry in `project.md` and switch by changing the
-**Active prospect** line — that single edit is the whole toggle.
+whole tenant. Read the **`Office source of truth`** entry from the ambient
+**Project configuration** (from `docs/agents/project.md`, written by `/setup`): one **row
+per prospect**, each carrying that prospect's site + pinned folder, with the
+**`Active prospect`** line naming which row is live. Managing several prospects from one
+instance? Add a row per prospect and switch by changing the **Active prospect** line —
+that single edit is the whole toggle.
 
 If nothing is configured yet, ask the user for the site/folder (or search the tenant),
 read from there, and offer to record it via `/setup`.
 
 **How to reach it:** prefer `sharepoint_search` with a **content** query (words from the
 project or plan title) over `sharepoint_folder_search` by name — folder-name search is
-unreliable when the folder isn't named after the project. Filter results to the **active**
-profile's pinned folder, and confirm the path is still current if searches stop returning it
-(docs can move).
+unreliable when the folder isn't named after the project. Filter results to the pinned folder
+on the **Active prospect**'s row, and confirm the path is still current if searches stop
+returning it (docs can move).
 
 ## Reading (the only mode)
 

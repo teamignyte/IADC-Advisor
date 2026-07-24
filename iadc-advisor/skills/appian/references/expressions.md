@@ -544,7 +544,7 @@ If your expression requires any of these operations, search Appian docs FIRST:
 
 ```bash
 # Use the Appian version from the ambient Project configuration
-VERSION="26.6"
+VERSION="26.6"  # example — substitute the configured version
 
 # Cache functions.json if not already cached
 if [ ! -f /tmp/appian-functions-$VERSION.json ]; then

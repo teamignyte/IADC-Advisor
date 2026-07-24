@@ -288,6 +288,7 @@ From the documentation page, extract:
 
 ### Fallback behavior
 
-If the Project configuration has no `Appian version` line:
+If the Project configuration has no `Appian version` line — or the line is present but
+empty, or still holds an unfilled angle-bracket placeholder (e.g. `<e.g. 26.6 — …>`):
 1. Default to version 26.6 (latest)
 2. Suggest to user: "Using Appian 26.6 docs. To use a different version, set the `Appian version` line in docs/agents/project.md or re-run /setup."
