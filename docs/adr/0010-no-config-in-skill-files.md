@@ -34,5 +34,6 @@ differs between two client apps, it belongs in `docs/agents/`, written by `/setu
   and point at the ambient Project configuration instead.
 - `/setup` writes `docs/agents/project.md` from a template asset and offers the
   per-person `project.local.md` override.
-- The hook implements the local-over-committed precedence itself (Audience is not a
-  native Claude Code settings key).
+- The hook resolves precedence itself (Audience is not a native Claude Code settings
+  key): `project.local.md` (per-person) overrides `project.md` (committed), which falls
+  back to the built-in default `Audience: developer`.
