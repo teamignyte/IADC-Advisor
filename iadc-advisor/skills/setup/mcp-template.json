@@ -1,5 +1,5 @@
 {
-  "_comment": "TEMPLATE — /setup asset. /setup writes the real .mcp.json (gitignored) into the app repo with LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json.",
+  "_comment": "TEMPLATE — /setup asset. /setup writes the real .mcp.json (gitignored) into the app repo with LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json. Every _comment key is a note to /setup and is dropped from the file it writes.",
   "mcpServers": {
     "iadc": {
       "type": "http",
@@ -22,10 +22,7 @@
     },
     "context7": {
       "type": "http",
-      "url": "https://mcp.context7.com/mcp",
-      "headers": {
-        "_comment": "Optional — add a CONTEXT7_API_KEY header for higher rate limits; keyless works without headers."
-      }
+      "url": "https://mcp.context7.com/mcp"
     }
   }
 }

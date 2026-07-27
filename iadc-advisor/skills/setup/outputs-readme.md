@@ -1,7 +1,8 @@
 # outputs — generated planning artifacts (git-ignored)
 
 The advisory skills write their **project artifacts** here — they are *not* committed
-(this folder's contents are git-ignored; only this README and `.gitkeep` are tracked).
+(this folder's contents are git-ignored; only this README is tracked, and it is what keeps
+the folder in git).
 
 - **`CONTEXT.md`** — the project-wide glossary / ubiquitous language, maintained by
   `/pressure-test` and `/domain-modeling`.
