@@ -56,6 +56,11 @@ Seeding uses `seed(application_uuid=APPLICATION_UUID)`, where `APPLICATION_UUID`
 developer names the app by a nickname, map it to the UUID via the **Nicknames** line
 there — never via a live lookup.
 
+**Metavariable convention.** Bare ALL-CAPS names in this file (`APPLICATION_UUID`, `EXPORT_PATH`)
+are **stand-ins you replace with a real value** — never literals to pass through, and never
+variable names the MCP resolves for you. Angle brackets are **not** used for them: in this bundle
+`<…>` means an *unfilled configuration placeholder*, which is a different thing.
+
 ## MANDATORY first sequence
 
 1. **Seed — pick the right front door.** For this bundle the graph is a
@@ -69,13 +74,18 @@ there — never via a live lookup.
      Appian MCP resolves *object* names to node UUIDs — a different job, once you're already
      in the graph — not the app seed target.)
      If the Application **UUID** (read from the Project configuration after applying any
-     **Personal overrides**) is missing, empty, or still an unfilled angle-bracket placeholder
+     **Personal overrides**) is missing, empty, or still an **unfilled angle-bracket placeholder**
      (e.g. `<application UUID — …>`) — or `/setup` hasn't run — the bundle isn't set up: ask
-     the user for the UUID (or run `/setup`), rather than reaching for a live lookup.
-   - `seed(application_uuid=APPLICATION_UUID)` — the normal path here.
+     the user for the UUID (or run `/setup`), rather than reaching for a live lookup. Judge this
+     by the **token, not the wording: angle brackets present ⇒ unfilled**, whatever words sit
+     inside them — placeholder text may itself describe or resemble a UUID, which is *not* an answer.
+   - `seed(application_uuid=APPLICATION_UUID)` — the normal path here; `APPLICATION_UUID` is a
+     **stand-in** for the UUID read from the Project configuration, substituted verbatim as a
+     string, not passed through literally.
      Asynchronous; returns `state: "queued"` immediately, before the build finishes.
-   - `seed(export_ref="<path>")` — only when you're co-located with the MCP server and
-     already have an extracted export directory on its disk. Synchronous; returns
+   - `seed(export_ref=EXPORT_PATH)` — only when you're co-located with the MCP server and
+     already have an extracted export directory on its disk; `EXPORT_PATH` is a **stand-in** for
+     that directory's path on the server, substituted verbatim as a string. Synchronous; returns
      `state: "ready"` immediately.
 2. **If you used `application_uuid`**, poll `seed_status(session_id)` until
    `state` is `"ready"` or `"ready_with_warnings"` (both queryable — stop and

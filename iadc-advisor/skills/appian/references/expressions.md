@@ -543,8 +543,11 @@ If your expression requires any of these operations, search Appian docs FIRST:
 **Step 1: Search functions.json by keyword**
 
 ```bash
-# Use the Appian version from the ambient Project configuration
-VERSION="${APPIAN_VERSION:?substitute the configured Appian version — never run this unsubstituted}"
+# Substitute the Appian version from the ambient Project configuration — the bare version string.
+# The Bash tool starts a fresh shell per call, so shell state does not carry between commands:
+# set VERSION in this block, and again in every other block that uses it.
+VERSION="<Appian version>"
+case "$VERSION" in *"<"*|"") echo "Substitute the configured Appian version into VERSION first." >&2; exit 1 ;; esac
 
 # Cache functions.json if not already cached
 if [ ! -f /tmp/appian-functions-$VERSION.json ]; then

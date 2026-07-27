@@ -225,12 +225,21 @@ When you encounter a function not documented in function-reference.md, use this 
 
 Read the **`Appian version`** line from the ambient **Project configuration**. Use this version for all documentation URLs.
 
+**Substitute that version into `VERSION=` in *every* bash block below — each block separately.**
+The Bash tool starts a **fresh shell for each call**, so **shell state does not carry between
+commands**: a variable set in one block is unset in the next. That is why each block below repeats
+the same guarded assignment — keep it, fill it in every time, and never rely on a `VERSION` "already
+set" by an earlier block. There is no `APPIAN_VERSION` environment variable in this bundle; the
+value comes from the ambient Project configuration and you type it in.
+
 ### Step 2: Check functions.json for function existence
 
 **First lookup in session (cache for reuse):**
 ```bash
-# Use the Appian version from the ambient Project configuration
-VERSION="${APPIAN_VERSION:?substitute the configured Appian version — never run this unsubstituted}"
+# Substitute the Appian version from the ambient Project configuration — the bare version string.
+# Shell state does not carry between Bash calls, so set VERSION in this block.
+VERSION="<Appian version>"
+case "$VERSION" in *"<"*|"") echo "Substitute the configured Appian version into VERSION first." >&2; exit 1 ;; esac
 
 # Fetch and cache functions.json
 curl -s "https://docs.appian.com/suite/help/$VERSION/functions.json" \
@@ -239,6 +248,10 @@ curl -s "https://docs.appian.com/suite/help/$VERSION/functions.json" \
 
 **Subsequent lookups (use cached):**
 ```bash
+# Fresh shell — set VERSION again here (substitute the version from the ambient Project configuration).
+VERSION="<Appian version>"
+case "$VERSION" in *"<"*|"") echo "Substitute the configured Appian version into VERSION first." >&2; exit 1 ;; esac
+
 # Check if cached first
 if [ ! -f /tmp/appian-functions-$VERSION.json ]; then
   curl -s "https://docs.appian.com/suite/help/$VERSION/functions.json" \
@@ -247,13 +260,17 @@ fi
 
 # Look up function (case-insensitive)
 jq -r '.["a!queryrecordtype"]' /tmp/appian-functions-$VERSION.json
-# Returns: "/suite/help/26.6/fnc_system_queryrecordtype.html" if exists
+# Returns: "/suite/help/$VERSION/fnc_system_queryrecordtype.html" if exists
 # Returns: null if doesn't exist
 ```
 
 ### Step 3: Fetch documentation page
 
 ```bash
+# Fresh shell — set VERSION again here (substitute the version from the ambient Project configuration).
+VERSION="<Appian version>"
+case "$VERSION" in *"<"*|"") echo "Substitute the configured Appian version into VERSION first." >&2; exit 1 ;; esac
+
 # If function exists, fetch full documentation
 DOC_PATH=$(jq -r '.["a!queryrecordtype"]' /tmp/appian-functions-$VERSION.json)
 
@@ -288,6 +305,9 @@ From the documentation page, extract:
 
 Read the ambient Project configuration **after applying any Personal overrides**. If it
 has no `Appian version` line — or the line is present but empty, or still holds an
-unfilled angle-bracket placeholder (e.g. `<e.g. 26.6 — …>`):
+**unfilled angle-bracket placeholder** (e.g. `<Appian version — …>`) — nothing is configured.
+Judge this by the **token, not the wording: angle brackets present ⇒ unfilled**, whatever words
+sit inside them — placeholder text may itself contain something that reads like a version number,
+which is *not* an answer. Then:
 1. Default to version 26.6 (latest)
 2. Suggest to user: "Using Appian 26.6 docs. To use a different version, set the `Appian version` line in docs/agents/project.md or re-run /setup."

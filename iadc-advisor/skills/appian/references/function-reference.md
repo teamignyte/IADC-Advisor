@@ -205,7 +205,7 @@ https://docs.appian.com/suite/help/{VERSION}/{filename}
 ```
 
 Where:
-- **{VERSION}** = The Appian version configured in SKILL.md (currently 26.6)
+- **{VERSION}** = The Appian version from the ambient Project configuration (`docs/agents/project.md`)
 - **{filename}** = Value from Documentation column (e.g., `fnc_date_and_time_adddatetime.html`)
 
 **Example:**

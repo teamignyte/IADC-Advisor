@@ -11,7 +11,9 @@ unlike `/interrogating`, Pressure-test **does not propose answers**. It asks; *y
 the next layer. The output is an approach you arrived at yourself and are ready to build,
 stress-tested against the live app and the ticket's own contradictions.
 
-**Who it's talking to.** By default the **developer who will build the ticket** (the `Audience` line in the ambient **Project configuration** — developer unless configured otherwise; a personal `project.local.md` override wins). The questions are there to sharpen
+**Who it's talking to.** By default the **developer who will build the ticket** — the `Audience`
+line in the ambient **Project configuration**, which reads `developer` unless configured
+otherwise (a personal `project.local.md` override wins). The questions are there to sharpen
 *your* understanding and readiness to implement — not to extract decisions above your authority.
 A decision that genuinely needs the project lead (an **architectural gap**) is **routed to
 them**, not forced onto you — see *Escalate the gaps*.
@@ -167,7 +169,8 @@ to the project lead** so they can unblock it:
    explicit yes. There is **no auto-send.** Channel: whichever the **`Escalation`** line names —
    **Slack** (`slack_send_message`; stage it with `slack_send_message_draft` first if useful) or a
    **Jira comment** on the ticket tagging the lead (via `/jira`). When it names **hand-off** there
-   is nothing to send from here: hand the builder the drafted text (branch 2 of *Configuration*).
+   is nothing to send from here: hand the builder the drafted text (the **`hand-off`** state in
+   *Configuration* below).
    Prefer a destination the **developer also sees** (a shared channel, or @-mention the dev) so
    the lead's in-thread reply notifies them automatically.
    **Capture the send's `channel_id` + `message_ts`** — reconcile needs them to find the reply later.
@@ -197,12 +200,17 @@ the **`Escalation`** line (channel — Slack | Jira comment | hand-off) and
    your read of who should see it. Do **not** ask where escalations should go and do **not**
    suggest `/setup` — hand-off is a deliberate answer, not a missing one, and an unset
    **`Project lead`** is expected in this state.
-3. **A named channel ⇒ a `Project lead` is required.** With **`Escalation`** set to **Slack** or
-   **Jira comment**, the send needs a recipient. If **`Project lead`** is missing, empty, or still
-   an **unfilled angle-bracket placeholder** (e.g. `<Slack channel/handle, or Jira account>`), ask
-   the user who escalations should go to and suggest running `/setup`. Otherwise draft, then
-   confirm-and-send under the gate in *Escalate the gaps* step 3 — propose → confirm → send is
-   never skipped, and there is still **no auto-send**.
+3. **Any other named channel ⇒ a `Project lead` is required.** Any filled-in value that isn't
+   `hand-off` names a channel the escalation goes out on — **Slack** and **Jira comment** are the
+   examples this bundle can send on itself, but this branch covers **whatever the line names**
+   (Teams, email, a typo), so no configured value falls through. The send needs a recipient: if
+   **`Project lead`** is missing, empty, or still an **unfilled angle-bracket placeholder**
+   (e.g. `<Slack channel/handle, or Jira account>`), ask the user who escalations should go to and
+   suggest running `/setup`. Otherwise draft, then confirm-and-send under the gate in *Escalate the
+   gaps* step 3 — propose → confirm → send is never skipped, and there is still **no auto-send**.
+   If the named channel is one this bundle can't send on (anything other than Slack or a Jira
+   comment), hand the builder the drafted text addressed to that channel to send themselves —
+   after the same confirm step, and never by substituting a channel of your own choosing.
 
 ## Readiness & reconcile
 

@@ -37,24 +37,38 @@ prospect's site + pinned folder, with the **`Active prospect`** line naming whic
 live. Tracking several prospects in this one repo? Add a row per prospect and switch by
 changing the **Active prospect** line — that single edit is the whole toggle.
 
-Then test whether it is configured — **in this order, first match wins:**
+Then test whether it is configured. **Branch on the parent `Office source of truth` value alone**
+— it has exactly three states, so exactly one branch applies. Read it **in this order, first match
+wins**, and only reach for the child `Row:` / `Active prospect:` lines once branch 3 sends you there:
 
-1. **Unfilled ⇒ not configured.** If the **`Office source of truth`** value — or the
-   **`Active prospect`**'s site/folder — is missing, empty, or still an
-   **unfilled angle-bracket placeholder** (e.g. `<pinned folder>`), nothing is configured yet.
-   Judge this by the **token, not the wording: angle brackets present ⇒ unfilled**, whatever
-   words sit inside them — placeholder text may itself mention `none`, which is *not* an answer.
-   Ask the user for the site/folder (or search the tenant), read from there, and offer to record
-   it via `/setup`.
-2. **A bare `none` ⇒ deliberate.** Only when the value is the bare word `none`, with no angle
-   brackets around it, does this project have **no M365 source documents**: say so, and
-   **do not search SharePoint/OneDrive** for source documents. Do **not** offer to configure
-   a folder — `none` is a deliberate answer, not a missing one.
-   This stops **SharePoint/OneDrive document search only**.
+1. **Parent unfilled ⇒ not configured.** If the **`Office source of truth`** value itself is
+   missing, empty, or still an **unfilled angle-bracket placeholder** (e.g. `<pinned folder>`),
+   nothing is configured yet. Judge this by the **token, not the wording: angle brackets
+   present ⇒ unfilled**, whatever words sit inside them — placeholder text may itself mention
+   `none`, which is *not* an answer. Ask the user for the site/folder (or search the tenant),
+   read from there, and offer to record it via `/setup`. **Do not consult the `Row:` or
+   `Active prospect:` lines here** — the parent already decided this branch.
+2. **Parent is a bare `none` ⇒ deliberate.** Only when the parent value is the bare word `none`,
+   with no angle brackets around it, does this project have **no M365 source documents**: say so,
+   and **do not search SharePoint/OneDrive** for source documents. Do **not** offer to configure
+   a folder — `none` is a deliberate answer, not a missing one. **Stop here whatever the `Row:` and
+   `Active prospect:` lines say** — the template has the user write `none` in place and delete
+   those lines, so any leftover bracketed child is stale noise, never a reason to fall back to
+   branch 1. This stops **SharePoint/OneDrive document search only**.
    **Teams and Outlook lookups are unaffected** — recovering a decision from Teams or Outlook
    discussion works exactly as it does on any other project.
+3. **Parent names rows ⇒ read the active row.** Any other parent value points at the rows beneath
+   it; the template ships the sentinel **`rows below`**, which means "the `Row:` lines under this
+   entry are the answer." Only now apply the same token test to the children:
+   - If the **`Active prospect`** line — or the **site** or **folder** on the row it names — is
+     missing, empty, or an **unfilled angle-bracket placeholder** (`<prospect name>`,
+     `<SharePoint site>`, `<pinned folder>`), the rows aren't filled in yet: ask the user for the
+     site/folder (or search the tenant), read from there, and offer to record it via `/setup`.
+   - Otherwise the pinned folder **is** configured — search it as described next.
 
-**How to reach it:** prefer `sharepoint_search` with a **content** query (words from the
+**How to reach it — only once branch 3 has landed on a configured row.** Under branches 1 and 2
+there is no pinned folder to search, and branch 2 forbids the search outright; skip this paragraph
+in both. With a configured row: prefer `sharepoint_search` with a **content** query (words from the
 project or plan title) over `sharepoint_folder_search` by name — folder-name search is
 unreliable when the folder isn't named after the project. Filter results to the pinned folder
 on the **Active prospect**'s row, and confirm the path is still current if searches stop
