@@ -44,7 +44,7 @@ the disposition of the *generated* domain docs changes here.
 - Nothing about outputs ever flows back to the workshop repo; they are client-instance
   artifacts by construction.
 
-## Amended by [ADR-0009](0009-ship-as-claude-code-plugin.md) / [ADR-0010](0010-no-config-in-skill-files.md)
+## Amended by [ADR-0009](0009-ship-as-claude-code-plugin.md)
 
 The decision above still stands — generated artifacts live in an `outputs/` workspace in
 the client's repo, git-ignored by default. What changed is **who puts them there**: the

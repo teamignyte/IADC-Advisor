@@ -10,9 +10,8 @@ Actively build and sharpen the project's domain model as you design. This is the
 ## File structure
 
 These are **generated project artifacts, not committed plugin source** — they live in the
-**`outputs/` workspace** (git-ignored, unless this repo declined `/setup`'s ignore rules; see
-`outputs/README.md`, if this repo has one). Most projects have a single
-context:
+**`outputs/` workspace** (git-ignored where `/setup`'s ignore rules were accepted; see
+`outputs/README.md`). Most projects have a single context:
 
 ```
 outputs/

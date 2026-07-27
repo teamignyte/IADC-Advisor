@@ -77,7 +77,7 @@ which is a different thing.
      in the graph — not the app seed target.)
      If the Application **UUID** (read from the Project configuration after applying any
      **Personal overrides**) is missing, empty, or still an **unfilled angle-bracket placeholder**
-     (e.g. `<application UUID — …>`) — or `/setup` hasn't run — the plugin isn't set up: ask
+     (e.g. `<application UUID — …>`) — or `/setup` hasn't run — this project isn't set up: ask
      the user for the UUID (or run `/setup`), rather than reaching for a live lookup. Judge this
      by the **token, not the wording: angle brackets present ⇒ unfilled**, whatever words sit
      inside them — placeholder text may itself describe or resemble a UUID, which is *not* an answer.

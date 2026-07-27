@@ -21,15 +21,16 @@ See [docs/adr/0001](docs/adr/0001-deliverable-lives-in-a-subfolder.md) and
 ## Working here
 
 - **Develop the plugin** by editing files under `iadc-advisor/`.
-- **Dogfood / test as a client sees it** in the scratch client repo at
-  `../iadc-dogfood` (a sibling of this repo, outside it — never inside the marketplace
-  tree): add this repo as a local marketplace and install at project scope
-  (`claude plugin marketplace add /home/saronsky/projects/IADC-Advisor`,
-  then in `../iadc-dogfood`: `claude plugin install iadc-advisor@ignyte --scope project`),
+- **Dogfood / test as a client sees it** in a scratch client repo — create one if you
+  don't have it (`mkdir ../iadc-dogfood && git -C ../iadc-dogfood init`), a sibling of
+  this repo, outside it — never inside the marketplace tree. Add this repo as a local
+  marketplace (`claude plugin marketplace add .` from this repo's root), then from
+  `../iadc-dogfood` run `claude plugin install iadc-advisor@ignyte --scope project`,
   open Claude there, and run `/setup`. The session hook, namespaced skills, and
   per-project state behave exactly as they will for the client. After editing the
-  plugin, refresh with `claude plugin marketplace update ignyte && claude plugin update
-  iadc-advisor` and start a fresh session.
+  plugin, refresh with
+  `claude plugin marketplace update ignyte && claude plugin update iadc-advisor`
+  and start a fresh session.
 - **Never install or enable `iadc-advisor` in this repo itself** — its SessionStart
   hook would inject the advisory-architect posture ("you do not write code") into every
   maintainer session. Dogfood only in the scratch repo. (Since the restructure, the

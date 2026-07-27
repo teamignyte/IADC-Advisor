@@ -5,8 +5,8 @@ How the engineering skills should consume this repo's domain documentation when 
 ## Before exploring, read these
 
 The domain docs are **generated project artifacts** — they live in the `outputs/` workspace
-(git-ignored, unless this repo declined `/setup`'s ignore rules; see `outputs/README.md`, if
-this repo has one), not committed project files:
+(git-ignored where `/setup`'s ignore rules were accepted; see `outputs/README.md`), not
+committed project files:
 
 - **`outputs/CONTEXT.md`** — the project glossary, or
 - **`outputs/CONTEXT-MAP.md`** if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.

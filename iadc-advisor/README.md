@@ -24,22 +24,34 @@ The architect **advises and plans**; your developers build. It reads and reasons
 
 ## Getting started
 
-1. **Add the marketplace** (once per machine): in any Claude Code session run
-   `/plugin marketplace add <this repo's git URL>` — access uses the same credentials as
-   the repo.
-2. **Install the plugin in your Appian app's repo** (once per project, committed so the
-   whole team gets it): open Claude Code in that repo, run `/plugin`, and install
-   **iadc-advisor** from the **ignyte** marketplace at **project** scope. (Terminal
-   alternative: `claude plugin install iadc-advisor@ignyte --scope project`.) Both work
-   the same on the Windows Desktop app.
-3. **Run `/setup`** in that repo. It generates the gitignored `.mcp.json` (graph, Appian,
+Declare **both** the marketplace and the plugin at **project** scope, from your Appian
+app's repo — that writes them into the repo's `.claude/settings.json`, so a teammate who
+clones it can resolve the plugin. (A project-scope plugin whose marketplace lives only on
+your machine simply reports as not installed for everyone else, with nothing to explain
+why.)
+
+1. **Add the marketplace** (once per repo), from a terminal in that repo:
+   `claude plugin marketplace add <this repo's git URL> --scope project` — access uses the
+   same credentials as the repo.
+2. **Install the plugin** (once per repo):
+   `claude plugin install iadc-advisor@ignyte --scope project`. Commit the resulting
+   `.claude/settings.json`.
+
+   **Desktop app:** there's no shell for those two commands — use the `/plugin` browser
+   instead: add the marketplace by URL, then install **iadc-advisor** from **ignyte** at
+   **project** scope.
+3. **Each teammate installs on their first session.** The commit records the plugin; it
+   doesn't install it for them. Claude Code prompts each teammate to install it when they
+   first open the repo — they accept once, and there's nothing else to configure.
+4. **Run `/setup`** in that repo. It generates the gitignored `.mcp.json` (graph, Appian,
    docs — literal values, no secrets tracked), writes the project configuration
    (`docs/agents/project.md` — Appian version, application UUID, audience, escalation),
    points the Jira/Microsoft 365 connectors, lays out the tracker + domain docs and the
    `outputs/` workspace — then verifies everything connects.
-4. **Ask `/which-skill`** any time you're not sure which flow fits.
+5. **Ask `/which-skill`** any time you're not sure which flow fits.
 
-Updates: `claude plugin update iadc-advisor` — see `CHANGELOG.md` for what changed.
+Updates: `claude plugin update iadc-advisor`, then start a fresh session — the update only
+takes effect on restart. See `CHANGELOG.md` for what changed.
 
 ## The main flow
 

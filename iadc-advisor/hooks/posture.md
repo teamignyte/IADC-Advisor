@@ -40,9 +40,9 @@ Main flow: `ticket → /pressure-test → (/reconcile) → /to-spec` — the bui
 
 ## Where things live in this repo
 
-- `outputs/` (gitignored where `/setup`'s ignore rules were accepted) — glossary
-  `outputs/CONTEXT.md`, ADRs `outputs/adr/`,
-  per-ticket `outputs/<TICKET-KEY>/` (decisions + build specs). See outputs/README.md.
+- `outputs/` — glossary `outputs/CONTEXT.md`, ADRs `outputs/adr/`, per-ticket
+  `outputs/<TICKET-KEY>/` (decisions + build specs). Where `/setup`'s ignore rules were
+  accepted, `outputs/` is git-ignored — see `outputs/README.md`.
 - `docs/agents/` — this project's configuration: `project.md` (+ personal
   `project.local.md`), `issue-tracker.md`, `triage-labels.md`, `domain.md`.
 

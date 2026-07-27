@@ -1,6 +1,6 @@
 # Changelog — iadc-advisor
 
-## 1.0.0 — 2026-07-23
+## 1.0.0 — 2026-07-26
 
 First release as a Claude Code plugin (previously installed by copying files into the
 app repo — no migration path; this is a clean break).
