@@ -211,7 +211,7 @@ Where:
 **Example:**
 - Function: `a!addDateTime()`
 - Documentation column: `fnc_date_and_time_adddatetime.html`
-- Full URL: `https://docs.appian.com/suite/help/26.6/fnc_date_and_time_adddatetime.html`
+- Full URL: `https://docs.appian.com/suite/help/{VERSION}/fnc_date_and_time_adddatetime.html` (with **{VERSION}** replaced by the configured version)
 - Use **WebFetch** tool to retrieve the official documentation page
 
 **For functions not in this table:**

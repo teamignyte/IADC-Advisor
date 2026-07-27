@@ -165,12 +165,12 @@ to the project lead** so they can unblock it:
    call vs. a product question), **ask the builder who it should go to** — never look up or
    resolve a Slack user yourself.
 3. **Confirm both, then send — gated.** Show the builder the **drafted message *and* the named
-   recipient** together ("send this to `<recipient>` on Slack? — y/n") and send only on an
-   explicit yes. There is **no auto-send.** Channel: whichever the **`Escalation`** line names —
-   **Slack** (`slack_send_message`; stage it with `slack_send_message_draft` first if useful) or a
-   **Jira comment** on the ticket tagging the lead (via `/jira`). When it names **hand-off** there
-   is nothing to send from here: hand the builder the drafted text (the **`hand-off`** state in
-   *Configuration* below).
+   recipient** together, naming the channel it would go out on ("send this to `<recipient>` on
+   `<channel>`? — y/n"), and send only on an explicit yes. There is **no auto-send.** Channel:
+   whichever the **`Escalation`** line names — **Slack** (`slack_send_message`; stage it with
+   `slack_send_message_draft` first if useful) or a **Jira comment** on the ticket tagging the lead
+   (via `/jira`). When it names **hand-off** there is nothing to send from here: hand the builder
+   the drafted text (the **`hand-off`** state in *Configuration* below).
    Prefer a destination the **developer also sees** (a shared channel, or @-mention the dev) so
    the lead's in-thread reply notifies them automatically.
    **Capture the send's `channel_id` + `message_ts`** — reconcile needs them to find the reply later.
@@ -195,19 +195,22 @@ the **`Escalation`** line (channel — Slack | Jira comment | hand-off) and
    configured: ask the user where escalations should go and suggest running `/setup`. Judge this
    by the **token, not the wording: angle brackets present ⇒ unfilled**, whatever words sit inside
    them — placeholder text may itself mention `hand-off`, which is *not* an answer.
-2. **`hand-off` ⇒ deliberate, and needs no `Project lead`.** A configured **hand-off** means the
-   advisor sends nothing at all: **give the builder the drafted text** to send themselves, plus
+2. **`hand-off` ⇒ deliberate, and needs no `Project lead`.** Read this value
+   **case-insensitively**, and accept the obvious spellings: `hand-off`, `handoff`, and `hand off`
+   in any casing (`Hand-off`, `HANDOFF`) are all the same answer. A configured **hand-off** means
+   the advisor sends nothing at all: **give the builder the drafted text** to send themselves, plus
    your read of who should see it. Do **not** ask where escalations should go and do **not**
    suggest `/setup` — hand-off is a deliberate answer, not a missing one, and an unset
    **`Project lead`** is expected in this state.
-3. **Any other named channel ⇒ a `Project lead` is required.** Any filled-in value that isn't
-   `hand-off` names a channel the escalation goes out on — **Slack** and **Jira comment** are the
-   examples this bundle can send on itself, but this branch covers **whatever the line names**
-   (Teams, email, a typo), so no configured value falls through. The send needs a recipient: if
-   **`Project lead`** is missing, empty, or still an **unfilled angle-bracket placeholder**
-   (e.g. `<Slack channel/handle, or Jira account>`), ask the user who escalations should go to and
-   suggest running `/setup`. Otherwise draft, then confirm-and-send under the gate in *Escalate the
-   gaps* step 3 — propose → confirm → send is never skipped, and there is still **no auto-send**.
+3. **Any other named channel ⇒ a `Project lead` is required.** Any filled-in value that isn't a
+   hand-off in one of branch 2's spellings names a channel the escalation goes out on — **Slack**
+   and **Jira comment** are the examples this bundle can send on itself, but this branch covers
+   **whatever the line names** (Teams, email, a typo), so no configured value falls through. The
+   send needs a recipient: if **`Project lead`** is missing, empty, or still an **unfilled
+   angle-bracket placeholder** (e.g. `<Slack channel/handle, or Jira account>`), ask the user who
+   escalations should go to and suggest running `/setup`. Otherwise draft, then confirm-and-send
+   under the gate in *Escalate the gaps* step 3 — propose → confirm → send is never skipped, and
+   there is still **no auto-send**.
    If the named channel is one this bundle can't send on (anything other than Slack or a Jira
    comment), hand the builder the drafted text addressed to that channel to send themselves —
    after the same confirm step, and never by substituting a channel of your own choosing.

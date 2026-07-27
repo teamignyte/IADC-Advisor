@@ -42,19 +42,20 @@ Then test whether it is configured. **Branch on the parent `Office source of tru
 wins**, and only reach for the child `Row:` / `Active prospect:` lines once branch 3 sends you there:
 
 1. **Parent unfilled ⇒ not configured.** If the **`Office source of truth`** value itself is
-   missing, empty, or still an **unfilled angle-bracket placeholder** (e.g. `<pinned folder>`),
+   missing, empty, or still an **unfilled angle-bracket placeholder** (e.g. `<rows below | none>`),
    nothing is configured yet. Judge this by the **token, not the wording: angle brackets
    present ⇒ unfilled**, whatever words sit inside them — placeholder text may itself mention
    `none`, which is *not* an answer. Ask the user for the site/folder (or search the tenant),
    read from there, and offer to record it via `/setup`. **Do not consult the `Row:` or
    `Active prospect:` lines here** — the parent already decided this branch.
 2. **Parent is a bare `none` ⇒ deliberate.** Only when the parent value is the bare word `none`,
-   with no angle brackets around it, does this project have **no M365 source documents**: say so,
-   and **do not search SharePoint/OneDrive** for source documents. Do **not** offer to configure
-   a folder — `none` is a deliberate answer, not a missing one. **Stop here whatever the `Row:` and
-   `Active prospect:` lines say** — the template has the user write `none` in place and delete
-   those lines, so any leftover bracketed child is stale noise, never a reason to fall back to
-   branch 1. This stops **SharePoint/OneDrive document search only**.
+   with no angle brackets around it, does this project have **no M365 source documents**. Match it
+   **case-insensitively** — `none`, `None`, `NONE` are the same answer, as is a bare `N/A` — then
+   say so, and **do not search SharePoint/OneDrive** for source documents. Do **not** offer to
+   configure a folder — `none` is a deliberate answer, not a missing one. **Stop here whatever
+   the `Row:` and `Active prospect:` lines say** — the template has the user write `none` in place
+   and delete those lines, so any leftover bracketed child is stale noise, never a reason to fall
+   back to branch 1. This stops **SharePoint/OneDrive document search only**.
    **Teams and Outlook lookups are unaffected** — recovering a decision from Teams or Outlook
    discussion works exactly as it does on any other project.
 3. **Parent names rows ⇒ read the active row.** Any other parent value points at the rows beneath
@@ -66,13 +67,16 @@ wins**, and only reach for the child `Row:` / `Active prospect:` lines once bran
      site/folder (or search the tenant), read from there, and offer to record it via `/setup`.
    - Otherwise the pinned folder **is** configured — search it as described next.
 
-**How to reach it — only once branch 3 has landed on a configured row.** Under branches 1 and 2
-there is no pinned folder to search, and branch 2 forbids the search outright; skip this paragraph
-in both. With a configured row: prefer `sharepoint_search` with a **content** query (words from the
-project or plan title) over `sharepoint_folder_search` by name — folder-name search is
-unreliable when the folder isn't named after the project. Filter results to the pinned folder
-on the **Active prospect**'s row, and confirm the path is still current if searches stop
-returning it (docs can move).
+**How to search — whenever a branch above sends you searching.** Prefer `sharepoint_search` with a
+**content** query (words from the project or plan title) over `sharepoint_folder_search` by name —
+folder-name search is unreliable when the folder isn't named after the project. This holds at full
+strength for a **tenant-wide** search, which is exactly what branch 1 and the unfilled-rows arm of
+branch 3 send you to do.
+
+**Narrow to the pinned folder — only once branch 3 has landed on a configured row.** Then filter
+results to the pinned folder on the **Active prospect**'s row, and confirm the path is still
+current if searches stop returning it (docs can move). No other branch has a pinned folder to
+narrow to; on those, do exactly what the branch you landed on says.
 
 ## Reading (the only mode)
 

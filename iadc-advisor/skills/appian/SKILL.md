@@ -225,6 +225,10 @@ When you encounter a function not documented in function-reference.md, use this 
 
 Read the **`Appian version`** line from the ambient **Project configuration**. Use this version for all documentation URLs.
 
+**Nothing configured there?** Don't stall on the guard in the blocks below — it only stops an
+*unsubstituted* `VERSION`. Go to **Fallback behavior** at the end of this section, take the default
+it names, substitute *that* into `VERSION=`, and tell the user you did.
+
 **Substitute that version into `VERSION=` in *every* bash block below — each block separately.**
 The Bash tool starts a **fresh shell for each call**, so **shell state does not carry between
 commands**: a variable set in one block is unset in the next. That is why each block below repeats
@@ -240,6 +244,7 @@ value comes from the ambient Project configuration and you type it in.
 # Shell state does not carry between Bash calls, so set VERSION in this block.
 VERSION="<Appian version>"
 case "$VERSION" in *"<"*|"") echo "Substitute the configured Appian version into VERSION first." >&2; exit 1 ;; esac
+echo "Appian docs version: $VERSION (source: ambient Project configuration)" >&2  # if you substituted the documented fallback default instead, say that here
 
 # Fetch and cache functions.json
 curl -s "https://docs.appian.com/suite/help/$VERSION/functions.json" \
@@ -251,6 +256,7 @@ curl -s "https://docs.appian.com/suite/help/$VERSION/functions.json" \
 # Fresh shell — set VERSION again here (substitute the version from the ambient Project configuration).
 VERSION="<Appian version>"
 case "$VERSION" in *"<"*|"") echo "Substitute the configured Appian version into VERSION first." >&2; exit 1 ;; esac
+echo "Appian docs version: $VERSION (source: ambient Project configuration)" >&2  # if you substituted the documented fallback default instead, say that here
 
 # Check if cached first
 if [ ! -f /tmp/appian-functions-$VERSION.json ]; then
@@ -270,6 +276,7 @@ jq -r '.["a!queryrecordtype"]' /tmp/appian-functions-$VERSION.json
 # Fresh shell — set VERSION again here (substitute the version from the ambient Project configuration).
 VERSION="<Appian version>"
 case "$VERSION" in *"<"*|"") echo "Substitute the configured Appian version into VERSION first." >&2; exit 1 ;; esac
+echo "Appian docs version: $VERSION (source: ambient Project configuration)" >&2  # if you substituted the documented fallback default instead, say that here
 
 # If function exists, fetch full documentation
 DOC_PATH=$(jq -r '.["a!queryrecordtype"]' /tmp/appian-functions-$VERSION.json)

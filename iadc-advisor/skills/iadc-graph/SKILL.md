@@ -56,10 +56,12 @@ Seeding uses `seed(application_uuid=APPLICATION_UUID)`, where `APPLICATION_UUID`
 developer names the app by a nickname, map it to the UUID via the **Nicknames** line
 there — never via a live lookup.
 
-**Metavariable convention.** Bare ALL-CAPS names in this file (`APPLICATION_UUID`, `EXPORT_PATH`)
-are **stand-ins you replace with a real value** — never literals to pass through, and never
-variable names the MCP resolves for you. Angle brackets are **not** used for them: in this bundle
-`<…>` means an *unfilled configuration placeholder*, which is a different thing.
+**Metavariable convention.** This file defines exactly two metavariables — **`APPLICATION_UUID`**
+and **`EXPORT_PATH`** — and they are **stand-ins you replace with a real value**: never literals to
+pass through, and never variable names the MCP resolves for you. Other ALL-CAPS words here (`UUID`
+as a field label, `MANDATORY`, `JSON`) are ordinary terms, not metavariables. Angle brackets are
+**not** used for these two: brackets around a **configuration value** mark that value *unfilled*,
+which is a different thing.
 
 ## MANDATORY first sequence
 
