@@ -17,3 +17,20 @@ real `.mcp.json` holds **literal values and is gitignored**, and a committed
   the Windows Desktop app. That is the whole reason this is written down.
 - `/setup` copies `.mcp.json.example` → `.mcp.json` and fills in literals; it never
   introduces `${VAR}`.
+
+## Amended by [ADR-0009](0009-ship-as-claude-code-plugin.md)
+
+The decision above still stands, and is load-bearing: the real `.mcp.json` holds **literal
+values and is gitignored**, and `${VAR}` is still forbidden for the same Windows Desktop
+reason. What changed is **where the template lives and who writes the file**. The product
+now ships as a plugin, which cannot place files in the client repo, so there is no
+committed `.mcp.json.example` — the template rides inside the plugin as the `/setup` asset
+`iadc-advisor/skills/setup/mcp-template.json`, and `/setup` **generates** the client's
+`.mcp.json` from it (merging into an existing one rather than overwriting, and establishing
+the `.gitignore` entry *before* writing any credential). The last consequence above is
+stale only in its mechanism — "copies `.mcp.json.example`" is now "generates from the
+template shipped inside the plugin".
+
+The plugin manifest deliberately declares **no** `mcpServers`: these servers span per-app
+(graph URL, `LCP_URL`), per-person (Appian credentials), and per-machine (`uv` path) values,
+which `userConfig` — one value per machine across all projects — cannot express.

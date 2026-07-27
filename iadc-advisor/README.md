@@ -37,12 +37,17 @@ why.)
    `claude plugin install iadc-advisor@ignyte --scope project`. Commit the resulting
    `.claude/settings.json`.
 
-   **Desktop app:** there's no shell for those two commands — use the `/plugin` browser
-   instead: add the marketplace by URL, then install **iadc-advisor** from **ignyte** at
-   **project** scope.
-3. **Each teammate installs on their first session.** The commit records the plugin; it
-   doesn't install it for them. Claude Code prompts each teammate to install it when they
-   first open the repo — they accept once, and there's nothing else to configure.
+   **Desktop app:** the `/plugin` browser can install the plugin at **project** scope, but
+   adding a marketplace through it always lands at **user** scope — which leaves the repo
+   with a plugin its teammates can't resolve (the failure above). So the marketplace entry
+   has to reach `.claude/settings.json` another way: have someone with a terminal run step
+   1, or add the `extraKnownMarketplaces` entry to that file by hand. Then install from
+   **ignyte** at **project** scope in the browser.
+3. **Each teammate picks it up on their first session.** The commit records the plugin; it
+   doesn't install it for them. When a teammate first opens the repo, Claude Code asks them
+   to trust the folder — accept, and it installs the repo's declared plugin in the
+   background, with nothing else to configure. (Decline the trust prompt and the plugin is
+   silently skipped.)
 4. **Run `/setup`** in that repo. It generates the gitignored `.mcp.json` (graph, Appian,
    docs — literal values, no secrets tracked), writes the project configuration
    (`docs/agents/project.md` — Appian version, application UUID, audience, escalation),
@@ -50,8 +55,10 @@ why.)
    `outputs/` workspace — then verifies everything connects.
 5. **Ask `/which-skill`** any time you're not sure which flow fits.
 
-Updates: `claude plugin update iadc-advisor`, then start a fresh session — the update only
-takes effect on restart. See `CHANGELOG.md` for what changed.
+Updates: from that repo, `claude plugin update iadc-advisor --scope project`, then start a
+fresh session — the update only takes effect on restart. (The scope flag matters: `update`
+defaults to user scope and errors out on a project-scope install.) See `CHANGELOG.md` for
+what changed.
 
 ## The main flow
 

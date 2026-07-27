@@ -35,4 +35,4 @@ alternative are noted in `decisions.md` only, not given an ADR.
 - `/pressure-test` (capture step) and `/reconcile` (resolution step) both write an ADR **and** the
   linking rollup entry as each decision lands. `domain-modeling`, `setup/domain.md`, the
   `pressure-test` *Where outputs go* section, and `outputs/README.md` are updated to match.
-- These remain **gitignored project artifacts** ([ADR-0005](0005-generated-artifacts-live-in-a-gitignored-outputs-workspace.md)) — the volume increase lands in `outputs/`, never in the tracked bundle.
+- These remain **gitignored project artifacts** ([ADR-0005](0005-generated-artifacts-live-in-a-gitignored-outputs-workspace.md)) — the volume increase lands in `outputs/`, never in the tracked plugin source.

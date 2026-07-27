@@ -28,8 +28,9 @@ See [docs/adr/0001](docs/adr/0001-deliverable-lives-in-a-subfolder.md) and
   `../iadc-dogfood` run `claude plugin install iadc-advisor@ignyte --scope project`,
   open Claude there, and run `/setup`. The session hook, namespaced skills, and
   per-project state behave exactly as they will for the client. After editing the
-  plugin, refresh with
-  `claude plugin marketplace update ignyte && claude plugin update iadc-advisor`
+  plugin, refresh **from `../iadc-dogfood`** (project scope is keyed to the working
+  directory) with
+  `claude plugin marketplace update ignyte && claude plugin update iadc-advisor --scope project`
   and start a fresh session.
 - **Never install or enable `iadc-advisor` in this repo itself** — its SessionStart
   hook would inject the advisory-architect posture ("you do not write code") into every
