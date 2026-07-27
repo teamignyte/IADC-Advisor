@@ -3,7 +3,7 @@
   "mcpServers": {
     "iadc": {
       "type": "http",
-      "url": "https://your-graph-host.example.com:8000/mcp/",
+      "url": "https://<your-graph-host>:8000/mcp/",
       "headers": {
         "appian-api-key": "<your-iadc-graph-api-key>"
       }
@@ -13,7 +13,7 @@
       "command": "<path-to-uv-executable>",
       "args": ["run", "--directory", "<path-to-mcp-bundle-extracted>", "python", "-m", "lcp_mcp_server"],
       "env": {
-        "LCP_URL": "https://your-tenant.appiancloud.com",
+        "LCP_URL": "https://<your-tenant>.appiancloud.com",
         "LCP_USERNAME": "<your.appian.username>",
         "LCP_PASSWORD": "<your-appian-password>",
         "LCP_API_PATH": "/suite/plugins/servlet/stateless/lcp-api",

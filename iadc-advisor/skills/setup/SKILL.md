@@ -24,6 +24,12 @@ Read the current state; don't assume:
   scope so the rest of the team gets the plugin too.
 - `.mcp.json` at the repo root — exists? which servers, which values still placeholders?
   Is it **tracked** (`git ls-files --error-unmatch .mcp.json` succeeds)?
+  **Redaction rule — it holds for the whole run, starting with this first read:** never print
+  a credential value back into the transcript. Report the file's *shape* — server entries and
+  key names, `••••` where a secret sits — never its secret contents. This matters most right
+  here: on a re-run the file you are reading is already filled in with live values. Every
+  later place this skill shows `.mcp.json` (the merge diff in step 3, the review in step 8)
+  means this rule.
 - `docs/agents/` — `project.md`, `project.local.md`, `issue-tracker.md`,
   `triage-labels.md`, `domain.md` — which exist from a prior run?
 - `outputs/` — does the workspace exist yet?
@@ -53,9 +59,19 @@ existing content alone):
 
   Show the user exactly which of these lines are missing and **get an explicit yes before you
   append them** — the `.gitignore` is theirs, and it's a committed file. If they decline,
-  append nothing, and tell them plainly what follows: step 3 will then leave `.mcp.json`
-  placeholder-valued, because this skill does not write credentials into a repo that doesn't
-  ignore them.
+  append nothing, don't ask again, and tell them plainly what follows — the decline reaches
+  every piece of per-project state this run would write, not just the secrets:
+
+  - **`.mcp.json`** stays placeholder-valued (step 3), because this skill does not write
+    credentials into a repo that doesn't ignore them.
+  - **The `outputs/` workspace** below is still created, but **don't write
+    `outputs/README.md`**: its opening line says the folder's contents are git-ignored, which
+    would be false in this repo. Say that out loud instead, and let the team decide.
+  - **A personal override** in `docs/agents/project.local.md` (step 4) would be a trackable
+    file. Only write one if the user says yes knowing that.
+
+  Step 9 expects `git check-ignore` to fail on all of these here, and reports them as
+  deliberately unignored rather than broken.
 
   **Edge case — `outputs/` already excluded as a directory.** If their `.gitignore` already
   has a bare `outputs/` or `/outputs/` rule (no trailing `*`), git never descends into the
@@ -64,9 +80,12 @@ existing content alone):
   `/outputs/*`, and that call is theirs, not yours.
 
 - **`outputs/`** — create the folder if it isn't there. **If `outputs/README.md` does not
-  already exist**, write [outputs-readme.md](./outputs-readme.md) to it; if it does exist,
-  leave it exactly as the team has it. That tracked README is what keeps the folder in git —
-  nothing else needs to.
+  already exist**, show the user [outputs-readme.md](./outputs-readme.md) and **get an
+  explicit yes before you write it** — same gate as the `.gitignore` above and for the same
+  reason: it is a committed file newly appearing in their repo. If it does exist, leave it
+  exactly as the team has it. If they decline it, write nothing and carry on — the workspace
+  itself works either way; that tracked README is only what keeps the folder in git and
+  documents what lands there, and nothing else needs it.
 
 ### 3. Wire the MCP servers
 
@@ -76,10 +95,13 @@ plugin. **Generate `.mcp.json` at the repo root from this skill's
 not `${VAR}` (the Windows Desktop app does not reliably expand `${VAR}` in `.mcp.json`) —
 unless a guard below stops you. **Drop every `_comment` key as you write**: they are notes to
 you about the template, never configuration, and they must not appear in the real file. The
-ignore rules from step 2 must already be in place before you write a credential — if they
-aren't (the user declined, or you skipped ahead), stop and settle step 2 first. With the rule
-in place `.mcp.json` is gitignored and no secret is ever tracked; the template stays in the
-plugin.
+ignore rules from step 2 must already be in place before you write a credential. If they
+aren't **because you skipped ahead**, go back and settle step 2 now. If they aren't **because
+the user declined them**, don't re-ask and don't append them anyway — that answer stands.
+Produce the outcome step 2 named instead: generate `.mcp.json` with every `<placeholder>`
+left standing, write **no** credential value into it, and hand the values off exactly the way
+the decline branch below does. With the rules in place `.mcp.json` is gitignored and no secret
+is ever tracked; the template stays in the plugin.
 
 This is an existing app repo, not a fresh clone — respect what's already there. Take these two
 in order, the tracked check **first**, before you write anything:
@@ -89,21 +111,39 @@ in order, the tracked check **first**, before you write anything:
   ignored**, whatever `.gitignore` says. Propose `git rm --cached .mcp.json` (step 2's entry
   then takes effect) so credentials stop being tracked, but make no git change without an
   explicit yes.
-  - **They agree** → run it, confirm `git check-ignore .mcp.json` now succeeds, then carry on
-    below with literal values as normal.
+  - **They agree** → run it, then check `git check-ignore .mcp.json`. Both outcomes are
+    reachable, so read which one you got before writing anything:
+    - **It succeeds** → the file is untracked *and* ignored. Carry on below with literal
+      values as normal.
+    - **It still fails** → step 2's `.mcp.json` entry was never added (the user declined the
+      append, or it got skipped), and an untracked file with no matching rule is not ignored.
+      **Write no credential value.** Say what just changed and why it matters: `git rm
+      --cached` staged the file's deletion, so the next `git add -A` would re-add whatever it
+      holds as a fresh blob — writing a password now would leave the repo *worse* off than
+      when this step started. Then either settle step 2 and re-check (this is the first ask
+      about that rule since the file became untracked, not a re-nag of a refusal), or, if
+      they decline again, take the decline branch below as written: placeholders standing,
+      values handed off, nothing secret in the file.
   - **They decline** → **this step ends here for `.mcp.json`.** Write **no** credential value
     into a tracked file — not the password, not an API key, not "just the URL and username".
     Leave every `<placeholder>` standing exactly as it is. Then tell the user which values are
     still needed, named one by one (`iadc`: `url` + `appian-api-key`; `appian`: `command`,
     `--directory`, `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`; `context7`: nothing unless they
     want a key), and that those have to go wherever they told you their team keeps secrets —
-    outside this repo. Move on to step 4. Step 9 will report `.mcp.json` as deliberately
-    unconfigured; that is the correct outcome, not a failure to paper over.
+    outside this repo. Skip only the rest of this step's `.mcp.json` write-up (the merge
+    bullet and the three server-value bullets); **still walk the connector bullets** — Jira,
+    Office, Slack — with the user, since those are Claude connectors that hold no credential
+    in this repo, and Office's deliberate `none` still gets recorded in step 4. Then move on
+    to step 4. Step 9 will report `.mcp.json` as deliberately unconfigured; that is the
+    correct outcome, not a failure to paper over.
 - **`.mcp.json` already exists** (and the check above cleared) → **merge, never overwrite**:
   add or update only the `iadc`, `appian`, and `context7` entries; preserve every other server
-  the team has configured. Show the diff before writing, with credential values redacted.
+  the team has configured. Show the diff before writing, redacted per the redaction rule in
+  step 1.
 
-Servers this plugin expects (collect each value with the user, write it into `.mcp.json`):
+Servers this plugin expects — collect each value with the user and write it into `.mcp.json`,
+**unless a guard above stopped you**, in which case the `<placeholder>` stays and the value is
+handed off instead of written:
 
 - **`iadc`** (graph) — HTTP `url` + `appian-api-key` header. Builds and serves a dependency graph for any Appian application.
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
@@ -176,7 +216,9 @@ never delete a line unless the template says to.
 
 **Per-person override:** ask whether this user's role differs from the repo default
 (e.g. a lead in a `developer`-default repo). If so, write just the differing lines to
-**`docs/agents/project.local.md`** (gitignored — step 2): same field names; the session
+**`docs/agents/project.local.md`** (gitignored by step 2's entry — unless the user declined
+that append, in which case take the decline branch there before writing one): same field
+names; the session
 hook injects it after `project.md`, so its values win. Any teammate can do the same on
 their machine without touching the committed default.
 
@@ -220,13 +262,13 @@ This step is the review gate over the finished state: re-show, in one place, eve
 touched, so the user sees the whole shape of it and can correct anything before you call setup
 done.
 
-- **`.mcp.json`** — **with every credential value redacted** (server entries and key names,
-  `••••` where a secret sits; never print a password or API key back into the transcript), or a
-  note that it was deliberately left placeholder-valued (step 3).
+- **`.mcp.json`** — **redacted per the redaction rule in step 1** (server entries and key
+  names, `••••` where a secret sits), or a note that it was deliberately left
+  placeholder-valued (step 3).
 - **The `.gitignore` diff** — the exact lines step 2 appended, or that they were already there,
   or that the user declined them.
-- **`outputs/`** — created or already present, and whether `README.md` was written or left as
-  the team had it.
+- **`outputs/`** — created or already present, and whether `README.md` was written, left as
+  the team had it, or declined.
 - **`docs/agents/project.md`** first, then `issue-tracker.md`, `triage-labels.md`, `domain.md`,
   and `project.local.md` if there's a personal override.
 
@@ -247,17 +289,26 @@ This is the payoff — confirm the configuration actually works, don't just writ
    unconfigured** with the list of values they still owe — don't call that a failure and don't
    quietly fill it in now.
 2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call). For Slack (if used for escalation), confirm the Slack connector is connected.
-3. **The workspace is live** — `outputs/` exists and holds its `README.md`, and the ignore
-   actually bites: `git check-ignore outputs/CONTEXT.md` succeeds (generated artifacts are
-   ignored) while `git check-ignore outputs/README.md` fails (the README stays trackable). If a
-   path inside `outputs/` isn't ignored, it's the directory-exclusion case from step 2 — surface
-   it rather than layering on more rules.
+3. **The workspace is live** — `outputs/` exists and holds its `README.md` (unless the user
+   declined it, step 2), and the ignore actually bites: `git check-ignore outputs/CONTEXT.md`
+   succeeds (generated artifacts are ignored) while `git check-ignore outputs/README.md` fails
+   (the README stays trackable). The two ways that can come out wrong have opposite causes —
+   read which one you got:
+   - **`outputs/README.md` *is* ignored** (its check succeeds when it should fail) → the
+     negation never took effect, which is the bare-`outputs/` directory-exclusion case from
+     step 2. Surface it — the fix is theirs, changing their rule to `/outputs/*` — rather than
+     layering on more rules.
+   - **A path inside `outputs/` is *not* ignored** (`outputs/CONTEXT.md`'s check fails) → the
+     `/outputs/*` rule is absent, or the user declined the `.gitignore` append (step 2). If
+     they declined, this is the state step 2 predicted, not a failure: report the workspace as
+     deliberately unignored and leave it.
 4. **Project configuration is live** — `docs/agents/project.md` exists and every field carries a
    real answer, with the two exceptions this file documents: `Project lead` stays a placeholder
    when `Escalation` is `hand-off`, and `Nicknames` stays one when the team has no shorthand
    (step 4). Any **other** `<...>` still standing means that field is genuinely unset — go back
    and fill it rather than reporting success. If `project.local.md` was written,
-   `git check-ignore` confirms it's ignored.
+   `git check-ignore` confirms it's ignored — unless the user declined the ignore entries
+   (step 2), in which case it is trackable by their choice, and that is what you report.
 5. **The session hook fires** — tell the user to start a fresh session in this repo and
    confirm the "iadc-advisor — operating posture" and "Project configuration" sections
    appear at the top of context.
