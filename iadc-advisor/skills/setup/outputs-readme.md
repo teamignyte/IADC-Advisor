@@ -11,6 +11,6 @@ The advisory skills write their **project artifacts** here — they are *not* co
   **`decisions.md`** (the rollup — status + resolved decisions, each linking its ADR — plus
   open/escalated items) and its build spec (`<TICKET-KEY> Spec.md`, from `/to-spec`). Created on demand.
 
-These are working design artifacts for the developer, not shippable bundle source — which
+These are working design artifacts for the developer, not committed project files — which
 is why they live outside version control. If your team wants them tracked instead, remove
-the `/outputs/*` rule from `.gitignore`.
+the `outputs/` entries `/setup` added to `.gitignore`.

@@ -1,12 +1,12 @@
 ---
 name: setup
-description: Configure this Appian architect-in-a-box bundle for a project — wire up the MCP servers and secrets, verify they connect, and set the issue tracker, readiness labels, and domain-doc layout the skills assume. Run once after cloning, before first use of the other skills.
+description: Configure the iadc-advisor plugin for this Appian project — write the per-project state into this repo (MCP servers + secrets, project configuration, issue tracker, domain docs), verify everything connects. Run once per app repo after installing the plugin, before first use of the other skills.
 disable-model-invocation: true
 ---
 
 # Setup
 
-Configure this bundle for the Appian project you're pointing it at. Everything ships as a template with placeholder values; this skill collects the real ones, wires them up, and confirms the bundle is live.
+Configure the plugin for the Appian project you're pointing it at. The plugin itself is installed out of this repo, in a shared cache that is read-only and replaced on every update — so it holds **no** per-project values and can ship **no** files here. This skill is what materializes them: it collects the real values and **generates** the per-project state in this repo, then confirms every connection is live.
 
 This is a prompt-driven skill, not a deterministic script. Explore, present what you found, confirm with the user, then write. Take it one section at a time — one question, one answer, then the next.
 
@@ -16,33 +16,122 @@ This is a prompt-driven skill, not a deterministic script. Explore, present what
 
 Read the current state; don't assume:
 
-- `.mcp.json` at the repo root — which servers are defined, which values are still `<...>` placeholders.
-- `.mcp.json` — does the real (gitignored) file exist yet, or only `.mcp.json.example`?
-- `CLAUDE.md` at the repo root — does an `## Agent skills` block already exist?
-- `outputs/` (glossary `CONTEXT.md`, `CONTEXT-MAP.md`, `adr/`) and `docs/agents/` — prior domain/config output.
+- The plugin is installed at **project scope**: `.claude/settings.json` in this repo
+  enables `iadc-advisor` (it's how this skill is running — verify, don't assume).
+- `.mcp.json` at the repo root — exists? which servers, which values still placeholders?
+- `docs/agents/` — `project.md`, `project.local.md`, `issue-tracker.md`,
+  `triage-labels.md`, `domain.md` — which exist from a prior run?
+- `outputs/` — does the workspace exist yet?
+- `.gitignore` — does it have the entries listed in step 2c?
 - `git remote -v` — is there a remote, and where?
 
 ### 2. Wire the MCP servers
 
-The bundle talks to its data sources through MCP. **Copy `.mcp.json.example` → `.mcp.json`** (gitignored) and fill in **literal** credential values — not `${VAR}`. Literal, because the Windows Desktop app does not reliably expand `${VAR}` in `.mcp.json` (there's a known bug in the `env` block), and a settings `env` block isn't guaranteed to feed `.mcp.json` expansion either. Literal values in a gitignored file are the robust, portable choice; the committed `.mcp.json.example` carries only placeholders, so no secret is ever tracked.
+The plugin talks to its data sources through MCP, configured **in this repo**, not in the
+plugin. **Generate `.mcp.json` at the repo root from this skill's
+[mcp-template.json](./mcp-template.json)** and fill in **literal** credential values —
+not `${VAR}` (the Windows Desktop app does not reliably expand `${VAR}` in `.mcp.json`).
+`.mcp.json` is gitignored (step 2c) so no secret is ever tracked; the template stays in
+the plugin.
 
-Servers this bundle expects (collect each value with the user, write it into `.mcp.json`):
+This is an existing app repo, not a fresh clone — respect what's already there:
+
+- **`.mcp.json` already exists** → **merge, never overwrite**: add or update only the
+  `iadc`, `appian`, and `context7` entries; preserve every other server the team has
+  configured. Show the diff before writing.
+- **`.mcp.json` is tracked in git** (`git ls-files --error-unmatch .mcp.json` succeeds) →
+  stop and surface it: the team has committed it deliberately. Propose
+  `git rm --cached .mcp.json` + the gitignore entry so credentials stop being tracked,
+  but make no git change without an explicit yes — if they decline, warn that literal
+  credentials must then never go in it, and record where the team wants secrets instead.
+
+Servers this plugin expects (collect each value with the user, write it into `.mcp.json`):
 
 - **`iadc`** (graph) — HTTP `url` + `appian-api-key` header. Builds and serves a dependency graph for any Appian application.
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
 - **`context7`** — HTTP docs search. Keyless works; add a `CONTEXT7_API_KEY` header only for higher rate limits.
 - **Jira** — connected as a **Claude connector** (the Atlassian connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. Jira is **human-first**: the architect reads via the connector and does only light, gated writes. the `jira` and `to-tickets` skills both go through this connector; the project key lives in `docs/agents/issue-tracker.md` (step 4), not an env var.
-- **Office / Microsoft 365** — connected as a **Claude connector** (the Microsoft 365 connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. This surface is **read-only**: the `office` skill finds and reads SharePoint/OneDrive documents and Teams/Outlook discussion to ground planning, and never sends, uploads, or edits. Optional — skip if the project has no SharePoint/M365 source docs. (Its pinned source-of-truth folder is a project value — step 3.)
+- **Office / Microsoft 365** — connected as a **Claude connector** (the Microsoft 365 connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. This surface is **read-only**: the `office` skill finds and reads SharePoint/OneDrive documents and Teams/Outlook discussion to ground planning, and never sends, uploads, or edits. Optional — if the project has no SharePoint/M365 source docs, leave the connector alone and record the deliberate `none` answer in step 3, so `/office` stops asking. (Its pinned source-of-truth folder is a project value — step 3.)
 - **Slack** — connected as a **Claude connector** (not in `.mcp.json`). Used only for **escalation**: `/pressure-test` can draft and — **gated** (propose → confirm → send) — send an architectural-gap question to the project lead's Slack channel. Point the user at their client's connector settings. Optional — skip if escalations go via a Jira comment or by handing the drafted text to the builder.
+
+### 2c. Materialize the workspace and ignores
+
+The plugin can't ship files into this repo, so create them here (idempotently — leave
+existing content alone):
+
+- **`outputs/`** — create the folder, write [outputs-readme.md](./outputs-readme.md) to
+  `outputs/README.md`, and `touch outputs/.gitkeep`.
+- **`.gitignore`** — ensure these entries exist (append any that are missing):
+
+  ```
+  # iadc-advisor per-project state — secrets and personal overrides, never committed
+  .mcp.json
+  docs/agents/project.local.md
+  # generated planning artifacts (glossary, ADRs, specs) — working files, not source
+  /outputs/*
+  !/outputs/.gitkeep
+  !/outputs/README.md
+  ```
 
 ### 3. Set project values
 
-- **Jira project key** (e.g. `IV`) — used by the `jira` and `to-tickets` skills.
-- **Appian version** (e.g. `26.6`) — used by `/appian` for version-exact `docs.appian.com` lookups. Write it into the **Project configuration** (`docs/agents/project.md`), which is the single source of truth `/appian` reads — don't leave it to drift from the skill's default.
-- **Application identity (graph seed target)** — the Appian application the `iadc` graph is built from. Ask for the **full application name** and any **nicknames** the team uses; get the **application UUID** either by resolving the name via the `appian` MCP (`listApplications`) or from the user directly — both are fine, and this is the one time a live lookup is worth it. Write name, nicknames, and UUID **together** into the **Project configuration** (`docs/agents/project.md`), so seeding reads the UUID there and never needs the Appian MCP again.
-- **Office source-of-truth folder** (only if the Microsoft 365 connector is used) — the SharePoint/OneDrive **site** and the **pinned folder** holding the project's requirements/design docs, so `/office` searches there first instead of the whole tenant. Write it as a **profile row** in the Project configuration (`docs/agents/project.md`) and set the **Active prospect** line. (Running several prospects from one instance? Add a row per prospect and toggle via that one line.) Skip if the project has no M365 source docs.
-- **Audience** — who the advisor is talking to. Default **`developer`** (the person who will build the ticket); set to `lead`/`architect` if the primary user owns architectural decisions. Record it on the **`Audience` line** in the **Project configuration** (`docs/agents/project.md`) — the line the operating posture reads. It shapes how `/pressure-test` pitches questions and whether it escalates gaps vs. asks the user directly.
-- **Escalation target** (only if `/pressure-test` will escalate architectural gaps) — the **channel** (`Slack` | `Jira comment` | `hand-off`) and the **project lead** (Slack channel/handle, or Jira account). Record both in the **Project configuration** (`docs/agents/project.md`). Skip for a lead/architect audience with no one to escalate to.
+Collect these and write them into **`docs/agents/project.md`**, from this skill's
+[project-config-template.md](./project-config-template.md) — never into any `SKILL.md`
+(plugin skills are shared, read-only, and replaced on update; workshop ADR 0010). That
+file is the whole per-project schema: the session hook injects it verbatim as the ambient
+**Project configuration**, and six skills read it.
+
+**Keep the template's field labels verbatim** — `Audience`, `Appian version`,
+`Application` (+ `Nicknames`, `UUID`), `Escalation` (+ `Project lead`),
+`Office source of truth` (+ `Row`, `Active prospect`) — and keep its
+*How to fill these in* paragraph. The skills match on those exact labels; rename or
+reword one and the value simply stops being found.
+
+Fill every value **in place**, replacing the `<...>` placeholder with a real answer — and
+where a field doesn't apply, write the **deliberate** answer the template names (`none`
+for `Office source of truth` and for an empty `Nicknames`, `hand-off` for `Escalation`)
+rather than skipping it. A placeholder left standing is how a skill knows a field is
+genuinely unset, so it will ask again every session; that is the nag `/setup` exists to
+prevent. Never invent a value, and never delete a line unless the template says to.
+
+- **Jira project key** (e.g. `IV`) — the one value that is *not* a `project.md` field: it
+  belongs in `docs/agents/issue-tracker.md` (step 4), where the `jira` and `to-tickets`
+  skills read it.
+- **`Appian version`** (e.g. `26.6`) — a bare version string, no trailing note. `/appian`
+  and `/context7` read this line for version-exact `docs.appian.com` lookups; it is the
+  single source of truth, so don't leave it to drift from a skill's fallback default.
+- **`Application`** — the Appian application the `iadc` graph is seeded from: its **full
+  name** on `Application`, the team's shorthand on **`Nicknames`**, and the **`UUID`**.
+  Resolve the UUID via the `appian` MCP (`listApplications`) or take it from the user —
+  this is the one time a live lookup is worth it. Recorded here, seeding reads the UUID
+  from the configuration and never needs the Appian MCP again.
+- **`Office source of truth`** (+ **`Row`**, **`Active prospect`**) — the SharePoint/OneDrive
+  **site** and **pinned folder** holding this project's requirements/design docs, so
+  `/office` searches there first instead of the whole tenant. Keep the template's shipped
+  value `rows below`, fill the `Row:` line (prospect name, site, folder) and name the live
+  one on `Active prospect:`; tracking more than one prospect in this repo, duplicate the
+  `Row:` line per prospect — that one `Active prospect` line is then the whole toggle.
+  **If this project has no M365 source documents, write the bare word `none` on the
+  `Office source of truth` line and delete the `Row:` and `Active prospect:` lines** — do
+  not skip the field and do not leave the placeholder. `none` is the deliberate answer
+  that tells `/office` to stop searching SharePoint/OneDrive; a placeholder left standing
+  only makes it ask again every session.
+- **`Audience`** — who the advisor is talking to: **`developer`** (the default — the person
+  who will build the ticket), or `lead`/`architect` if the primary user owns architectural
+  decisions. The operating posture reads this line; it shapes how `/pressure-test` pitches
+  questions and whether it escalates gaps or asks the user directly.
+- **`Escalation`** (+ **`Project lead`**) — where `/pressure-test` sends an architectural
+  gap: the channel (`Slack` | `Jira comment` | `hand-off`) and the lead (Slack
+  channel/handle, or Jira account). **No one to escalate to** — a lead/architect audience,
+  say? Write **`hand-off`**, the deliberate "hand me the drafted text and I'll send it"
+  answer, which needs no `Project lead`. Same rule as the field above: a written answer,
+  never a placeholder left standing.
+
+**Per-person override:** ask whether this user's role differs from the repo default
+(e.g. a lead in a `developer`-default repo). If so, write just the differing lines to
+**`docs/agents/project.local.md`** (gitignored — step 2c): same field names; the session
+hook injects it after `project.md`, so its values win. Any teammate can do the same on
+their machine without touching the committed default.
 
 ### 4. Issue tracker
 
@@ -78,18 +167,25 @@ Default to **single-context** — one `outputs/CONTEXT.md` + `outputs/adr/` in t
 
 ### 7. Confirm and write
 
-Show the user a draft of the `docs/agents/*.md` files and the `## Agent skills` block for `CLAUDE.md`, and let them edit before writing. If an `## Agent skills` block already exists, update it in place rather than duplicating; don't overwrite surrounding sections.
+Show the user a draft of every file this run will write — `docs/agents/project.md` first, then `issue-tracker.md`, `triage-labels.md`, `domain.md`, and `project.local.md` if there's a personal override — and let them edit before anything lands. Merge into files that already exist rather than clobbering them, and don't touch surrounding content. The client's `CLAUDE.md` is theirs: this skill writes nothing into it and needs nothing from it — the plugin's operating posture arrives through its session hook.
 
-### 8. Verify the bundle is live
+### 8. Verify the plugin is live
 
 This is the payoff — confirm the configuration actually works, don't just write files:
 
-1. **`.mcp.json` exists** (copied from `.mcp.json.example`), parses as JSON, and has real values filled in — no `<placeholder>` strings left.
+1. **`.mcp.json` exists** (generated from the template), parses as JSON, has no
+   `<placeholder>` strings left, and is matched by a `.gitignore` entry
+   (`git check-ignore .mcp.json` succeeds).
 2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call). For Slack (if used for escalation), confirm the Slack connector is connected.
-3. **Skill frontmatter is valid** — every `.claude/skills/*/SKILL.md` has a `name` and `description`.
+3. **Project configuration is live** — `docs/agents/project.md` exists with no
+   placeholders; if `project.local.md` was written, `git check-ignore` confirms it's
+   ignored.
+4. **The session hook fires** — tell the user to start a fresh session in this repo and
+   confirm the "iadc-advisor — operating posture" and "Project configuration" sections
+   appear at the top of context.
 
 Report what connected and what didn't, with the specific fix for each failure (missing env var, connector not enabled, wrong endpoint).
 
 ### 9. Done
 
-Tell the user setup is complete and which skills now read from these files. They can edit `docs/agents/*.md` and the secrets file directly later — re-run this skill only to switch trackers or re-point the bundle at a different Appian project.
+Tell the user setup is complete and which skills now read from these files. They can edit `docs/agents/*.md` and the gitignored `.mcp.json` directly later — re-run this skill only to switch trackers or re-point the plugin at a different Appian project.

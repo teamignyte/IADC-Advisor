@@ -1,5 +1,5 @@
 {
-  "_comment": "TEMPLATE. Copy to .mcp.json (gitignored) and replace the placeholder values with your real ones. Use LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json (see for_liam.md). /setup walks you through it and verifies each server connects.",
+  "_comment": "TEMPLATE — /setup asset. /setup writes the real .mcp.json (gitignored) into the app repo with LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json.",
   "mcpServers": {
     "iadc": {
       "type": "http",
