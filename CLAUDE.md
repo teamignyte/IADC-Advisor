@@ -62,6 +62,16 @@ under `skills/`, never a manifest key. This one bites silently: **`claude plugin
 on the broken manifest**, so it is not a gate. The release check is a real install reporting the
 plugin as `enabled` in `claude plugin list` — verify there, not with `validate`.
 
+## The vendored `appian` skill
+
+`iadc-advisor/skills/appian/` is vendored from <https://github.com/appian/dev-mcp-skills> and
+carries deliberate local patches — chiefly the ADR 0010 config relocation (upstream hardcodes
+`**Appian Version:** 26.6`; we read it from the ambient Project configuration) and repairs to 17
+citations upstream points at files that do not exist. **Never edit that tree without reading
+[docs/vendored-appian-skill.md](docs/vendored-appian-skill.md) first** — it records every
+deliberate divergence, how to update via `git subtree`, and the greps that catch a silent revert.
+The copy is currently stale (upstream ships 65 reference files; we have 52).
+
 ## Agent skills
 
 ### Issue tracker
