@@ -126,9 +126,13 @@ in order, the tracked check **first**, before you write anything:
       **HEAD still carries the file**, so any operation that restores the index (`git reset`,
       `git restore --staged .mcp.json`, `git stash`) puts it back to **tracked**, where no
       `.gitignore` line can reach it and the next `git add -A` would stage the password you
-      are about to write. Say that plainly: the staged deletion has to be **committed before
-      anything else** — offer to show `git status` so they can see it pending. Then carry on
-      below with literal values as normal, and re-show that pending deletion in step 8.
+      are about to write. So the staged deletion has to be **committed before you write any
+      credential** — say that plainly, show `git status` so they can see it pending, and
+      **offer to commit it now** (run it only on their yes, like every other git change
+      here). Only once that removal is committed do you carry on below with literal values.
+      If they'd rather commit it themselves, that's fine — then write **no** credential
+      value this run: leave the placeholders standing, tell them which values are still
+      needed, and re-show the pending deletion in step 8 so it isn't forgotten.
     - **It still fails** → step 2's `.mcp.json` entry was never added (the user declined the
       append, or it got skipped), and an untracked file with no matching rule is not ignored.
       **Write no credential value.** Say what just changed and why it matters: `git rm

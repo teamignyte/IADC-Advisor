@@ -55,10 +55,10 @@ why.)
    `outputs/` workspace — then verifies everything connects.
 5. **Ask `/which-skill`** any time you're not sure which flow fits.
 
-Updates: from that repo, `claude plugin update iadc-advisor --scope project`, then start a
-fresh session — the update only takes effect on restart. (The scope flag matters: `update`
-defaults to user scope and errors out on a project-scope install.) See `CHANGELOG.md` for
-what changed.
+Updates: from that repo, `claude plugin update iadc-advisor@ignyte --scope project`, then
+start a fresh session — the update only takes effect on restart. (Both parts matter:
+without `@ignyte` the plugin isn't found, and `update` defaults to user scope and errors
+out on a project-scope install.) See `CHANGELOG.md` for what changed.
 
 ## The main flow
 
