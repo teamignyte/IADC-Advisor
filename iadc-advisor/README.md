@@ -1,6 +1,6 @@
 # Appian Architect-in-a-Box
 
-An **Appian architect, in a box.** This is a Claude Code bundle that turns Claude into an advisory architect for your Appian projects. Its main job: help a developer work out **how to build the ticket in front of them** — getting oriented in your application (what a change touches, its blast radius, the objects involved), sharpening the approach, and leaving an implementation note. It also answers questions about your Appian application from the real source of truth and, for net-new work, turns a rough idea into a spec and a ready-to-build ticket breakdown.
+An **Appian architect, in a box.** This is a Claude Code plugin that turns Claude into an advisory architect for your Appian projects. Its main job: help a developer work out **how to build the ticket in front of them** — getting oriented in your application (what a change touches, its blast radius, the objects involved), sharpening the approach, and leaving an implementation note. It also answers questions about your Appian application from the real source of truth and, for net-new work, turns a rough idea into a spec and a ready-to-build ticket breakdown.
 
 It's built for two audiences:
 
@@ -24,9 +24,22 @@ The architect **advises and plans**; your developers build. It reads and reasons
 
 ## Getting started
 
-1. **Clone** this repo and open it in Claude Code.
-2. **Run `/setup`.** It walks you through connecting the MCP servers (graph, Appian, docs) and the Jira connector, setting your Jira project key and Appian/graph endpoints, and laying out your issue tracker and domain docs — then verifies everything connects.
-3. **Ask `/which-skill`** any time you're not sure which flow fits your situation. It's the router over the whole toolkit.
+1. **Add the marketplace** (once per machine): in any Claude Code session run
+   `/plugin marketplace add <this repo's git URL>` — access uses the same credentials as
+   the repo.
+2. **Install the plugin in your Appian app's repo** (once per project, committed so the
+   whole team gets it): open Claude Code in that repo, run `/plugin`, and install
+   **iadc-advisor** from the **ignyte** marketplace at **project** scope. (Terminal
+   alternative: `claude plugin install iadc-advisor@ignyte --scope project`.) Both work
+   the same on the Windows Desktop app.
+3. **Run `/setup`** in that repo. It generates the gitignored `.mcp.json` (graph, Appian,
+   docs — literal values, no secrets tracked), writes the project configuration
+   (`docs/agents/project.md` — Appian version, application UUID, audience, escalation),
+   points the Jira/Microsoft 365 connectors, lays out the tracker + domain docs and the
+   `outputs/` workspace — then verifies everything connects.
+4. **Ask `/which-skill`** any time you're not sure which flow fits.
+
+Updates: `claude plugin update iadc-advisor` — see `CHANGELOG.md` for what changed.
 
 ## The main flow
 
@@ -40,4 +53,8 @@ You have a ticket (or a described task). **`/pressure-test`** orients you in the
 
 ## Configuration & secrets
 
-The bundle ships as a template, so no secrets live in tracked files. Copy the committed `.mcp.json.example` → `.mcp.json` and fill in your real MCP credentials (graph endpoint + key, Appian environment); the real `.mcp.json` is gitignored. Jira connects as a Claude connector (no tokens to store). `/setup` handles all of this and confirms each connection is live.
+Nothing secret is ever committed: `/setup` writes real credentials only to the gitignored
+`.mcp.json`, and your personal role override lives in the gitignored
+`docs/agents/project.local.md`. Jira and Microsoft 365 connect as Claude connectors — no
+tokens on disk. The committed `docs/agents/project.md` holds only team-shared,
+non-secret values.

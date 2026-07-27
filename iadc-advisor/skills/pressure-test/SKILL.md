@@ -118,8 +118,9 @@ for real delivery.
    and what the code and docs actually say — with a concrete scenario ("A shares a rule with B; A
    deletes it — what happens to B?"). This stays with the dev and about the build; it does **not**
    re-open the scoping gaps already escalated in step 4.
-6. **Capture as you go** (via `/domain-modeling`) — to the **gitignored outputs workspace** (see
-   below), never committed. Glossary terms into `outputs/CONTEXT.md`. Every **substantive decision**
+6. **Capture as you go** (via `/domain-modeling`) — to the **`outputs/` workspace** (see below;
+   gitignored where `/setup`'s ignore rules were accepted), never committed by you. Glossary
+   terms into `outputs/CONTEXT.md`. Every **substantive decision**
    gets captured **twice, as it lands** (don't batch):
    - a **numbered ADR** in `outputs/adr/NNNN-slug.md` — project-wide sequential numbering, so the
      ADR sequence is the **chronological history of every decision** (see `/domain-modeling`'s
@@ -204,14 +205,14 @@ the **`Escalation`** line (channel — Slack | Jira comment | hand-off) and
    **`Project lead`** is expected in this state.
 3. **Any other named channel ⇒ a `Project lead` is required.** Any filled-in value that isn't a
    hand-off in one of branch 2's spellings names a channel the escalation goes out on — **Slack**
-   and **Jira comment** are the examples this bundle can send on itself, but this branch covers
+   and **Jira comment** are the examples this plugin can send on itself, but this branch covers
    **whatever the line names** (Teams, email, a typo), so no configured value falls through. The
    send needs a recipient: if **`Project lead`** is missing, empty, or still an **unfilled
    angle-bracket placeholder** (e.g. `<Slack channel/handle, or Jira account>`), ask the user who
    escalations should go to and suggest running `/setup`. Otherwise draft, then confirm-and-send
    under the gate in *Escalate the gaps* step 3 — propose → confirm → send is never skipped, and
    there is still **no auto-send**.
-   If the named channel is one this bundle can't send on (anything other than Slack or a Jira
+   If the named channel is one this plugin can't send on (anything other than Slack or a Jira
    comment), hand the builder the drafted text addressed to that channel to send themselves —
    after the same confirm step, and never by substituting a channel of your own choosing.
 
@@ -238,8 +239,9 @@ dead-waits. It proceeds on the provisional lean and tracks readiness explicitly.
 
 ## Where outputs go
 
-The glossary, decision logs, and ADRs Pressure-test produces are **project artifacts, not bundle source**
-— written to the **gitignored `outputs/` workspace**, never committed:
+The glossary, decision logs, and ADRs Pressure-test produces are **project artifacts, not plugin source**
+— written to the **`outputs/` workspace** (gitignored where `/setup`'s ignore rules were
+accepted), never committed by you:
 
 - **Glossary:** `outputs/CONTEXT.md` — the project-wide ubiquitous language (cross-cutting, not
   ticket-scoped).
@@ -251,7 +253,8 @@ The glossary, decision logs, and ADRs Pressure-test produces are **project artif
   this ticket's resolved decisions (**each linking its ADR number**), and its open/escalated items.
   It's the per-ticket index over the ADRs, not a separate record. Create the folder if it doesn't exist.
 
-`outputs/` is git-ignored, so these stay close at hand without landing in version control.
+Where `/setup`'s ignore rules were accepted, `outputs/` is git-ignored, so these stay close at
+hand without landing in version control.
 (SharePoint would be the firm's system of record, but its Microsoft 365 connector is read-only —
 so `/office` stays read-only, for grounding only.)
 

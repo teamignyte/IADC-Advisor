@@ -496,6 +496,6 @@ const svg = await mermaid.render('id', diagramText);
 
 ## Rendering
 
-In this bundle, diagrams render natively — publish the diagram as an **artifact** and Claude renders it. No CLI or export step is needed.
+In this plugin, diagrams render natively — publish the diagram as an **artifact** and Claude renders it. No CLI or export step is needed.
 
 The CLI is also the fastest way to validate generated diagrams — a syntax error exits non-zero with a parse message.

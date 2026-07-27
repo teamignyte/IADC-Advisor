@@ -1,19 +1,19 @@
 ---
 name: to-diagram
-description: "Render a Mermaid diagram from what's in context — flowchart, sequence, ER/record model, class, state, and every other Mermaid type — then save it to the `outputs/` workspace and present it as an artifact. The bundle's shared diagram primitive: it picks the right diagram type, gets the syntax right (avoiding the gotchas that silently break rendering), and handles save-and-present. Use whenever a picture would explain something better than prose — an app's structure or data model, a change's blast radius, a build-step order, a ticket dependency graph, a status lifecycle, an API/integration flow — even if the user only says 'draw', 'diagram', 'visualize', or 'show me how these relate' without naming a type. `/orient`, `/pressure-test`, `/to-spec`, and `/to-tickets` pull this in to render their diagrams; it also stands alone. Verbs: diagram, draw, visualize, chart, ERD, entity relationship, sequence diagram, flowchart, state diagram, blast-radius diagram, dependency graph, mermaid, show me how X relates."
+description: "Render a Mermaid diagram from what's in context — flowchart, sequence, ER/record model, class, state, and every other Mermaid type — then save it to the `outputs/` workspace and present it as an artifact. The plugin's shared diagram primitive: it picks the right diagram type, gets the syntax right (avoiding the gotchas that silently break rendering), and handles save-and-present. Use whenever a picture would explain something better than prose — an app's structure or data model, a change's blast radius, a build-step order, a ticket dependency graph, a status lifecycle, an API/integration flow — even if the user only says 'draw', 'diagram', 'visualize', or 'show me how these relate' without naming a type. `/orient`, `/pressure-test`, `/to-spec`, and `/to-tickets` pull this in to render their diagrams; it also stands alone. Verbs: diagram, draw, visualize, chart, ERD, entity relationship, sequence diagram, flowchart, state diagram, blast-radius diagram, dependency graph, mermaid, show me how X relates."
 ---
 
 # To-diagram — render a Mermaid diagram
 
-The bundle's shared **diagram primitive**. When a picture would explain something better than
+The plugin's shared **diagram primitive**. When a picture would explain something better than
 prose — the shape of an app, a record model, a change's blast radius, the order of build steps, a
 ticket dependency graph, a status lifecycle, an integration flow — this skill renders it as a
 **Mermaid** diagram, saves it to the `outputs/` workspace, and presents it as an artifact.
 
-It is advisory, like everything in this bundle: a diagram is a **document**, not a build.
+It is advisory, like everything in this plugin: a diagram is a **document**, not a build.
 To-diagram draws pictures of the app and the plan; it never creates or mutates Appian objects.
 
-Most of the bundle reaches this skill through the flow skills — `/orient` draws the app's topology
+Most of the plugin reaches this skill through the flow skills — `/orient` draws the app's topology
 and ERD, `/to-spec` the build-step DAG, `/pressure-test` the blast radius, `/to-tickets` the ticket
 dependency graph. You can also invoke it directly ("diagram how these records relate").
 
@@ -34,7 +34,8 @@ both what you present and what you save; there is no separate HTML page to build
     `outputs/<TICKET-KEY>/diagrams/<slug>.md` (ticket-scoped). Create the folder lazily.
   - Verify it landed and report the path.
 - **Mind where it goes.** An artifact is default-private but hosted off the local machine, whereas
-  the rest of this bundle stays local and git-ignored. For a sensitive client's app-architecture
+  the rest of what this plugin writes stays local (and git-ignored, where `/setup`'s ignore
+  rules were accepted). For a sensitive client's app-architecture
   diagram, skip the hosted artifact — the saved `.md` renders wherever Mermaid does (GitHub, VS
   Code, the repo) with no upload.
 

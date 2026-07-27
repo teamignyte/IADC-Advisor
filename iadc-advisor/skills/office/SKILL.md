@@ -98,5 +98,5 @@ creates, uploads, updates, moves, copies, renames, or deletes — e.g.
 `outlook_send_mail`, `outlook_create_*`, `sharepoint_upload_file`,
 `sharepoint_update_file`, `sharepoint_delete_item`, `sharepoint_move_item`,
 `sharepoint_create_folder`. If a user asks the architect to send mail or edit a
-document, decline: that's execution, outside this advisory bundle. Reading and
+document, decline: that's execution, outside this advisory plugin. Reading and
 citing is the whole job.

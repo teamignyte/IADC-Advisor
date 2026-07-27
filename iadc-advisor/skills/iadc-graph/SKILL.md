@@ -65,7 +65,7 @@ which is a different thing.
 
 ## MANDATORY first sequence
 
-1. **Seed — pick the right front door.** For this bundle the graph is a
+1. **Seed — pick the right front door.** For this plugin the graph is a
    **whole-application export**, and the **application UUID is in the Project configuration**
    (set by `/setup`) — you don't resolve it live.
    - **Read the UUID straight from the Project configuration. Do NOT call the Appian MCP
@@ -77,7 +77,7 @@ which is a different thing.
      in the graph — not the app seed target.)
      If the Application **UUID** (read from the Project configuration after applying any
      **Personal overrides**) is missing, empty, or still an **unfilled angle-bracket placeholder**
-     (e.g. `<application UUID — …>`) — or `/setup` hasn't run — the bundle isn't set up: ask
+     (e.g. `<application UUID — …>`) — or `/setup` hasn't run — the plugin isn't set up: ask
      the user for the UUID (or run `/setup`), rather than reaching for a live lookup. Judge this
      by the **token, not the wording: angle brackets present ⇒ unfilled**, whatever words sit
      inside them — placeholder text may itself describe or resemble a UUID, which is *not* an answer.

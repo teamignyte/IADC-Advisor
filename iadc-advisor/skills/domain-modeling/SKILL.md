@@ -9,8 +9,9 @@ Actively build and sharpen the project's domain model as you design. This is the
 
 ## File structure
 
-These are **generated project artifacts, not committed bundle source** — they live in the
-**git-ignored `outputs/` workspace** (see `outputs/README.md`). Most projects have a single
+These are **generated project artifacts, not committed plugin source** — they live in the
+**`outputs/` workspace** (git-ignored, unless this repo declined `/setup`'s ignore rules; see
+`outputs/README.md`, if this repo has one). Most projects have a single
 context:
 
 ```
@@ -39,8 +40,8 @@ outputs/
 
 Create files lazily — only when you have something to write. If no `CONTEXT.md` exists, create
 one under `outputs/` when the first term is resolved; create an `adr/` folder when the first ADR
-is needed. (The `outputs/` base is git-ignored by default — see `outputs/README.md` to change
-that if your team wants the model version-controlled.)
+is needed. (Where `/setup`'s ignore rules were accepted, the `outputs/` base is git-ignored — see
+`outputs/README.md` to change that if your team wants the model version-controlled.)
 
 ## During the session
 

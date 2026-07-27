@@ -20,9 +20,9 @@ follows to build it. It is the handoff artifact — it replaces splitting work i
   developer says they're happy do you write it to disk.
 - **Advisory.** The spec is instructions for a *human* to execute; the agent never builds
   Appian objects. To-spec produces the plan, not the build.
-- **Gitignored outputs workspace, not the tracker.** Output goes to the gitignored `outputs/`
-  workspace in the repo — never committed as bundle source, and (absent O365 write scopes) not
-  SharePoint. Same workspace Pressure-test captures to.
+- **The `outputs/` workspace, not the tracker.** Output goes to the `outputs/` workspace in the
+  repo — gitignored where `/setup`'s ignore rules were accepted, never committed as plugin
+  source, and (absent O365 write scopes) not SharePoint. Same workspace Pressure-test captures to.
 - **Readiness gate — reconcile, then check the ticket's `Status:`.** If escalations are open, run
   **`/reconcile <TICKET-KEY>`** first (step 1) to pull any late Slack replies, then read the
   `Status:` line of `outputs/<TICKET-KEY>/decisions.md`. On **`READY`** (no open escalations) you
@@ -68,7 +68,7 @@ follows to build it. It is the handoff artifact — it replaces splitting work i
    `BLOCKED`,** title it `<TICKET-KEY> Spec (PROVISIONAL).md` and open with a
    `> PROVISIONAL — pending escalations:` banner listing each assumed-pending decision; re-run once
    `/reconcile` flips the status to `READY` to produce the final spec.
-6. **Hand off.** The developer executes the build steps outside this bundle; the spec is the
+6. **Hand off.** The developer executes the build steps outside this plugin; the spec is the
    source of record for the build.
 
 ## Spec template

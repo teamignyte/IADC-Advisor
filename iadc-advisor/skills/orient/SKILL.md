@@ -9,7 +9,7 @@ argument-hint: "an area or object to orient on, or nothing for the whole app"
 
 Answer **"what does this app do, and how does it do it"** — for someone with no build in view yet. A new developer landing on the codebase, or an experienced one dropped into an unfamiliar corner, needs a *map* before they need anything else: the shape of the app, the objects that carry it, the data model, the decisions that explain why it's built this way, and where it's heading.
 
-This skill produces that map as a single **cited briefing**. It doesn't interview you and it doesn't plan a change — it reads the real application from every grounding source the bundle has and narrates what it finds.
+This skill produces that map as a single **cited briefing**. It doesn't interview you and it doesn't plan a change — it reads the real application from every grounding source the plugin has and narrates what it finds.
 
 ## When this — and when something else
 
@@ -72,7 +72,7 @@ Close the graph session, then hand back a single narrated document, top-down:
 4. **Why it's built this way** — the decisions (ADRs) behind the structure.
 5. **Where it's heading** — what's in flight on the board.
 
-**Every claim carries a citation** — a graph node/edge, an ADR, or a ticket — per the bundle's house rule that answers are grounded in sources. A briefing the reader can't trace back is worse than no briefing.
+**Every claim carries a citation** — a graph node/edge, an ADR, or a ticket — per the plugin's house rule that answers are grounded in sources. A briefing the reader can't trace back is worse than no briefing.
 
 ## After the map
 

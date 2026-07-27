@@ -7,7 +7,7 @@ description: "MANDATORY skill for Appian MCP tool usage. Provides critical domai
 
 This is an **architect-in-a-box**, not a builder. The Appian MCP runs in **read-only mode** (`LCP_TOOL_MODE=readonly`), so only inspection tools (`list*`, `get*`) are exposed — the mutating tools (`create*`, `update*`, `delete*`) and the environment-touching test tools are **not available**, by design. The architect inspects the Appian environment to answer questions and pressure-test plans; it does not create or change objects.
 
-That means the create/update material in this skill is **advisory reference**: it's the domain knowledge you use to give correct advice and to spot a design that would break — "here's how you'd build this record type, and here's what would go wrong" — not a set of actions you take. Execution happens with a full-access build tool, outside this bundle.
+That means the create/update material in this skill is **advisory reference**: it's the domain knowledge you use to give correct advice and to spot a design that would break — "here's how you'd build this record type, and here's what would go wrong" — not a set of actions you take. Execution happens with a full-access build tool, outside this plugin.
 
 ## CRITICAL: Read This Before Using Appian MCP Tools
 
@@ -233,7 +233,7 @@ it names, substitute *that* into `VERSION=`, and tell the user you did.
 The Bash tool starts a **fresh shell for each call**, so **shell state does not carry between
 commands**: a variable set in one block is unset in the next. That is why each block below repeats
 the same guarded assignment — keep it, fill it in every time, and never rely on a `VERSION` "already
-set" by an earlier block. There is no `APPIAN_VERSION` environment variable in this bundle; the
+set" by an earlier block. There is no `APPIAN_VERSION` environment variable in this plugin; the
 value comes from the ambient Project configuration and you type it in.
 
 ### Step 2: Check functions.json for function existence

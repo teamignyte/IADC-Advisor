@@ -43,3 +43,17 @@ the disposition of the *generated* domain docs changes here.
   removes the `/outputs/*` rule from `.gitignore` — called out in `outputs/README.md`.
 - Nothing about outputs ever flows back to the workshop repo; they are client-instance
   artifacts by construction.
+
+## Amended by [ADR-0009](0009-ship-as-claude-code-plugin.md) / [ADR-0010](0010-no-config-in-skill-files.md)
+
+The decision above still stands — generated artifacts live in an `outputs/` workspace in
+the client's repo, git-ignored by default. What changed is **who puts them there**: the
+product now ships as a plugin, which cannot place files in the client repo, so the
+workspace and its ignore rules are **written into the app repo by `/setup`**, not shipped.
+Concretely, the first consequence above is stale: there is no shipped `.gitignore` and no
+`outputs/.gitkeep`. `/setup` appends the `/outputs/*` + `!/outputs/README.md` entries to
+the client's own `.gitignore` — **with their explicit consent, which they may decline** —
+creates `outputs/`, and offers `outputs/README.md` (the tracked file that now keeps the
+folder in git). On the decline path the workspace exists but is *not* ignored, which is
+why the skills describe it as git-ignored **where `/setup`'s ignore rules were accepted**
+rather than unconditionally.

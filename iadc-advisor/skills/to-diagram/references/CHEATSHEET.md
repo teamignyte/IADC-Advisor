@@ -468,5 +468,5 @@ flowchart LR
 | Confluence | Plugin |
 | Docusaurus | Plugin (`@docusaurus/theme-mermaid`) |
 
-Platforms bundle their own Mermaid version, which lags official releases. Core types (flowchart, sequence, class, state, ER, gantt, pie, gitGraph, mindmap, timeline, journey) render everywhere; the newest types (architecture-beta, kanban, packet, treemap, xychart, sankey, block) may not render on a given platform, or may only work under their legacy `-beta` names. Check the bundled version by rendering a code block containing just `info`, or test in the target platform before committing.
+Platforms bundle their own Mermaid version, which lags official releases. Core types (flowchart, sequence, class, state, ER, gantt, pie, gitGraph, mindmap, timeline, journey) render everywhere; the newest types (architecture-beta, kanban, packet, treemap, xychart, sankey, block) may not render on a given platform, or may only work under their legacy `-beta` names. Check which version a platform bundles by rendering a code block containing just `info`, or test in the target platform before committing.
 

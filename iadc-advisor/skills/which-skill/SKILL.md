@@ -1,12 +1,12 @@
 ---
 name: which-skill
-description: Ask which skill or flow fits your situation. A router over the skills in this Appian architect-in-a-box bundle.
+description: Ask which skill or flow fits your situation. A router over the skills in this Appian architect-in-a-box plugin.
 disable-model-invocation: true
 ---
 
 # Which Skill
 
-You don't remember every skill, so ask. This is a router over the skills in this bundle — an **advisory Appian architect**. It helps a developer figure out **how to build the ticket in front of them**, answers questions about an Appian application, and — for net-new work — sharpens planning into specs and ticket breakdowns. It does **not** write code or build Appian objects; execution happens outside this bundle.
+You don't remember every skill, so ask. This is a router over the skills in this plugin — an **advisory Appian architect**. It helps a developer figure out **how to build the ticket in front of them**, answers questions about an Appian application, and — for net-new work — sharpens planning into specs and ticket breakdowns. It does **not** write code or build Appian objects; execution happens outside this plugin.
 
 A **flow** is a path through the skills. Most work runs along the **main flow**; the other two flows are for when the work *isn't* a defined build. Everything else is a standalone tool or a vocabulary layer that runs underneath.
 
@@ -31,7 +31,7 @@ You have an idea to shape into something a developer can pick up and build — n
 1. **`/interrogate-with-docs`** — sharpen the idea by interview. Start here when the project **has a domain model**: it's stateful, retaining what it learns in `CONTEXT.md` and ADRs. (No `CONTEXT.md`/codebase to ground against? Use `/interrogate-me` — see Standalone. Both run the same `/interrogating` primitive; `interrogate-with-docs` is the one that leaves a paper trail.)
 2. **`/to-tickets`** — split the sharpened thinking into tracer-bullet tickets, each declaring its **blocking edges**. On a local tracker that's one file per ticket; on a real tracker (Jira, etc.) the edges become native blocking links, so any ticket whose blockers are done can be grabbed.
 
-**This is the handoff point.** The tickets go to developers (or coding agents) *outside* this bundle to implement — where each one becomes a starting point for `/pressure-test`. (A *defined* ticket skips this flow: `ticket → /pressure-test → /to-spec` produces the build spec directly, no split needed.)
+**This is the handoff point.** The tickets go to developers (or coding agents) *outside* this plugin to implement — where each one becomes a starting point for `/pressure-test`. (A *defined* ticket skips this flow: `ticket → /pressure-test → /to-spec` produces the build spec directly, no split needed.)
 
 Keep steps 1–2 in **one unbroken context window** so the interrogation and tickets build on the same thinking. If a session gets too long before `/to-tickets`, don't push on degraded — `/handoff` and continue in a fresh thread (see Crossing sessions).
 
@@ -59,7 +59,7 @@ The domain skills that let the architect answer questions and ground plans in th
 
 A model-invoked reference that runs *beneath* the other skills — the single source of truth for domain language. Reach for it directly when the **words**, not the process, are the problem; or let the skills above pull it in.
 
-- **`/domain-modeling`** — sharpen the project's *domain* language: challenge a fuzzy term, resolve an overloaded word ("account" doing three jobs), record a hard-to-reverse decision as an ADR. It's the active discipline `/pressure-test` and `/interrogate-with-docs` drive to keep the project glossary (`outputs/CONTEXT.md`) clean. (Project glossary and decision records are written to the git-ignored `outputs/` workspace — see `/pressure-test`.)
+- **`/domain-modeling`** — sharpen the project's *domain* language: challenge a fuzzy term, resolve an overloaded word ("account" doing three jobs), record a hard-to-reverse decision as an ADR. It's the active discipline `/pressure-test` and `/interrogate-with-docs` drive to keep the project glossary (`outputs/CONTEXT.md`) clean. (Project glossary and decision records are written to the `outputs/` workspace — git-ignored where `/setup`'s ignore rules were accepted; see `/pressure-test`.)
 
 ## Crossing sessions
 

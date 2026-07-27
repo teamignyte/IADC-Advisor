@@ -1,27 +1,67 @@
 # Appian Architect-in-a-Box — Workshop
 
-This is the **workshop**: the development environment for the Appian Architect-in-a-Box bundle. You are working *on the product here, not with it*.
+This is the **workshop**: the development environment for the Appian Architect-in-a-Box plugin. You are working *on the product here, not with it*.
 
-## The deliverable is `deliverable/` — and only `deliverable/` ships
+## The deliverable is the plugin — `iadc-advisor/`, and only it ships
 
-Everything the client receives lives under [`deliverable/`](deliverable/) — its `CLAUDE.md`, `README.md`, `.claude/skills/`, `.mcp.json.example`, and `.gitignore`. On install those contents flatten to the client's repo root. Shipping is an **allowlist**: if it's outside `deliverable/`, it does not ship. See [docs/adr/0001](docs/adr/0001-deliverable-lives-in-a-subfolder.md).
+The client receives the **`iadc-advisor` Claude Code plugin**: everything under
+[`iadc-advisor/`](iadc-advisor/) — its `.claude-plugin/plugin.json`, `skills/`, `hooks/`,
+and templates. This repo doubles as the private **marketplace**
+(`.claude-plugin/marketplace.json` at the root). Shipping is still an allowlist: the
+marketplace `source` points at `iadc-advisor/` and nothing else ships. Releases are
+deliberate: bump `version` in `plugin.json` and record it in `iadc-advisor/CHANGELOG.md`.
+See [docs/adr/0001](docs/adr/0001-deliverable-lives-in-a-subfolder.md) and
+[docs/adr/0009](docs/adr/0009-ship-as-claude-code-plugin.md).
 
 ## Dev docs live here at the root (never shipped)
 
-- `CONTEXT.md` — **maintainer** vocabulary for how the bundle is built and reasoned about. This is *not* a client Appian app's glossary; the bundle's own skills would misread it as one, which is exactly why they live in `deliverable/`, not here.
-- `docs/adr/` — decisions about building the bundle.
+- `CONTEXT.md` — **maintainer** vocabulary for how the plugin is built and reasoned about. This is *not* a client Appian app's glossary; the plugin's own skills would misread it as one, which is exactly why the plugin's skills live in `iadc-advisor/`, not here.
+- `docs/adr/` — decisions about building the plugin.
+
 ## Working here
 
-- **Develop the bundle** by editing files under `deliverable/`.
-- **Dogfood / test it as a client sees it** by opening Claude with **`deliverable/` as the working directory** — then `deliverable/CLAUDE.md` and `deliverable/.claude/skills/` load as root, exactly as they will for the client.
-- **The advisory posture holds even in the workshop:** this repo produces docs, decisions, and configuration — it does not build client Appian objects or write application code.
+- **Develop the plugin** by editing files under `iadc-advisor/`.
+- **Dogfood / test as a client sees it** in the scratch client repo at
+  `../iadc-dogfood` (a sibling of this repo, outside it — never inside the marketplace
+  tree): add this repo as a local marketplace and install at project scope
+  (`claude plugin marketplace add /home/saronsky/projects/IADC-Advisor`,
+  then in `../iadc-dogfood`: `claude plugin install iadc-advisor@ignyte --scope project`),
+  open Claude there, and run `/setup`. The session hook, namespaced skills, and
+  per-project state behave exactly as they will for the client. After editing the
+  plugin, refresh with `claude plugin marketplace update ignyte && claude plugin update
+  iadc-advisor` and start a fresh session.
+- **Never install or enable `iadc-advisor` in this repo itself** — its SessionStart
+  hook would inject the advisory-architect posture ("you do not write code") into every
+  maintainer session. Dogfood only in the scratch repo. (Since the restructure, the
+  product's skills no longer auto-load anywhere in this repo — expected.)
+- **The advisory posture holds even in the workshop:** this repo produces docs,
+  decisions, and configuration — it does not build client Appian objects.
 
 ## Deploying
 
 Push this workshop repo with the **PAT in `.secrets/git-credentials`** (gitignored; never committed) — that PAT is the deploy identity. Don't fall back to ambient GitHub or `gh` auth. It needs `repo` scope and must be SSO-authorized for the `teamignyte` org; refresh it there when it expires.
 
-## Extending the bundle
+## Extending the plugin
 
-Author or edit skills with the **`skill-creator`** skill — it carries the frontmatter conventions, progressive-disclosure structure, and description-triggering guidance, and can run eval loops to harden a new skill. When you add or rename a skill, update **`which-skill`** (the router) and the skill map in `deliverable/CLAUDE.md` to match.
+Author or edit skills with **`skill-creator`** — it carries the frontmatter conventions,
+progressive-disclosure structure, and description-triggering guidance, and can run eval
+loops to harden a new skill. Keep skills **advisory**: the plugin is deliberately
+execution-free (no code-writing or triage skills; it plans and hands off). When you add or
+rename a skill, update **`which-skill`** (the router). Never put a per-project value in a
+`SKILL.md` — that's [ADR 0010](docs/adr/0010-no-config-in-skill-files.md); per-project
+state is written by `/setup` into the client repo. Record hard-to-reverse decisions as ADRs
+in `docs/adr/`.
 
-Keep new skills **advisory** — the bundle is deliberately execution-free (no code-writing or triage skills; it plans and hands off). Record hard-to-reverse build decisions as ADRs in `docs/adr/`.
+## Agent skills
+
+### Issue tracker
+
+Issues and specs live as markdown files under `.scratch/<feature>/` in this repo. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical roles, unchanged — `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`, recorded as a `Status:` line in each issue file. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context — `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.

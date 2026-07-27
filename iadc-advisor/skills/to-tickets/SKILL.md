@@ -106,4 +106,4 @@ The end-to-end behaviour this ticket makes work, from the user's perspective —
 
 In either form, avoid specific file paths or code snippets — they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts — not a working demo, just the important bits.
 
-The tickets are the handoff point. Developers (or coding agents) outside this bundle work the frontier one ticket at a time — any ticket whose blockers are all done is grabbable. This bundle plans and hands off; it does not implement.
+The tickets are the handoff point. Developers (or coding agents) outside this plugin work the frontier one ticket at a time — any ticket whose blockers are all done is grabbable. This plugin plans and hands off; it does not implement.
