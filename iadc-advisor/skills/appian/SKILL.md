@@ -5,9 +5,12 @@ description: "MANDATORY skill for Appian MCP tool usage. Provides critical domai
 
 ## Posture: read-only / advisory
 
-This is an **architect-in-a-box**, not a builder. The Appian MCP runs in **read-only mode** (`LCP_TOOL_MODE=readonly`), so only inspection tools (`list*`, `get*`) are exposed — the mutating tools (`create*`, `update*`, `delete*`) and the environment-touching test tools are **not available**, by design. The architect inspects the Appian environment to answer questions and pressure-test plans; it does not create or change objects.
+This is an **architect-in-a-box**, not a builder. The Appian MCP runs in **read-only mode** (`LCP_TOOL_MODE=readonly`), so only inspection tools (`list*`, `get*`) are exposed. Not available, by design: the mutating tools (`create*`, `update*`, `delete*`) **and the environment-touching test tools — `testInterface`, `testRule`, `validateExpression`**. If a workflow below tells you to call one of those, it is describing what a full-access builder would do; you do the read-only equivalent instead (see the accessibility note below) or say plainly that the check needs a build tool.
 
-That means the create/update material in this skill is **advisory reference**: it's the domain knowledge you use to give correct advice and to spot a design that would break — "here's how you'd build this record type, and here's what would go wrong" — not a set of actions you take. Execution happens with a full-access build tool, outside this plugin.
+That means the **create, update, delete, validate and verify** workflows in this skill are **advisory reference**: they are the domain knowledge you use to give correct advice and to spot a design that would break — "here's how you'd build this record type, and here's what would go wrong" — not a set of actions you take. Execution happens with a full-access build tool, outside this plugin. Two consequences worth stating, because the emphatic framing further down does not:
+
+- **The deletion workflow's dependency check is live and is your blast-radius tool.** You cannot delete anything, but `getObjectDependents` is a `get*` tool and it works. When someone asks "what breaks if we remove this?", that check plus the structural review around it is exactly the right answer — run it.
+- **Accessibility audits are in scope and are done from source.** `testInterface` does not exist here, so do not try to render a component tree. Read the interface's SAIL expression with `getInterface` and evaluate it against `references/component-checks.md` and `references/accessibility-reference.md` — both are lookup tables that work fine against source. Only the render step is unavailable; the audit itself is squarely advisory work.
 
 ## CRITICAL: Read This Before Using Appian MCP Tools
 

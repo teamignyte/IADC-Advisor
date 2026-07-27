@@ -101,17 +101,31 @@ to `references/…`.
 
 `SKILL.md` carries a local `## Posture: read-only / advisory` section stating that this is
 an **architect, not a builder**; that the Appian MCP runs with `LCP_TOOL_MODE=readonly` so
-`create*`/`update*`/`delete*` are not exposed; and — the load-bearing part — that the
-skill's create/update material is **advisory reference for giving correct advice**, not a
-set of actions to take.
+`create*`/`update*`/`delete*` **and the test tools** (`testInterface`, `testRule`,
+`validateExpression`) are not exposed; and — the load-bearing part — that the skill's
+**create, update, delete, validate and verify** workflows are **advisory reference for
+giving correct advice**, not a set of actions to take.
+
+It also carries two carve-outs that a blanket "this is all reference" would get wrong:
+
+- **`getObjectDependents` is live** — you cannot delete, but the deletion workflow's
+  dependency check is a `get*` tool and is exactly the right answer to "what breaks if we
+  remove this?"
+- **Accessibility audits are in scope, done from source** — `testInterface` is absent, so
+  read the SAIL with `getInterface` and evaluate against `component-checks.md` /
+  `accessibility-reference.md`. Only the render step is unavailable.
 
 **Upstream has nothing like this**, because upstream's skill is written for people who do
 build. Losing it flips the plugin's most-loaded skill against the product's premise.
 
 This matters more after each refresh, not less: upstream keeps adding builder-oriented
-material (this refresh brought a create/update workflow back into `expressions.md` plus
-four build-and-verify checklists). The posture block is what reframes all of it as
-reference.
+material (this refresh brought a create/update workflow back into `expressions.md`, four
+build-and-verify checklists, and an accessibility-audit workflow). **Re-read this patch
+against the new content every time** — the 2026-07-27 refresh proved the framing can go
+out of date rather than just get lost: its original clause covered only "create/update
+material", which left the 80-line deletion workflow, the new blocking verification gates,
+and the audit workflow outside its literal scope. The audit was the live one — read-only
+advisory work the product genuinely wants to do, depending on a tool that isn't there.
 
 **Verify it by name after every refresh** — see the checks in §4.
 
