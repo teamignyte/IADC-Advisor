@@ -16,7 +16,7 @@ Each tab is defined with `a!tabItem()` which takes a label, optional icon, and c
 - You need tabs inside a form where sections can be completed in any order
 - You want animations on transition states
 
-### ✅ Use the manual tab pattern (`guidelines/patterns/tabs.md`) when:
+### ✅ Use the manual tab pattern (`references/patterns/tabs.md`) when:
 - You need badges or counts on tab labels
 - You need tabs integrated into a page header with a colored background
 - You need custom tab styling (colors, sizes, decorative bars)

@@ -129,7 +129,7 @@ Use the Resource Reference Map above to identify which reference file matches yo
 - Creating record types → Load `references/record-types.md` AND `references/data-modeling.md`
 - Adding relationships → Load `references/relationship-patterns.md`
 - Building interfaces → Load `references/interfaces.md` AND `references/sail.md`
-- Creating process models → Load `references/process-models.md` AND `references/node-types.md`
+- Creating process models → Load `references/process-models.md`; for per-node-type specifics it doesn't cover, look the node up in the Appian documentation (`/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search** below) — never guess a node's configuration
 
 #### Step 3: Load Supplementary References
 Based on what you discover in Step 2, load additional references:

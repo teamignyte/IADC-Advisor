@@ -2,7 +2,7 @@
 
 ## ⚠️ CRITICAL: Icon Validation
 **BEFORE using `a!richTextIcon()` with ANY icon:**
-- [ ] Read `/ui-guidelines/reference/rich-text-icon-aliases.md` to verify icon name exists
+- [ ] Verify the icon name exists in the Appian documentation — search `/context7` for the icon alias list, then confirm it against version-exact `docs.appian.com` via the **Appian Documentation Search** workflow in this skill's `SKILL.md`
 - [ ] NEVER guess icon names - always look up first
 
 ---
@@ -311,7 +311,7 @@ a!sideBySideLayout(
 ## Rich Text Icons
 
 ### a!richTextIcon Parameters
-- `icon`: **MUST** be valid alias from `/ui-guidelines/reference/rich-text-icon-aliases.md` - DO NOT GUESS
+- `icon`: **MUST** be a valid alias verified in the Appian documentation (`/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**) - DO NOT GUESS
 - `color`: Icon color (STANDARD, ACCENT, POSITIVE, NEGATIVE, SECONDARY, or hex)
 - `size`: Icon size (SMALL through EXTRA_LARGE)
 - `altText`: Accessibility text
@@ -374,7 +374,7 @@ a!richTextDisplayField(
 ## Validation Checklist
 
 ### Icon Validation (CRITICAL):
-- [ ] **IF using `a!richTextIcon()`:** Verify icon name in `/ui-guidelines/reference/rich-text-icon-aliases.md` FIRST
+- [ ] **IF using `a!richTextIcon()`:** Verify the icon name in the Appian documentation FIRST — `/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**
 - [ ] DO NOT GUESS icon names (e.g., "chart-bar" ❌ → "bar-chart" ✅)
 
 ### Syntax Validation:

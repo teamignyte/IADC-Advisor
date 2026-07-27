@@ -18,9 +18,27 @@ The architect **advises and plans**; your developers build. It reads and reasons
 - **Answer "how does our app work"** — with `/orient`, a single cited briefing that composes the dependency graph, the live environment, the Jira board, and your domain docs into the shape of the app, its data model, the decisions behind it, and what's in flight. Ideal for onboarding a new developer or catching up on an unfamiliar area. (Or go straight to the raw graph — what calls this, what breaks if I change it, how these objects relate.)
 - **Answer "how does Appian work"** with semantic search over the Appian documentation, confirmed against the official docs at your environment's version.
 - **Inspect your Appian environment** directly (read-only) to ground advice in the real configuration.
-- **Read your requirements and design documents** from SharePoint / OneDrive, and pull context from Teams and Outlook. _(Planned — the Office/SharePoint integration isn't built yet.)_
+- **Read your requirements and design documents** from SharePoint / OneDrive, and pull context from Teams and Outlook — through the Microsoft 365 connector, so an answer rests on what the spec actually says and cites the document it came from. `/setup` can pin the project's source-of-truth folder so searches start there instead of the whole tenant. (Read-only: it finds, reads, and cites — it never sends, uploads, or edits.)
 - **Read your Jira board for context** — what's planned, in flight, decided, blocked, or already tracked — so the architect's planning and answers are grounded in the work your team is actually tracking. (Jira stays human-first; the architect reads, and writes only light comments on request.)
 - **Research a question** against primary sources in the background, leaving a cited Markdown file in the repo.
+
+## Before you start
+
+`/setup` (step 4 below) asks for these and can't finish without them, so have them to hand:
+
+- **The `iadc` graph** — its URL, and its `appian-api-key`.
+- **The Appian MCP server** — a path to the **`uv`** executable on this machine, and a path to
+  the **extracted LCP MCP server bundle** (you'll be given the zip; unpack it somewhere stable
+  first — `/setup` needs the folder, not the archive).
+- **Your Appian environment** — the tenant URL (e.g. `https://<your-tenant>.appiancloud.com`)
+  and **your own Appian username and password**. They're personal, and they stay in a
+  gitignored file (see Configuration & secrets).
+- **Connectors enabled in your Claude client** — **Jira** (the Atlassian connector) and
+  **Microsoft 365**; **Slack** too if architectural gaps should be escalated there. These
+  connect via OAuth in your client's settings, so there's nothing to put on disk.
+
+The Appian documentation search needs no key. `/setup` can look up your application's UUID for
+you once the Appian server is connected.
 
 ## Getting started
 
@@ -31,8 +49,10 @@ your machine simply reports as not installed for everyone else, with nothing to 
 why.)
 
 1. **Add the marketplace** (once per repo), from a terminal in that repo:
-   `claude plugin marketplace add <this repo's git URL> --scope project` — access uses the
-   same credentials as the repo.
+   `claude plugin marketplace add https://github.com/teamignyte/IADC-Advisor.git --scope project`
+   — that repo is the plugin's marketplace, and access uses your usual GitHub credentials for
+   it. (It is *not* your app repo: adding your own repo instead is what produces
+   "Plugin not found in any marketplace".)
 2. **Install the plugin** (once per repo):
    `claude plugin install iadc-advisor@ignyte --scope project`. Commit the resulting
    `.claude/settings.json`.

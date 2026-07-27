@@ -8,6 +8,11 @@
 
 **Tech Stack:** Claude Code plugin system (`.claude-plugin/plugin.json`, `marketplace.json`, hooks), bash (SessionStart hook script), Markdown skills.
 
+> **⚠️ Correction (applied 2026-07-27, after execution) — the manifest steps below were wrong and are now fixed.**
+> As originally written, Task 2's Step 2 wrote `plugin.json` including `"skills": "./skills/"`, and Task 3's Step 4 told the reader to "register the hooks in the manifest" by adding `"hooks": "./hooks/hooks.json"`. Both of those are exactly the paths Claude Code **auto-discovers** (`skills/`, `hooks/hooks.json`), so declaring them registered the same paths a second time. The result: the plugin **installed successfully but loaded nothing** — `✘ failed to load — Duplicate hooks file detected`, no skills, no `/setup`, no posture hook.
+> The plan compounded the failure by verifying with `claude plugin validate`, which **passes on the broken manifest** — so validate is *not* a gate for this. The real check is a **real install** reporting the plugin as `enabled` in `claude plugin list`.
+> Steps 2 (Task 2) and 4 (Task 3) below, and their verification steps, are corrected accordingly. The shipped manifest correctly declares only `name`, `version`, `description`, `author`. This is recorded rather than silently deleted: the plan is the written record of how the conversion was done, and this mistake is worth keeping as a lesson.
+
 ## Global Constraints
 
 - Plugin name is exactly `iadc-advisor` (skills namespace as `iadc-advisor:*`). Never rename after release.
@@ -210,12 +215,11 @@ Create `iadc-advisor/.claude-plugin/plugin.json`:
   "name": "iadc-advisor",
   "version": "1.0.0",
   "description": "Advisory Appian architect: pressure-test tickets against the live app, produce build specs, answer how-does-our-app-work — advise and plan, never build.",
-  "author": { "name": "Ignyte Group" },
-  "skills": "./skills/"
+  "author": { "name": "Ignyte Group" }
 }
 ```
 
-(No `hooks` key yet — Task 3 adds it together with the files it points at, so this task's `claude plugin validate` never sees a dangling path.)
+**Those four keys and nothing else.** Do **not** add a `skills` key, and do **not** add a `hooks` key here or in any later task: Claude Code auto-discovers `skills/` and `hooks/hooks.json`, so declaring either registers the same path twice and the plugin installs but loads nothing (see the Correction note at the top of this plan). Task 3 adds the hook *files*; it does not touch this manifest.
 
 - [ ] **Step 3: Write the marketplace**
 
@@ -261,6 +265,8 @@ Thumbs.db
 Run: `claude plugin validate iadc-advisor && claude plugin validate . && ls iadc-advisor/skills | wc -l && git status --porcelain | grep -c '^R' && git status --porcelain | grep -c '^ *D' || true`
 Expected: both validations pass (no missing-description warnings); skill count `20`; rename count large (~100+); delete count `0`.
 
+Also run: `grep -c 'skills\|hooks' iadc-advisor/.claude-plugin/plugin.json || true` → Expected: `0`. **`claude plugin validate` is a schema check, not a load check** — it passes on a manifest that redundantly declares the auto-discovered paths and therefore loads nothing. The load gate is Task 7's real install (`claude plugin list` must report `iadc-advisor` as `enabled`).
+
 ```bash
 git add -A
 git commit -m "restructure: deliverable/ becomes the iadc-advisor plugin; repo doubles as the ignyte marketplace"
@@ -274,8 +280,8 @@ git commit -m "restructure: deliverable/ becomes the iadc-advisor plugin; repo d
 - Create: `iadc-advisor/hooks/hooks.json`
 - Create: `iadc-advisor/hooks/session-start.sh`
 - Create: `iadc-advisor/hooks/posture.md`
-- Modify: `iadc-advisor/.claude-plugin/plugin.json` (add the `hooks` key)
 - Delete: `iadc-advisor/CLAUDE.md` (its content dissolves into `posture.md` here and `/setup`/README in Tasks 5–6)
+- **Not** modified: `iadc-advisor/.claude-plugin/plugin.json` — `hooks/hooks.json` is auto-discovered; declaring it breaks loading (see the Correction note at the top of this plan)
 
 **Interfaces:**
 - Consumes: nothing — the `posture.md` content (distilled from the deleted `CLAUDE.md`) is inlined in full at Step 3.
@@ -389,22 +395,17 @@ Main flow: `ticket → /pressure-test → (/reconcile) → /to-spec` — the bui
 - Surface a simpler path when you see one; push back when warranted.
 ```
 
-- [ ] **Step 4: Register the hooks in the manifest and delete the shipped `CLAUDE.md`**
+- [ ] **Step 4: Delete the shipped `CLAUDE.md`** (and leave the manifest alone)
 
-In `iadc-advisor/.claude-plugin/plugin.json`, add after the `"skills"` line:
-
-```json
-  "hooks": "./hooks/hooks.json"
-```
-
-Then:
+`hooks/hooks.json` needs **no** manifest registration — Claude Code discovers it from that exact path. Do **not** add a `hooks` key to `iadc-advisor/.claude-plugin/plugin.json`; doing so registers the hook file twice and the whole plugin fails to load (`✘ failed to load — Duplicate hooks file detected`). The manifest stays as Task 2 wrote it: `name`, `version`, `description`, `author`.
 
 ```bash
 git rm iadc-advisor/CLAUDE.md
 claude plugin validate iadc-advisor
+grep -c 'hooks' iadc-advisor/.claude-plugin/plugin.json || true
 ```
 
-Expected: validation passes with the hooks path now resolving.
+Expected: validation passes; the `grep -c` prints `0`. Remember that `validate` would have passed either way — it is a schema check, not a load check; loading is proven only by Task 7's real install.
 
 - [ ] **Step 5: Verify the hook script end-to-end**
 
@@ -420,7 +421,7 @@ Expected: posture text, then `## Project configuration` with both lines, then `#
 - [ ] **Step 6: Commit**
 
 ```bash
-git add iadc-advisor/hooks iadc-advisor/.claude-plugin/plugin.json
+git add iadc-advisor/hooks
 git commit -m "hook: SessionStart injects posture + project config; retires shipped CLAUDE.md"
 ```
 
@@ -903,6 +904,8 @@ cd ../iadc-dogfood && claude plugin install iadc-advisor@ignyte --scope project
 ```
 
 Expected: install succeeds; `../iadc-dogfood/.claude/settings.json` now enables `iadc-advisor`.
+
+**This is the real load gate.** Then run `claude plugin list` and confirm `iadc-advisor` reports as **`enabled`** — not merely installed. A manifest that redundantly declares the auto-discovered `skills/` or `hooks/hooks.json` paths installs cleanly and passes `claude plugin validate`, but shows here as `✘ failed to load — Duplicate hooks file detected`, with no skills and no posture hook. If you see that, strip the offending key from `plugin.json` (see the Correction note at the top of this plan) and reinstall.
 
 - [ ] **Step 3: Verify the session seam** (interactive — do this in a new Claude session in `../iadc-dogfood/`)
 

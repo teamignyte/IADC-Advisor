@@ -15,8 +15,12 @@ The shippable artifact — the Claude Code plugin named `iadc-advisor`: everythi
 scope from this repo's marketplace. The product this repo produces.
 
 **Marketplace**:
-This repo's `.claude-plugin/marketplace.json`, which lists the plugin. Clients add it
-once (`/plugin marketplace add`), then install and update the plugin from it.
+This repo's `.claude-plugin/marketplace.json`, which lists the plugin. Clients declare it
+at **project scope, once per app repo**
+(`claude plugin marketplace add <this repo's git URL> --scope project`), then install and
+update the plugin from it. The `/plugin marketplace add` slash form takes no `--scope` and
+lands at **user** scope — which leaves the repo declaring a plugin its teammates cannot
+resolve, so it is not the path to hand a client.
 
 **Workshop**:
 This repo, where the plugin is developed. Its root is the maintainer's dev

@@ -1901,7 +1901,6 @@ If removing input parameter:
 
 **Tool Limitations:**
 - Phase 1.5 documents tool enhancement proposals for expression-based dependency detection
-- See `/my-docs/interactive-guidance/tool-change-proposal-dependency-detection.md` (not in skill)
 
 ---
 

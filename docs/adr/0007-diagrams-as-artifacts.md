@@ -32,6 +32,6 @@ invocable directly). It is advisory — a diagram is a document, not a build.
   privacy posture. The skill flags this and keeps the inline block + saved file as the always-local
   path; for a sensitive client's architecture, skip the hosted Artifact.
 - Saving follows the plugin's **gated, never-auto-write** rule — offer, then write on approval.
-- `to-diagram` is registered in `which-skill` and the `CLAUDE.md` skill map, and carries
+- `to-diagram` is registered in `which-skill` (the router), and carries
   full-coverage Mermaid reference files under `references/` (progressive disclosure — read the
   matching file before generating a non-trivial diagram of that type).

@@ -2,7 +2,7 @@
 
 ## Prefer `a!tabLayout()` for Standard Tabs
 
-For standard tab navigation, use the native `a!tabLayout()` component. See `guidelines/layouts/tab-layout-instructions.md` for usage, parameters, and patterns.
+For standard tab navigation, use the native `a!tabLayout()` component. See `references/layouts/tab-layout-instructions.md` for usage, parameters, and patterns.
 
 The patterns below are for **custom tab styling only** — use them when you need badges, counts on tab labels, tabs integrated into a colored page header, or custom decorative bar styling that the native component doesn't support.
 

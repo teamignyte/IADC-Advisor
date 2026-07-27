@@ -54,11 +54,22 @@ rename a skill, update **`which-skill`** (the router). Never put a per-project v
 state is written by `/setup` into the client repo. Record hard-to-reverse decisions as ADRs
 in `docs/adr/`.
 
+**Never declare `skills` or `hooks` in `iadc-advisor/.claude-plugin/plugin.json`.** Both are
+auto-discovered from `skills/` and `hooks/hooks.json`; declaring them as well registers the same
+paths twice and the plugin **installs successfully but loads nothing** — `✘ failed to load —
+Duplicate hooks file detected`, no skills, no posture hook. Adding a skill means adding a folder
+under `skills/`, never a manifest key. This one bites silently: **`claude plugin validate` passes
+on the broken manifest**, so it is not a gate. The release check is a real install reporting the
+plugin as `enabled` in `claude plugin list` — verify there, not with `validate`.
+
 ## Agent skills
 
 ### Issue tracker
 
-Issues and specs live as markdown files under `.scratch/<feature>/` in this repo. See `docs/agents/issue-tracker.md`.
+Work on the plugin is tracked as plan-and-progress files, not tickets: the implementation plan
+lives in `docs/superpowers/plans/` (committed), and task-by-task progress in `.superpowers/sdd/`
+(gitignored working notes). There is no `.scratch/` tree here — `docs/agents/issue-tracker.md`
+records the local-markdown ticket conventions for if issues are ever filed as files.
 
 ### Triage labels
 

@@ -508,8 +508,8 @@ Detailed usage rules for layout components:
 Reusable UI patterns with SAIL examples:
 - `card_lists.md`, `kpis.md`, `messages.md`, `tabs.md`
 
-**Icon aliases** — `references/rich-text-icon-aliases.md`
-Full list of icon names available for `a!richTextIcon()` and `a!stampField()`.
+**Icon aliases** — not bundled; look them up in the Appian documentation
+The icon names available for `a!richTextIcon()` and `a!stampField()` are a closed vocabulary of ~1000 aliases and are **not** shipped with this skill. Search `/context7` for the icon alias list, then confirm the exact alias against version-exact `docs.appian.com` via the **Appian Documentation Search** workflow in `SKILL.md`. NEVER guess an alias — an invalid one fails validation or silently renders nothing.
 
 ## Platform Quirks
 

@@ -2,8 +2,9 @@
 
 The product now ships as a Claude Code **plugin** named `iadc-advisor`, distributed from
 this repo acting as its own private **marketplace** (`.claude-plugin/marketplace.json` at
-the root points at the plugin folder). Clients add the marketplace once, then install the
-plugin at **project scope** in each Appian-app repo (committed `.claude/settings.json`).
+the root points at the plugin folder). Clients declare **both** the marketplace and the plugin
+at **project scope** — once per Appian-app repo, in that repo's committed
+`.claude/settings.json`, so a teammate who clones it can resolve the plugin.
 This supersedes the flatten-into-repo install: nothing is copied into the client repo by
 hand anymore, and updates arrive by bumping `version` in `plugin.json` (deliberate
 releases + `CHANGELOG.md`, never per-commit).
@@ -44,3 +45,11 @@ docs explicitly steer self-hosted stdio servers to project `.mcp.json`.
 - Dogfooding changes: instead of opening Claude in the plugin folder, install the plugin
   from a local-path marketplace into a scratch client repo.
 - No migration path: no flattened installs exist (clean break).
+- **The manifest must stay minimal — never declare `skills` or `hooks` in
+  `iadc-advisor/.claude-plugin/plugin.json`.** Both are auto-discovered from `skills/` and
+  `hooks/hooks.json`; declaring them *additionally* registers the same paths twice, and the
+  plugin then **installs successfully but loads nothing** — `✘ failed to load — Duplicate hooks
+  file detected`, no skills, no posture hook. It fails silently in the worst place: **`claude
+  plugin validate` passes on the broken manifest**, so validation is not a gate. The only check
+  that catches it is a real install reporting the plugin as `enabled` in `claude plugin list` —
+  which is therefore the release check, not `validate`.

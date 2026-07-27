@@ -129,13 +129,6 @@ a!gridField(
 )
 ```
 
-**Conversion Details:** The converter will transform custom search/filter UX to built-in grid features. See `/conversion-guidelines/display-conversion-grids.md` `{#display-grids.search-filter}` for:
-- 4-step conversion process (inventory, match, apply decision matrix)
-- Decision tree: when to convert vs keep custom UX
-- User filter types (list filters, date range filters)
-- TODO comment format for missing user filters
-- Complete conversion examples
-
 ### When Custom Search/Filter UX is Appropriate
 
 Keep custom search/filter sections when they serve **multiple components**, not just one grid:
@@ -228,13 +221,6 @@ a!headerContentLayout(
   }
 )
 ```
-
-**Conversion Details:** The converter will transform mockup action buttons to functional record actions. See `/conversion-guidelines/display-conversion-actions.md` for:
-- Action type rules (Record List vs Related)
-- Primary key identification
-- Placement rules and validation
-- refreshAfter parameter usage
-- Style mapping and configuration
 
 ## ⚠️ CRITICAL: Function Variables in Grid Columns
 
@@ -771,7 +757,6 @@ a!gridColumn(
 - Use `a!buttonArrayLayout` to wrap multiple buttons in grid columns
 - Empty `saveInto: {}` indicates this is a mockup placeholder
 - Converter will transform to `a!recordActionField()` with proper action references
-- See `/conversion-guidelines/display-conversion-actions.md` for conversion patterns
 
 ### 8. Conditional Background Color Highlighting
 

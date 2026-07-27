@@ -328,4 +328,4 @@ Ready to create role groups and constants.
 - Group hierarchy and security → `security-patterns.md`
 - Record types and data model → `data-modeling.md` + `record-types.md`
 - Interfaces and SAIL → `interfaces.md` + `sail.md`
-- Process models → `process-models.md` + `node-types.md`
+- Process models → `process-models.md` (for per-node-type specifics, look the node up in the Appian documentation — `/context7` first, then version-exact `docs.appian.com` via the **Appian Documentation Search** workflow in `SKILL.md`; never guess a node's configuration)

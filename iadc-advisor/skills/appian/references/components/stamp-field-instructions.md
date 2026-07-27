@@ -3,8 +3,8 @@
 ## ⚠️ CRITICAL: Icon Parameter Validation
 
 **BEFORE using ANY icons in stampField, you MUST:**
-- [ ] Read `/ui-guidelines/reference/rich-text-icon-aliases.md` in full to see all valid icon names
-- [ ] ONLY use icon names that appear exactly in that file
+- [ ] Look the icon alias up in the Appian documentation — search `/context7` for the icon alias list, then confirm it against version-exact `docs.appian.com` via the **Appian Documentation Search** workflow in this skill's `SKILL.md`
+- [ ] ONLY use icon names the documentation lists verbatim, character for character
 - [ ] NEVER guess icon names - always verify first
 
 **The `icon` parameter accepts ONLY valid icon aliases.** Using invalid icon names will cause validation errors. There are ~1000 valid icons - guessing will fail.
@@ -27,8 +27,8 @@ StampField creates an icon and/or text displayed on a colored background shape. 
 ## Core StampField Parameters
 
 ### Icon Parameter
-- **icon**: Valid icon alias string from `/ui-guidelines/reference/rich-text-icon-aliases.md`
-- **⚠️ MANDATORY**: Look up icon name in aliases file BEFORE use
+- **icon**: Valid icon alias string, verified in the Appian documentation (`/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**)
+- **⚠️ MANDATORY**: Look the icon name up in the Appian documentation BEFORE use
 - **❌ DO NOT GUESS** icon names - they must match exactly
 
 ### Shape Options
@@ -157,14 +157,14 @@ a!stampField(
 ## Best Practices
 
 ### ✅ DO:
-- **ALWAYS read `/ui-guidelines/reference/rich-text-icon-aliases.md` before using ANY icon parameter**
+- **ALWAYS verify the icon alias in the Appian documentation — `/context7`, then version-exact `docs.appian.com` via Appian Documentation Search — before using ANY icon parameter**
 - Choose shape based on content: ROUNDED for avatars/status, SEMI_ROUNDED for modern badges
 - Use TINY size for most UI elements to avoid overwhelming the interface
 - Provide tooltips for icon-only stamps
 - Use consistent sizing within the same UI section
 
 ### ❌ DON'T:
-- **Guess icon names - ALWAYS verify in aliases file first**
+- **Guess icon names - ALWAYS verify the alias in the Appian documentation first**
 - Use stamps for plain icons without backgrounds (use richTextIcon instead)
 - Make stamps too large (MEDIUM/LARGE should be rare)
 - Put complex content in stamps (use cardLayout instead)
@@ -214,10 +214,10 @@ Remember: StampField is for simple badges and indicators with background shapes.
 Before using stampField in your code:
 
 ### Icon Validation (CRITICAL):
-- [ ] **IF using `icon` parameter:** Read `/ui-guidelines/reference/rich-text-icon-aliases.md` FIRST
-- [ ] **Verify icon name exists** in aliases file using exact string match
+- [ ] **IF using `icon` parameter:** Look the alias up in the Appian documentation FIRST — `/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**
+- [ ] **Verify icon name exists** in the Appian documentation using exact string match
 - [ ] **DO NOT GUESS** icon names based on other frameworks (Font Awesome, Material Icons, etc.)
-- [ ] Common mistake: "chart-bar" ❌ → Correct: "bar-chart" ✅ (always check the file!)
+- [ ] Common mistake: "chart-bar" ❌ → Correct: "bar-chart" ✅ (always check the docs!)
 
 ### Parameter Validation:
 - [ ] `shape` is one of: `"ROUNDED"`, `"SEMI_ROUNDED"`, `"SQUARED"`
