@@ -33,19 +33,17 @@ MCP tool schemas describe **parameters** (what fields exist), but not **domain r
 
 ## Configuration
 
-**Appian version:** read the **`Appian version`** line from the ambient **Project
-configuration** (injected at session start from `docs/agents/project.md`; written by
-`/setup`). Never hardcoded here — this file is shared across projects.
+**Appian version:** read the **`Appian version`** line from the ambient
+**Project configuration** (injected at session start from `docs/agents/project.md`;
+written by `/setup`). Never hardcoded here — this file is shared across projects.
 
 **Supported Versions (as of 2026-07-15):**
 26.6, 26.5, 26.3, 25.4, 25.3, 25.2, 25.1, 24.4, 24.3
 
-Set it via `/setup` (or edit `docs/agents/project.md`). This affects:
+Set **the Appian version** via `/setup` (or edit `docs/agents/project.md`). This affects:
 - Documentation URL lookups
 - Function availability checks
 - Version-specific guidance
-
-**To change:** edit the `Appian version` line in `docs/agents/project.md`, or re-run `/setup`.
 
 **Maintenance:** Update this list quarterly when new Appian versions are released. Typically add the latest version and remove the oldest (2+ years old).
 
@@ -288,7 +286,8 @@ From the documentation page, extract:
 
 ### Fallback behavior
 
-If the Project configuration has no `Appian version` line — or the line is present but
-empty, or still holds an unfilled angle-bracket placeholder (e.g. `<e.g. 26.6 — …>`):
+Read the ambient Project configuration **after applying any Personal overrides**. If it
+has no `Appian version` line — or the line is present but empty, or still holds an
+unfilled angle-bracket placeholder (e.g. `<e.g. 26.6 — …>`):
 1. Default to version 26.6 (latest)
 2. Suggest to user: "Using Appian 26.6 docs. To use a different version, set the `Appian version` line in docs/agents/project.md or re-run /setup."

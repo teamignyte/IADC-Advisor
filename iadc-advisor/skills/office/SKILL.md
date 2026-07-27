@@ -31,14 +31,20 @@ pulls requirements before sharpening a plan.
 
 The advisor searches a **pinned source-of-truth folder** first, rather than scanning the
 whole tenant. Read the **`Office source of truth`** entry from the ambient
-**Project configuration** (from `docs/agents/project.md`, written by `/setup`): one **row
-per prospect**, each carrying that prospect's site + pinned folder, with the
-**`Active prospect`** line naming which row is live. Managing several prospects from one
-instance? Add a row per prospect and switch by changing the **Active prospect** line —
-that single edit is the whole toggle.
+**Project configuration** (from `docs/agents/project.md`, written by `/setup`), after
+applying any **Personal overrides**: one **row per prospect**, each carrying that
+prospect's site + pinned folder, with the **`Active prospect`** line naming which row is
+live. Managing several prospects from one instance? Add a row per prospect and switch by
+changing the **Active prospect** line — that single edit is the whole toggle.
 
-If nothing is configured yet, ask the user for the site/folder (or search the tenant),
-read from there, and offer to record it via `/setup`.
+If **`Office source of truth`** is `none`, this project has **no M365 source documents**:
+say so and stop. Do **not** search the tenant and do **not** offer to configure a folder —
+`none` is a deliberate answer, not a missing one.
+
+If instead the value — or the **`Active prospect`**'s site/folder — is missing, empty, or
+still an unfilled angle-bracket placeholder (e.g. `<pinned folder>`), nothing is configured
+yet: ask the user for the site/folder (or search the tenant), read from there, and offer to
+record it via `/setup`.
 
 **How to reach it:** prefer `sharepoint_search` with a **content** query (words from the
 project or plan title) over `sharepoint_folder_search` by name — folder-name search is

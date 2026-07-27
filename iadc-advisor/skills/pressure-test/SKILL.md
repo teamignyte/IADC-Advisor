@@ -158,9 +158,9 @@ to the project lead** so they can unblock it:
    thread — the developer is notified automatically and will pick it up, so **no further action is
    required** on their side.
 2. **Pick the recipient — never guess one.** The recipient is the **Project lead** configured
-   below. If it's unset, or the gap clearly belongs to someone else (a data-model call vs. a
-   product question), **ask the builder who it should go to** — never look up or resolve a Slack
-   user yourself.
+   below. If it's unset — missing, empty, or still an unfilled angle-bracket placeholder — or
+   the gap clearly belongs to someone else (a data-model call vs. a product question),
+   **ask the builder who it should go to** — never look up or resolve a Slack user yourself.
 3. **Confirm both, then send — gated.** Show the builder the **drafted message *and* the named
    recipient** together ("send this to `<recipient>` on Slack? — y/n") and send only on an
    explicit yes. There is **no auto-send.** Channel: **Slack** (`slack_send_message`; stage it
@@ -181,9 +181,11 @@ only outward writes here, and both are **gated**.
 ### Configuration
 
 Escalation is configured in the ambient **Project configuration** (from
-`docs/agents/project.md`, written by `/setup`): the **`Escalation`** line (channel —
-Slack | Jira comment | hand-off) and **`Project lead`** (Slack channel/handle, or Jira
-account). If unset, ask the user where escalations should go and suggest running `/setup`.
+`docs/agents/project.md`, written by `/setup`), after applying any **Personal overrides**:
+the **`Escalation`** line (channel — Slack | Jira comment | hand-off) and
+**`Project lead`** (Slack channel/handle, or Jira account). If either is missing, empty, or
+still an unfilled angle-bracket placeholder (e.g. `<Slack channel/handle, or Jira account>`),
+ask the user where escalations should go and suggest running `/setup`.
 
 ## Readiness & reconcile
 
