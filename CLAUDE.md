@@ -66,11 +66,13 @@ plugin as `enabled` in `claude plugin list` — verify there, not with `validate
 
 `iadc-advisor/skills/appian/` is vendored from <https://github.com/appian/dev-mcp-skills> and
 carries deliberate local patches — chiefly the ADR 0010 config relocation (upstream hardcodes
-`**Appian Version:** 26.6`; we read it from the ambient Project configuration) and repairs to 17
+`**Appian Version:** 26.6`; we read it from the ambient Project configuration) and repairs to 15
 citations upstream points at files that do not exist. **Never edit that tree without reading
 [docs/vendored-appian-skill.md](docs/vendored-appian-skill.md) first** — it records every
-deliberate divergence, how to update via `git subtree`, and the greps that catch a silent revert.
-The copy is currently stale (upstream ships 65 reference files; we have 52).
+deliberate divergence, the refresh procedure, and the greps that catch a silent revert.
+Refreshed to upstream `0ab639c4` on 2026-07-27. **Adding a local patch means adding it to that
+doc in the same commit** — an undocumented divergence is indistinguishable from staleness at
+refresh time, and one nearly cost us the skill's advisory posture.
 
 ## Agent skills
 

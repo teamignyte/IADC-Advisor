@@ -248,7 +248,18 @@ The process model needs a parameter named `record` typed to the record type's `t
 - **RELATED_ACTION** (delete): restrict to admins or record owner
 - Always set `contextExpr` on RELATED_ACTION to pass the record into the process model
 - The `key` must be unique within the record type and is used in SAIL references
-- RELATED_ACTIONs auto-surface only on record views, NOT on custom `a!gridField` grids. When adding a RELATED_ACTION (e.g., Edit), also update any dashboard interface that displays that record type in a custom grid — add `recordActions` to the grid or a link column using `a!recordActionField()` to surface the action on each row.
+
+### Surfacing Actions After Configuration
+
+**Configuring an action does NOT make it appear to users — you must also place it where users can reach it.** How depends on the action type and where records are shown:
+
+- **LIST_ACTION** (create): auto-appears on Appian's built-in record list, but that list is rarely used. On a custom `a!gridField()`, wire it via the grid's `recordActions` parameter.
+- **RELATED_ACTION** on a **record view** (Summary View): usually surfaced via the view's `relatedActionShortcuts` (most common), or `a!recordActionField()` for precise positioning on complex interfaces. (The auto-generated related-actions tab is hidden in modern apps via `hideRelatedActionsView: true`.)
+- **RELATED_ACTION** on a **custom grid** or anywhere **outside a record view**: does NOT auto-surface — wire it via the grid's `recordActions` parameter or `a!recordActionField()`.
+
+⚠️ After adding a RELATED_ACTION (e.g., Edit), also update any dashboard/interface that displays that record type in a custom grid, or the action will be invisible there.
+
+See `references/appian-workflow-patterns.md` ("Surfacing Record Actions on Interfaces") for the full decision guide and examples.
 
 ## User Filters
 
@@ -291,6 +302,16 @@ Load both files together - universal for structure, this file for specifics.
 
 Record type deletion is **CRITICAL risk** and requires typed confirmation. Follow these dependency checks:
 
+**Step 1: Check expression dependencies** via `getObjectDependents(uuid)`:
+   - Find all interfaces referencing this record type
+   - Find all expression rules using recordType!
+   - Find all process models with record type nodes/variables
+   - Find all Web APIs querying this record type
+   - Deduplicate by UUID and group by type
+   - Present top 10 per type (or all if < 10)
+
+**Step 2: Check structural dependencies:**
+
 1. **Check relationships** via `listRecordTypeRelationships(uuid)`
    - Count MANY_TO_ONE relationships (this RT depends on others)
    - Count ONE_TO_MANY relationships (other RTs depend on this one)
@@ -310,26 +331,48 @@ Record type deletion is **CRITICAL risk** and requires typed confirmation. Follo
 
 **Present to user:**
 ```
-You are about to DELETE record type "[Name]" (UUID: [uuid]).
+⚠️ CRITICAL: You are about to DELETE record type "[Name]" (UUID: [uuid])
 
-This will permanently remove:
-- Appian record type definition (metadata layer)
-- [N] relationships to other record types
-- [N] record views
-- [N] record actions
-- [N] user filters
+Expression dependencies (automated check):
+❌ Interfaces: N unique (M references) - will get "Unknown record type" errors
+   [Show top 10 with breadcrumbs - see confirmation-patterns.md Universal Workflow 7]
+   
+❌ Expression Rules: N unique (M references) - will fail validation
+   [Show top 10 with breadcrumbs]
+   
+❌ Process Models: N unique (M references) - nodes/variables will fail
+   [Show top 10 with breadcrumbs]
+   
+❌ Web APIs: N unique (M references) - will fail validation
+   [Show top 10 with breadcrumbs]
+
+Structural dependencies (confirmed):
+❌ [N] relationships to other record types
+   [List each relationship with source/target]
+❌ [N] record views (will be deleted)
+❌ [N] record actions (will be deleted)
+❌ [N] user filters (will be deleted)
 
 Database impact:
 - The database table [TABLE_NAME] will be PRESERVED
 - [N] data records remain in database but are no longer accessible via Appian
 
-Impact on other objects:
-- [List of record types with FK relationships to this one] will have orphaned fields
-- Interfaces/expressions using this record type will break
+What breaks if you proceed:
+- N interfaces will get "Unknown record type" errors
+- N expression rules will fail validation
+- N process models will have broken nodes/variables
+- N Web APIs will fail
+- Related record types will have broken relationships
+- [N] records become inaccessible (but data preserved in database)
 
 This action CANNOT be undone (record type metadata will be lost).
 
-To confirm, type: DELETE [Name]
+Options:
+1. Cancel (recommended - remove dependencies first)
+2. Proceed (HIGH RISK - breaks N+ design objects)
+3. Details (show full dependency list)
+
+To confirm HIGH RISK operation, type: DELETE [Name]
 ```
 
 #### Field Deletion
