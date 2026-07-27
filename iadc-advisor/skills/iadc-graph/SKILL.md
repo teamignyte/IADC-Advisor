@@ -51,7 +51,8 @@ session start from `docs/agents/project.md`; written by `/setup`): the **`Applic
 entry — full name, **Nicknames**, and **UUID**. Read the UUID from there rather than
 resolving it live through the Appian MCP.
 
-Seeding uses `seed(application_uuid="<UUID from the Project configuration>")`. If a
+Seeding uses `seed(application_uuid=APPLICATION_UUID)`, where `APPLICATION_UUID` stands for the
+**UUID** value read from the Project configuration and passed verbatim as a string. If a
 developer names the app by a nickname, map it to the UUID via the **Nicknames** line
 there — never via a live lookup.
 
@@ -71,7 +72,7 @@ there — never via a live lookup.
      **Personal overrides**) is missing, empty, or still an unfilled angle-bracket placeholder
      (e.g. `<application UUID — …>`) — or `/setup` hasn't run — the bundle isn't set up: ask
      the user for the UUID (or run `/setup`), rather than reaching for a live lookup.
-   - `seed(application_uuid="<uuid from Project configuration>")` — the normal path here.
+   - `seed(application_uuid=APPLICATION_UUID)` — the normal path here.
      Asynchronous; returns `state: "queued"` immediately, before the build finishes.
    - `seed(export_ref="<path>")` — only when you're co-located with the MCP server and
      already have an extracted export directory on its disk. Synchronous; returns

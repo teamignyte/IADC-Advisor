@@ -157,19 +157,20 @@ to the project lead** so they can unblock it:
    answerable in a reply. **Close by telling the lead exactly what to do:** just reply in this
    thread — the developer is notified automatically and will pick it up, so **no further action is
    required** on their side.
-2. **Pick the recipient — never guess one.** The recipient is the **Project lead** configured
-   below. If it's unset — missing, empty, or still an unfilled angle-bracket placeholder — or
-   the gap clearly belongs to someone else (a data-model call vs. a product question),
-   **ask the builder who it should go to** — never look up or resolve a Slack user yourself.
+2. **Pick the recipient — never guess one.** The recipient is the **`Project lead`** read from the
+   ambient **Project configuration** — see *Configuration* below for how to read it and the one
+   remedy that applies when it isn't set. If the gap clearly belongs to someone else (a data-model
+   call vs. a product question), **ask the builder who it should go to** — never look up or
+   resolve a Slack user yourself.
 3. **Confirm both, then send — gated.** Show the builder the **drafted message *and* the named
    recipient** together ("send this to `<recipient>` on Slack? — y/n") and send only on an
-   explicit yes. There is **no auto-send.** Channel: **Slack** (`slack_send_message`; stage it
-   with `slack_send_message_draft` first if useful) or, alternatively, a **Jira comment** on the
-   ticket tagging the lead (via `/jira`). If no channel/lead is configured, fall back to
-   **hand-off** — give the builder the drafted text to send themselves. Prefer a destination the
-   **developer also sees** (a shared channel, or @-mention the dev) so the lead's in-thread reply
-   notifies them automatically. **Capture the send's `channel_id` + `message_ts`** — reconcile needs
-   them to find the reply later.
+   explicit yes. There is **no auto-send.** Channel: whichever the **`Escalation`** line names —
+   **Slack** (`slack_send_message`; stage it with `slack_send_message_draft` first if useful) or a
+   **Jira comment** on the ticket tagging the lead (via `/jira`). When it names **hand-off** there
+   is nothing to send from here: hand the builder the drafted text (branch 2 of *Configuration*).
+   Prefer a destination the **developer also sees** (a shared channel, or @-mention the dev) so
+   the lead's in-thread reply notifies them automatically.
+   **Capture the send's `channel_id` + `message_ts`** — reconcile needs them to find the reply later.
 4. **Record** the gap under *Open / escalated* in `decisions.md`: the question, its **provisional
    lean** (so planning continues on a marked assumption), **who** it went to, and the **thread
    pointer** (the Slack `channel_id` + `message_ts`, or the Jira comment id) so the reply can be
@@ -183,9 +184,25 @@ only outward writes here, and both are **gated**.
 Escalation is configured in the ambient **Project configuration** (from
 `docs/agents/project.md`, written by `/setup`), after applying any **Personal overrides**:
 the **`Escalation`** line (channel — Slack | Jira comment | hand-off) and
-**`Project lead`** (Slack channel/handle, or Jira account). If either is missing, empty, or
-still an unfilled angle-bracket placeholder (e.g. `<Slack channel/handle, or Jira account>`),
-ask the user where escalations should go and suggest running `/setup`.
+**`Project lead`** (Slack channel/handle, or Jira account). Test in this order, first match wins
+— **exactly one remedy applies per state:**
+
+1. **Unfilled ⇒ not configured.** If **`Escalation`** is missing, empty, or still an
+   **unfilled angle-bracket placeholder** (e.g. `<Slack | Jira comment | hand-off>`), nothing is
+   configured: ask the user where escalations should go and suggest running `/setup`. Judge this
+   by the **token, not the wording: angle brackets present ⇒ unfilled**, whatever words sit inside
+   them — placeholder text may itself mention `hand-off`, which is *not* an answer.
+2. **`hand-off` ⇒ deliberate, and needs no `Project lead`.** A configured **hand-off** means the
+   advisor sends nothing at all: **give the builder the drafted text** to send themselves, plus
+   your read of who should see it. Do **not** ask where escalations should go and do **not**
+   suggest `/setup` — hand-off is a deliberate answer, not a missing one, and an unset
+   **`Project lead`** is expected in this state.
+3. **A named channel ⇒ a `Project lead` is required.** With **`Escalation`** set to **Slack** or
+   **Jira comment**, the send needs a recipient. If **`Project lead`** is missing, empty, or still
+   an **unfilled angle-bracket placeholder** (e.g. `<Slack channel/handle, or Jira account>`), ask
+   the user who escalations should go to and suggest running `/setup`. Otherwise draft, then
+   confirm-and-send under the gate in *Escalate the gaps* step 3 — propose → confirm → send is
+   never skipped, and there is still **no auto-send**.
 
 ## Readiness & reconcile
 

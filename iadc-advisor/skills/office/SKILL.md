@@ -34,17 +34,25 @@ whole tenant. Read the **`Office source of truth`** entry from the ambient
 **Project configuration** (from `docs/agents/project.md`, written by `/setup`), after
 applying any **Personal overrides**: one **row per prospect**, each carrying that
 prospect's site + pinned folder, with the **`Active prospect`** line naming which row is
-live. Managing several prospects from one instance? Add a row per prospect and switch by
+live. Tracking several prospects in this one repo? Add a row per prospect and switch by
 changing the **Active prospect** line — that single edit is the whole toggle.
 
-If **`Office source of truth`** is `none`, this project has **no M365 source documents**:
-say so and stop. Do **not** search the tenant and do **not** offer to configure a folder —
-`none` is a deliberate answer, not a missing one.
+Then test whether it is configured — **in this order, first match wins:**
 
-If instead the value — or the **`Active prospect`**'s site/folder — is missing, empty, or
-still an unfilled angle-bracket placeholder (e.g. `<pinned folder>`), nothing is configured
-yet: ask the user for the site/folder (or search the tenant), read from there, and offer to
-record it via `/setup`.
+1. **Unfilled ⇒ not configured.** If the **`Office source of truth`** value — or the
+   **`Active prospect`**'s site/folder — is missing, empty, or still an
+   **unfilled angle-bracket placeholder** (e.g. `<pinned folder>`), nothing is configured yet.
+   Judge this by the **token, not the wording: angle brackets present ⇒ unfilled**, whatever
+   words sit inside them — placeholder text may itself mention `none`, which is *not* an answer.
+   Ask the user for the site/folder (or search the tenant), read from there, and offer to record
+   it via `/setup`.
+2. **A bare `none` ⇒ deliberate.** Only when the value is the bare word `none`, with no angle
+   brackets around it, does this project have **no M365 source documents**: say so, and
+   **do not search SharePoint/OneDrive** for source documents. Do **not** offer to configure
+   a folder — `none` is a deliberate answer, not a missing one.
+   This stops **SharePoint/OneDrive document search only**.
+   **Teams and Outlook lookups are unaffected** — recovering a decision from Teams or Outlook
+   discussion works exactly as it does on any other project.
 
 **How to reach it:** prefer `sharepoint_search` with a **content** query (words from the
 project or plan title) over `sharepoint_folder_search` by name — folder-name search is

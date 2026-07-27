@@ -230,7 +230,7 @@ Read the **`Appian version`** line from the ambient **Project configuration**. U
 **First lookup in session (cache for reuse):**
 ```bash
 # Use the Appian version from the ambient Project configuration
-VERSION="26.6"  # example — substitute the configured version
+VERSION="${APPIAN_VERSION:?substitute the configured Appian version — never run this unsubstituted}"
 
 # Fetch and cache functions.json
 curl -s "https://docs.appian.com/suite/help/$VERSION/functions.json" \

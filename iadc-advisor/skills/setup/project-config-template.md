@@ -7,6 +7,7 @@ Edit these values in place (or re-run `/setup`); this file is committed and shar
   - **UUID:** `<application UUID — the iadc graph seed target>`
 - **Escalation:** `<Slack | Jira comment | hand-off>`
   - **Project lead:** `<Slack channel/handle, or Jira account>`
-- **Office source of truth:** `<rows below | none>` — `none` means this project has no M365 source documents
+- **Office source of truth:** `rows below` — replace with `none` if this project has no M365 source documents
   - **Row:** `<prospect name>` — site `<SharePoint site>`, folder `<pinned folder>`
-  - **Active prospect:** `<prospect name — must match one of the Row names>`
+    - One **Row** line per prospect: copy this whole line for each additional prospect, keeping the names distinct
+  - **Active prospect:** `<prospect name — must match one of the Row names>` — picks which Row above is live
