@@ -76,4 +76,4 @@ Off the main flow entirely.
 
 ## Precondition
 
-**`/setup`** — run once before your first flow to configure this bundle for your project: connect the MCP servers, set your Jira project key and Appian/graph endpoints, and lay out the issue tracker and domain docs the other skills assume.
+**`/setup`** — run once before your first flow. It materializes this project's own state **into this repo**, since the plugin itself ships none of it: `.mcp.json` (the MCP servers and their literal credentials), `docs/agents/project.md` (the project configuration the session hook injects and six skills read), the `.gitignore` entries that keep those out of git, the `outputs/` workspace, and the issue-tracker and domain-doc config the other skills assume — then verifies every connection is live.
