@@ -19,19 +19,33 @@ application_uuid"}` — no partial/best-guess behavior.
 
 A path to an **already-extracted Appian export directory on the MCP
 server's own filesystem**. Only usable by a caller co-located with the
-server — e.g. an agent running on the MCP host itself, which already has
+server — e.g. the review agent running on the IADC host, which already has
 export directories sitting on disk from a prior extraction. If you're a
 remote client (a dev agent talking to the hosted MCP over HTTP), you almost
 certainly do not have a path on the server's disk to hand it — use
 `application_uuid` instead.
 
 Builds and registers the session **synchronously**: the call blocks until
-the graph finishes building, and the response state is always
+the resolver→builder pipeline finishes, and the response state is always
 `"ready"`. There is no polling step for this path.
 
 ```
 seed(export_ref="/path/on/server/to/extracted-export") -> {"session_id": "...", "state": "ready"}
 ```
+
+The build itself runs off the server's event loop in a worker thread (IV-316)
+— from YOUR call's point of view nothing changes (it's still one blocking
+round trip, same shape as above), but on the Graph service's shared HTTP
+transport, another principal's concurrent call (a read against an existing
+session, `/health`, etc.) is no longer frozen out for the whole build
+duration (IV-316). A SECOND concurrent `export_ref` seed normally queues
+behind this one (a dedicated lock caps concurrent heavy builds on this
+process) — only the reverse (other calls blocked BY a build) changed. That
+cap is a normal-case guarantee, not an absolute one: cancelling a seed
+mid-build (e.g. an MCP cancellation or client disconnect on the in-flight
+seed call) releases the lock while its worker thread keeps running to
+completion (a thread can't be stopped from outside), so a second seed can
+briefly build concurrently with it.
 
 ### `application_uuid` — asynchronous, remote dev-agent path
 
@@ -82,8 +96,8 @@ An `export_ref` session's `seed_status` will just immediately confirm
 ## TTL and eviction
 
 Sessions are evicted **lazily** on idle timeout, not by a background
-sweeper: 30 minutes (1800s) since the session was last accessed. Every
-read/seed call refreshes that timer, so a
+sweeper: `DEFAULT_SESSION_TTL_SECONDS = 1800` (30 minutes) since
+`last_accessed`. Every read/seed call refreshes `last_accessed`, so a
 session under active use never expires; one left idle for 30+ minutes gets
 swept the next time *anything* touches the registry (not necessarily your
 own next call). Once evicted, the `session_id` behaves exactly like one
@@ -105,7 +119,7 @@ unknown id: `{"error": "session does not belong to this caller",
 "session_id": ...}`. You cannot hand a `session_id` to another agent/caller
 and have them read it — each caller needs its own `seed`. (Under stdio
 there's effectively one fixed local principal, so this only bites under the
-HTTP-mounted transport with distinct authenticated callers.)
+Graph service's HTTP transport with distinct authenticated callers.)
 
 ## Closing a session
 
@@ -131,14 +145,14 @@ export directory; the session_id then behaves as closed.
 ## Single-worker constraint (context, not something you control)
 
 The session registry is in-memory and process-local on the MCP server —
-this only matters if you're the one operating the server, not to a caller
-driving it over the wire. Mentioned here only so you
+this only matters if you're the one operating the server (see the
+`iadc-ops` skill), not to a caller driving it. Mentioned here only so you
 don't misdiagnose a "session not found" as a client-side bug: if the server
 were ever run under multiple worker processes, a session seeded on one
 worker would be invisible to a request landing on another. The deployed
-server runs single-worker specifically to avoid this; it's not something a
-graph-MCP caller needs to reason about beyond knowing sessions aren't
-resilient to a server restart either way.
+Graph service runs single-worker specifically to avoid this; it's not
+something a graph-MCP caller needs to reason about beyond knowing sessions
+aren't resilient to a server restart either way.
 
 ## Live refresh: `report_changes` — the write path
 
@@ -161,7 +175,7 @@ the freshened nodes/edges immediately.
 
 Per-uuid outcomes:
 - `"patched"` / `"deleted"` — applied.
-- `"rejected"` — that uuid isn't part of this session's application graph
+- `"rejected"` — that uuid isn't part of this session's package membership
   (reporting a change to an object the session never knew about is a no-op,
   not an error).
 - `"error"` — the live re-fetch or patch itself failed (LCP auth/network
@@ -169,8 +183,8 @@ Per-uuid outcomes:
   carries the exception text.
 
 Known gap worth knowing before you rely on this: **reporting a record
-type's own UUID does not re-expand that record type's fields, views,
-actions, or relationships** — it only refreshes the record type's
+type's own UUID does not re-materialise that record type's fields, views,
+actions, or relationships** — the patch only refreshes the record type's
 own artifact attributes, not its structural children. `report_changes` is
 built for rule/interface/expression-rule-style content edits; a record
 type's structure changing under you means the field/view/action/

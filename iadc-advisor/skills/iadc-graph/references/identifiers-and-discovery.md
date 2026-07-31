@@ -19,7 +19,7 @@ list):
 | `recordView` / view-backed `recordField` | `f"{rt_uuid}/{stub}"` composite — synthesized, Appian assigns no id here | `a1b2c3d4-.../myUrlStub` |
 | Boundary nodes (`external`/`dangling`/`unknown`) | Priority-ordered: uuid, then name, then raw ref text | Varies — could be a UUID, an `appian:{name}` form, or literal malformed ref text |
 
-Full priority rules for boundary node ids:
+Full priority rules for boundary nodes (`_boundary_node_id` in the resolver):
 `dangling` always has a uuid; `unknown` is `appian:{name}` if a name was
 recovered, else the raw ref text; `external` tries uuid, then name, then raw
 ref text, in that order. You don't need to compute any of this yourself —
@@ -33,7 +33,7 @@ token you got from a tool response.
 ## `node_label` is output-only
 
 Every compact record includes a `node_label` — a human-readable string
-computed for display. It is
+computed for display (ADR 0019/0028; see `resolver/node_label.py`). It is
 **never a valid input.** Do not pass `node_label` back into `node_id`,
 `source`, or `target` on any call — it is frequently NOT the node's id (an
 `appian_builtin`'s label is its IDE-form name like `a!queryRecordType`, not
@@ -41,13 +41,13 @@ the stored `appian:a!queryRecordType` id; a `recordField`'s label is
 `"{ownerRTName}.{fieldName}"`, not its UUID; a boundary node's label is
 `"⊘ {kind}:{node_id}"` when no name is recoverable — the id appears inside
 the label string but the label as a whole is not the id — or `"⊘ {name}
-[{kind}]"` when one is (e.g. `⊘ User.username [external]`,
+[{kind}]"` when one is (IV-173: e.g. `⊘ User.username [external]`,
 `⊘ CC_uiViewRecordDocuments [dangling]`) — neither form is the id).
 
 **The rule that matters in practice: always pass `id` exactly as returned by
 another tool call — never one you typed, guessed, or extracted from a label
 string.** This mirrors the Appian skill's UUID discipline
-(its own `tools-mcp.md` reference, "Critical Rule: Never
+(`.claude/skills/appian/references/tools-mcp.md`, "Critical Rule: Never
 Fabricate UUIDs") — same failure mode (silent 404-style `"node not found"`),
 same fix (retrieve, don't guess).
 
@@ -59,7 +59,7 @@ that into a real, verified `node_id`, in the order to reach for them:
 
 ### 1. Search inside the already-seeded graph (primary path)
 
-If the object you care about is plausibly part of the seeded application, this
+If the object you care about is plausibly part of the seeded package, this
 is the first thing to try — no other MCP involved:
 
 - **`find_nodes(session_id, query, kind?, object_type?, limit?)`** —
@@ -80,7 +80,7 @@ object_type?}, ...], "returned", "total_matching", "truncated"}`. **Read the
 If `truncated: true` and your match isn't in the returned page, narrow the
 query/filters rather than assuming it doesn't exist.
 
-If nothing matches, the object may not be part of this session's application graph —
+If nothing matches, the object may not be part of this session's package —
 move to step 2.
 
 ### 2. The Appian-MCP name→UUID handoff (object not yet in the seeded graph)
@@ -89,7 +89,7 @@ When you have a human-given name for an Appian design object that isn't
 (yet) in this session's graph — or you're not sure it is, and want to
 resolve the name authoritatively before searching — resolve it via the
 `appian` MCP first, exactly the way the `appian` skill requires for its own
-tool calls (its own `tools-mcp.md` reference, "UUID Sources"
+tool calls (`.claude/skills/appian/references/tools-mcp.md`, "UUID Sources"
 / "Never Fabricate UUIDs"):
 
 - `listRecordTypes` / `getRecordType` — record types
@@ -106,7 +106,7 @@ keyed by the Appian object UUID verbatim) — but it's only a *candidate*
 `node_id` until the graph confirms it. Feed it to `get_node(session_id,
 node_id)` or `find_nodes(session_id, query=<uuid>)` to check it's actually a
 node in this session's graph before treating it as one (it may not be, if
-the object is outside the seeded application — it would then show up, if at
+the object is outside the seeded package — it would then show up, if at
 all, as a boundary node under a different id per the priority rules above,
 or not be reachable at all).
 

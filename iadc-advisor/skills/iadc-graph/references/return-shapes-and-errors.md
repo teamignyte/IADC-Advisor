@@ -1,11 +1,21 @@
 # Return shapes & errors
 
-The exact JSON shapes the read tools return, the JSON-string wrapping, the
-session error dicts, and every empty-vs-not-found distinction.
+Canonical source: `graph_mcp/tools.py` (the shapes) and `graph_mcp/__main__.py`
+(the JSON-string wrapping + session error dicts). `tests/test_graph_mcp_docs_drift_guard.py`
+guards this file **token-level only**: every wire key `node_label`,
+`occurrence_count`, `total_matching` and every error string `unknown or
+expired session`, `node not found`, `session not ready` must appear
+backtick-wrapped somewhere below, forward-coupled from the code that
+produces them (named error constants; wire keys verified against real
+return values — a sibling check in the same suite also guards the 18-tool
+roster against `SKILL.md`'s own enumeration). It does **not** enforce full
+prose/shape equality — if a shape's structure changes beyond these guarded
+tokens, update this file by hand, same as before.
 
-**Every one of the 17 tools returns a JSON string**, not a raw object. Parse
-the string before reading any field. Everything below describes the shape
-*after* you parse it.
+**Every one of the 18 tools returns a JSON string**, not a raw object —
+`mcp.tool()` functions all end in `json.dumps(...)`. Parse the string before
+reading any field. Everything below describes the shape *after* you
+`json.loads()` it.
 
 **Errors are dicts, never raised exceptions across the MCP boundary** — with
 exactly one exception: an invalid `direction` (`get_neighbors`/`reachable`) is
@@ -22,8 +32,8 @@ edge record (built by `enrich_node`):
 ```
 
 - **The label key is `node_label` — not `name`, not `display_name`.** Don't
-  guess at either of those; they aren't on the wire. (`display_name` was a
-  legacy key — if you see it in older docs/code comments, treat it as
+  guess at either of those; they aren't on the wire. (`display_name` was the
+  pre-ADR-0028 key — if you see it in older docs/code comments, treat it as
   historical, not current.)
 - `object_type` is present **only** on `kind == "artifact"` nodes — omitted
   entirely on every other kind (never sent as `null`). Check for the key's
@@ -61,7 +71,7 @@ Sort order differs by which end varies:
 `get_out_edges`/`get_in_edges` take an optional `relation` parameter to
 pre-filter to one relation, same exact-match semantics as `edges_by_relation`
 below: an unknown/misspelled relation returns `[]`, not an error. Omitted
-(the default) returns every edge, unfiltered.
+(the default) returns every edge, unfiltered — the pre-IV-137 behavior.
 `get_out_edges(node, relation="calls")` and `get_in_edges(node,
 relation="uses_display_name")` answer "who does this call" / "who uses this
 display name" in one precise call instead of fetching every edge and
@@ -108,10 +118,10 @@ Shared by `list_nodes`, `find_nodes`, `reachable`:
   etc.) carries no `object_type` and contributes nothing to this map. Summing
   its values equals `node_count_by_kind["artifact"]` exactly — it does not
   change `total_nodes`, which stays the sum of `node_count_by_kind`.
-- `total_nodes`/`total_edges` are computed sums (the totals of the
-  `node_count_by_kind` / `edge_count_by_relation` values), not independently tracked counters.
+- `total_nodes`/`total_edges` are computed sums (`sum(node_count_by_kind.values())`
+  / `sum(edge_count_by_relation.values())`), not independently tracked counters.
 
-## `record_model` — one-call record type substructure
+## `record_model` — one-call record type substructure (IV-138)
 
 Read-only composition of a record type's `has_field`/`has_display_name`/
 `has_view`/`defines_action`/`declares`/`targets` edges — the nested
@@ -142,11 +152,11 @@ substructure in one call instead of an out-edges-then-per-child dance:
 - Every embedded record's `id` is a real node id — feed it straight into
   `get_node`/`get_out_edges`/etc., same as any other tool's output.
 - A field's `display_name` key is present **only** when a Display Name node
-  is actually present for that field (only created when
-  referenced, not for every field); absent, never `null`, when
+  is actually materialized for that field (ADR 0031 — reference-only
+  materialization, not every field gets one); absent, never `null`, when
   there isn't one.
 - `cardinality`/`update_behavior` on a relationship record are read off that
-  relationship node's own attrs — not derived from the target.
+  relationship node's own attrs (ADR 0028) — not derived from the target.
 - A record type with none of these (no fields/views/actions/relationships)
   returns empty lists for each — a real, valid answer, not an error.
 - Errors: the standard not-found dict when `record_type_id` is absent, PLUS
@@ -154,6 +164,55 @@ substructure in one call instead of an out-edges-then-per-child dance:
   when the node exists but isn't an artifact with `object_type ==
   "recordType"` (e.g. you passed a field/view/relationship id, or an
   unrelated artifact, by mistake).
+
+## `get_sail` — a node's SAIL, field-keyed (IV-148)
+
+SAIL is already retained in the session (`SessionEntry.context.artifacts`)
+but no other tool exposes the expression body — every other tool describes
+*relationships between* objects, not the SAIL text itself. `get_sail` is the
+read-only lookup for that text:
+
+```json
+{
+  "node_id": "<node_id>",
+  "node_label": "<str>",
+  "sail": [{"field": "expr", "text": "a!x()"}, {"field": "expr", "text": "a!y()"}]
+}
+```
+
+- For an **artifact** node: `sail` is that artifact's own `sail_strings`, in
+  original XML-document order — NOT sorted, and duplicate `field` values are
+  kept as separate entries (e.g. a processModel artifact with several node
+  `expr` slots returns one entry per slot).
+- For a **recordView** node (the composite `{rt_uuid}/{urlStub}` id, ADR 0028
+  slice A3): the view itself carries no SAIL — `sail` is the OWNING record
+  type artifact's entries whose `field` matches that exact
+  `detailViewCfg:{urlStub}` tag, same order/duplicates-kept semantics.
+- For every other kind (`appian_builtin`, the three boundary kinds
+  `external`/`dangling`/`unknown`, and the four non-view record-model kinds
+  `recordField`/`recordAction`/`recordRelationship`/`recordFieldDisplayName`)
+  — kinds that structurally never carry a SAIL body — plus an artifact or
+  recordView owner missing from the session's extracted artifacts (e.g. a
+  synthesized node with no corresponding Reader-extracted `Artifact`):
+
+```json
+{"node_id": "<node_id>", "node_label": "<str>", "sail": [], "reason": "..."}
+```
+
+**`sail: []` alone is not an error signal** — a real artifact with genuinely
+no SAIL (e.g. a `constant`) also returns `sail: []`, but WITHOUT a `reason`
+key. Check for the `reason` key's presence to distinguish "this kind/node
+structurally has no SAIL to show" from "this artifact really has none."
+
+Errors: the standard not-found dict when `node_id` is absent from the graph
+entirely (see "Node-not-found" below) — there is no distinct wrong-kind
+error the way `record_model` has one; every kind gets a real (possibly
+empty-with-reason) answer.
+
+**Freshness:** `get_sail` reads `SessionEntry.sail_map`, which a successful
+`report_changes` patch/delete rehydrates in place (IV-246) — a `get_sail`
+call after reporting a change on that same uuid sees the freshened SAIL (or,
+for a delete, the node-not-found error), not a stale pre-patch read.
 
 ## `get_node` — the full record
 
@@ -198,8 +257,8 @@ them off the compact edge record you drilled in from.
 
 Every read tool (`get_neighbors`, `get_node`, `callers_of`, `shortest_path`,
 `get_out_edges`, `get_in_edges`, `get_edge`, `edges_by_relation`, `list_nodes`,
-`find_nodes`, `graph_overview`, `reachable`, `report_changes`, `record_model`)
-funnels through the same node-resolution check first and returns one of
+`find_nodes`, `graph_overview`, `reachable`, `report_changes`, `record_model`,
+`get_sail`) funnels through the same `_resolve_or_error` check first and returns one of
 these three dicts verbatim on failure — check for `"error"` in the parsed
 JSON before assuming you got a real result shape:
 
@@ -267,9 +326,10 @@ success), or `"export_failed"`/`"export_timed_out"`/`"build_failed"`/
 {"error": "node not found", "id": "<node_id>"}
 ```
 Used by `get_neighbors`, `get_node`, `callers_of`, `get_out_edges`,
-`get_in_edges`, `reachable`, `record_model` for an absent `node_id`. For
-`shortest_path`, the same shape is used for whichever of `source`/`target` is
-missing — **`source` is checked first**, so if both are absent you'll see
+`get_in_edges`, `reachable`, `record_model`, `get_sail` for an absent `node_id` — the
+`node not found` error. For `shortest_path`, the same shape is used for
+whichever of `source`/`target` is missing — **`source` is checked first**,
+so if both are absent you'll see
 `source` named, not `target`. `record_model` additionally has its own
 distinct wrong-kind error — see its own section above, not this one.
 
@@ -315,7 +375,7 @@ you `[]`, identical to a correctly-spelled relation with zero matches. There
 is no way to distinguish "typo" from "genuinely zero of these" from the
 return value alone — check your spelling against the vocabulary reference if
 an empty result surprises you. The same holds for `get_out_edges`/
-`get_in_edges`'s optional `relation` parameter — it reuses this
+`get_in_edges`'s optional `relation` parameter (IV-137) — it reuses this
 exact-match filter, so a typo there is just as silent.
 
 ## Bad-input errors
@@ -342,7 +402,7 @@ or a bare list:
 ```
 
 - `"patched"` / `"deleted"` — no `detail` key.
-- `"rejected"` — uuid isn't in this session's application graph; `detail`
+- `"rejected"` — uuid isn't in this session's package membership; `detail`
   explains that.
 - `"error"` — the live re-fetch or patch itself raised (LCP auth/network
   failure, an object_type the patcher can't handle); `detail` is `str(exc)`.
@@ -351,7 +411,7 @@ If the session itself doesn't resolve, you get one of the standard session
 dicts — `unknown or expired session` / `session does not belong to this
 caller` / `session not ready` (see "Session-resolution errors" above) — at
 the top level instead of a `results` envelope, same as every other read
-tool: `report_changes` funnels through the same node-resolution check,
+tool: `report_changes` funnels through the same `_resolve_or_error` check,
 so all three apply, not just the first two.
 
 One more top-level (non-`results`) error unique to this tool, when no

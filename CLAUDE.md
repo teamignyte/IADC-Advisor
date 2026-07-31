@@ -13,6 +13,13 @@ deliberate: bump `version` in `plugin.json` and record it in `iadc-advisor/CHANG
 See [docs/adr/0001](docs/adr/0001-deliverable-lives-in-a-subfolder.md) and
 [docs/adr/0009](docs/adr/0009-ship-as-claude-code-plugin.md).
 
+**Before any release, byte-compare the vendored `iadc-graph` skill** against IADC at the sha
+recorded in [docs/vendored-iadc-graph-skill.md](docs/vendored-iadc-graph-skill.md) —
+`diff -r iadc-advisor/skills/iadc-graph <IADC>/.claude/skills/iadc-graph` must print nothing.
+If a graph image was deployed since that sha, refresh the copy **from the newly deployed sha
+first** (never from IADC `HEAD`) and then release: the skill may lag the deployed server, never
+lead it ([docs/adr/0011](docs/adr/0011-iadc-graph-skill-byte-identical-at-deployed-sha.md)).
+
 ## Dev docs live here at the root (never shipped)
 
 - `CONTEXT.md` — **maintainer** vocabulary for how the plugin is built and reasoned about. This is *not* a client Appian app's glossary; the plugin's own skills would misread it as one, which is exactly why the plugin's skills live in `iadc-advisor/`, not here.
@@ -73,6 +80,19 @@ deliberate divergence, the refresh procedure, and the greps that catch a silent 
 Refreshed to upstream `0ab639c4` on 2026-07-27. **Adding a local patch means adding it to that
 doc in the same commit** — an undocumented divergence is indistinguishable from staleness at
 refresh time, and one nearly cost us the skill's advisory posture.
+
+## The vendored `iadc-graph` skill
+
+`iadc-advisor/skills/iadc-graph/` is the opposite arrangement: a **byte-identical copy** of
+IADC's own `.claude/skills/iadc-graph/`, with **zero local patches**, taken at the sha that
+built the **deployed** graph image. That upstream is ours, so a divergence is never something to
+carry — it is something to upstream. **Never hand-edit that tree here**: fix it in IADC, where a
+drift-guard test couples the skill to the server's real tool roster per commit, then refresh.
+Refresh is triggered by a graph *deploy*, not by a plugin release, and always from the deployed
+sha — **the skill may lag the deployed server, never lead it.** Procedure, current sha, and the
+byte-identity consequences that must not be "fixed" locally:
+[docs/vendored-iadc-graph-skill.md](docs/vendored-iadc-graph-skill.md),
+[docs/adr/0011](docs/adr/0011-iadc-graph-skill-byte-identical-at-deployed-sha.md).
 
 ## Agent skills
 

@@ -2,8 +2,9 @@
   "_comment": "TEMPLATE — /setup asset. /setup writes the real .mcp.json (gitignored) into the app repo with LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json. Every _comment key is a note to /setup and is dropped from the file it writes.",
   "mcpServers": {
     "iadc": {
+      "_comment": "The graph MCP is served by the standalone Graph service on port 8001, over cleartext http — a separate service from the review API on 8000, which does NOT serve /mcp. The api-key is the Graph service's own key, not the review service's. The scheme becomes https once the endpoint is TLS-terminated; until then http is correct and https fails the handshake.",
       "type": "http",
-      "url": "https://<your-graph-host>:8000/mcp/",
+      "url": "http://<your-graph-host>:8001/mcp/",
       "headers": {
         "appian-api-key": "<your-iadc-graph-api-key>"
       }

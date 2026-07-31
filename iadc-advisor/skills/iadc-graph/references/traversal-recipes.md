@@ -1,6 +1,6 @@
 # Traversal recipes
 
-Worked call sequences for the questions this graph gets asked most.
+Worked call sequences for the review questions this graph gets asked most.
 Every recipe assumes a `session_id` from a prior `seed(...)` already in a
 queryable state (`"ready"` or `"ready_with_warnings"` — see the skill's
 session-lifecycle notes) and a starting `node_id` already in hand — get one
@@ -70,9 +70,9 @@ get_out_edges(session_id, node_id=<recordView node id, "{rt_uuid}/{urlStub}">)
 Filter the returned edge list to `relation == "renders_via"` — the record
 view's `uiExpr` reference to the rendering interface. The edge's `source` is
 the `recordView` node itself (not the owning record type — `renders_via` is
-sourced on the view), and `target` is the interface (or an
+re-sourced from the view, ADR 0028), and `target` is the interface (or an
 `external`/`dangling`/`unknown` boundary node if it doesn't resolve
-in-application).
+in-package).
 
 **To find the record view node id first:** `get_out_edges`/`list_nodes` on
 the owning record type, filtered to `relation == "has_view"` — its target is
@@ -134,7 +134,7 @@ the record view's detail-view config, not authored SAIL.
 ## 6. Orientation — "what is even in this graph"
 
 **Goal:** a first-look summary before you start drilling into specific
-nodes — sizes, shape, how much of the graph is boundary (out-of-application)
+nodes — sizes, shape, how much of the graph is boundary (out-of-package)
 material.
 
 **Call:**
@@ -225,10 +225,10 @@ can't tell which in advance and figures it out from the fetch result.
 
 **Read off the result:** `{"results": {uuid: {"status": ...}}}`, one entry
 per requested uuid — `"patched"`/`"deleted"` mean the graph was updated
-in-place; `"rejected"` means the uuid isn't in this session's application graph at all
+in-place; `"rejected"` means the uuid isn't in this session's package at all
 (nothing to patch); `"error"` means the live re-fetch itself failed (check
 `detail`). **Known gap:** patching a uuid that is itself a record type does
-not re-expand that record type's own fields/views/actions/
+not re-materialize that record type's own fields/views/actions/
 relationships — this path is for rules/interfaces/expression rule edits, not
 record-model structure changes.
 
@@ -249,7 +249,7 @@ four relations, then a follow-up call per field/relationship.
 ```
 record_model(session_id, record_type_id=<recordType artifact node id>)
 ```
-`record_type_id` must be an in-application artifact with `object_type ==
+`record_type_id` must be an in-package artifact with `object_type ==
 "recordType"` — find one via `find_nodes(session_id, query=<name>,
 kind="artifact", object_type="recordType")` or
 `list_nodes(session_id, kind="artifact", object_type="recordType")` first.
@@ -259,7 +259,7 @@ kind="artifact", object_type="recordType")` or
 for the full shape. Every embedded `id` feeds directly into any other tool
 (e.g. `get_out_edges` on a relationship's `id` if you need more than
 cardinality/target). A field only carries a `display_name` key when a
-Display Name node is actually present for it — most fields
+Display Name node is actually materialized for it (ADR 0031) — most fields
 won't have one. A record type declaring none of fields/views/actions/
 relationships returns empty lists, not an error; passing a node id that
 exists but isn't a record type (e.g. a field or relationship id by mistake)
