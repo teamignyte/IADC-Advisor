@@ -1,6 +1,6 @@
-# Appian Architect-in-a-Box — Bundle Design
+# Appian Architect-in-a-Box — Plugin Design
 
-The working vocabulary for building and maintaining this bundle *itself* — how the
+The working vocabulary for building and maintaining this plugin *itself* — how the
 product is structured, shipped, and reasoned about. This is maintainer vocabulary; it
 is **not** the domain language of any client's Appian application. That lives in the
 client's own `CONTEXT.md`, in the client's repo (see `docs/adr/0001`).
@@ -9,29 +9,46 @@ client's own `CONTEXT.md`, in the client's repo (see `docs/adr/0001`).
 
 ### Product and repository
 
-**Bundle**:
-The reusable Claude Code configuration — a `CLAUDE.md`, the skills, and MCP config —
-that turns Claude into an advisory Appian architect. The product this repo produces.
-_Avoid_: tool, app, plugin
+**Plugin**:
+The shippable artifact — the Claude Code plugin named `iadc-advisor`: everything under
+`iadc-advisor/` (skills, the session hook, templates), installed by clients at project
+scope from the **Catalog**. The product this repo produces.
 
-**Deliverable**:
-The subset of the repo that ships to a client: everything under `deliverable/`, and only
-that. Its contents flatten to the client's repo root on install.
-_Avoid_: release, dist
+**Catalog**:
+`IADC-Marketplace`'s `.claude-plugin/marketplace.json`, which lists this plugin alongside the
+rest of the IADC family. It is a *separate repo* — this one is only the workshop. Clients
+declare it at **project scope, once per app repo**
+(`claude plugin marketplace add https://github.com/teamignyte/IADC-Marketplace.git --scope project`),
+then install and update the plugin from it.
+_Avoid_: marketplace (ambiguous — the catalog file, the repo holding it, and the `ignyte`
+registration are three different things) The `/plugin marketplace add` slash form takes no `--scope` and
+lands at **user** scope — which leaves the repo declaring a plugin its teammates cannot
+resolve, so it is not the path to hand a client.
 
 **Workshop**:
-This repo, where the bundle is developed. Its root is the maintainer's dev
+This repo, where the plugin is developed. Its root is the maintainer's dev
 environment — auto-discovered by Claude Code — and is never shipped.
 
+**Per-project state**:
+Everything `/setup` materializes into a client app repo: the gitignored `.mcp.json`,
+the `docs/agents/*.md` configuration (including `project.md` and the gitignored
+per-person `project.local.md`), and the `outputs/` workspace. The plugin ships the
+intelligence; the app repo holds the per-project state.
+
+**Session hook**:
+The plugin's SessionStart hook — the replacement for the shipped `CLAUDE.md` (plugins
+cannot load one). Injects the operating posture plus `project.md`/`project.local.md`
+into every session in an app repo where the plugin is enabled.
+
 **Dev docs**:
-Design docs about *building the bundle* — this `CONTEXT.md` and `docs/adr/`. They sit
-at the workshop root, are shared among the bundle's
+Design docs about *building the plugin* — this `CONTEXT.md` and `docs/adr/`. They sit
+at the workshop root, are shared among the plugin's
 maintainers, and are never shipped.
 
 **Usage docs**:
-The `CONTEXT.md` and ADRs a *client* produces when they use the bundle on their own
+The `CONTEXT.md` and ADRs a *client* produces when they use the plugin on their own
 Appian app. They live in the client's repo and describe the client's project; the
-bundle never ships them.
+plugin never ships them.
 
 ### Flow and posture
 
@@ -64,10 +81,10 @@ A starting situation that generates planning work and then merges onto the spine
 e.g. `wayfinder` for a huge, foggy effort.
 
 **Handoff point**:
-The moment advisory output leaves the bundle for execution elsewhere. The bundle plans
+The moment advisory output leaves the plugin for execution elsewhere. The plugin plans
 up to this point and stops.
 
 **Advisory posture**:
-The house rule that the bundle only inspects, reasons, plans, and hands off — it never
+The house rule that the plugin only inspects, reasons, plans, and hands off — it never
 writes application code or mutates Appian design objects.
 _Avoid_: read-only (that's the MCP mode, narrower than the posture)

@@ -1,0 +1,11 @@
+# Normalize all text to LF in the repository.
+#
+# The vendored Appian skill (iadc-advisor/skills/appian/) arrived with CRLF while
+# its upstream (github.com/appian/dev-mcp-skills) uses LF. Left alone, every file
+# reads as fully changed on a `git subtree pull`, burying real conflicts in
+# line-ending noise. See docs/vendored-appian-skill.md.
+* text=auto eol=lf
+
+# The SessionStart hook must be LF: CRLF breaks a shebang script on Linux and in
+# Git-for-Windows bash.
+*.sh text eol=lf

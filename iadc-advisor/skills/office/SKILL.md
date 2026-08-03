@@ -1,0 +1,102 @@
+---
+name: "office"
+description: "Read Microsoft 365 context — SharePoint/OneDrive documents (requirements, specs, process docs) and Teams/Outlook discussion — through the Microsoft 365 connector, to ground the Appian advisor's planning and answers in source-of-truth documents. Read-only: inspect and cite, never send, upload, edit, or delete. Load when the architect needs to find or read a spec, requirements doc, or a decision recorded in Teams/Outlook. Verbs: read the spec, find requirements, what does the doc say, SharePoint doc, Teams thread, meeting notes."
+---
+
+Pull **context from Microsoft 365** to ground the Appian advisor. Like the Jira
+board, this surface is **human-first and read-only**: your job is to **find and
+read** source-of-truth documents and discussion — via the Microsoft 365
+connector — so planning and answers rest on what the spec actually says, not
+memory. You never send, upload, edit, move, or delete anything.
+
+Access is through the **Microsoft 365 Claude connector** (OAuth), not `.mcp.json`
+— there are no tokens or env vars to configure here. If the connector isn't
+connected, tell the user to enable it in their client's connector settings
+(`/setup` covers this) and fall back to what they can paste in or point you at.
+
+## What this is for
+
+- **Ground planning in requirements.** Before interrogating a plan or writing a
+  spec, find and read the SharePoint/OneDrive docs that state the requirements,
+  and answer "what did the spec say" from the document, not recollection.
+- **Recover decisions from discussion.** Pull the relevant Teams thread or
+  Outlook exchange where a decision or constraint was recorded, and bring it
+  into the conversation — cited.
+
+The ticket-first flow consumes this: `/pressure-test` grounds every question against
+these docs (searching SharePoint by the ticket key), and `/interrogate-with-docs`
+pulls requirements before sharpening a plan.
+
+## Configuration
+
+The advisor searches a **pinned source-of-truth folder** first, rather than scanning the
+whole tenant. Read the **`Office source of truth`** entry from the ambient
+**Project configuration** (from `docs/agents/project.md`, written by `/setup`), after
+applying any **Personal overrides**: one **row per prospect**, each carrying that
+prospect's site + pinned folder, with the **`Active prospect`** line naming which row is
+live. Tracking several prospects in this one repo? Add a row per prospect and switch by
+changing the **Active prospect** line — that single edit is the whole toggle.
+
+Then test whether it is configured. **Branch on the parent `Office source of truth` value alone**
+— it has exactly three states, so exactly one branch applies. Read it **in this order, first match
+wins**, and only reach for the child `Row:` / `Active prospect:` lines once branch 3 sends you there:
+
+1. **Parent unfilled ⇒ not configured.** If the **`Office source of truth`** value itself is
+   missing, empty, or still an **unfilled angle-bracket placeholder** (e.g. `<rows below | none>`),
+   nothing is configured yet. Judge this by the **token, not the wording: angle brackets
+   present ⇒ unfilled**, whatever words sit inside them — placeholder text may itself mention
+   `none`, which is *not* an answer. Ask the user for the site/folder (or search the tenant),
+   read from there, and offer to record it via `/setup`. **Do not consult the `Row:` or
+   `Active prospect:` lines here** — the parent already decided this branch.
+2. **Parent is a bare `none` ⇒ deliberate.** Only when the parent value is the bare word `none`,
+   with no angle brackets around it, does this project have **no M365 source documents**. Match it
+   **case-insensitively** — `none`, `None`, `NONE` are the same answer, as is a bare `N/A` — then
+   say so, and **do not search SharePoint/OneDrive** for source documents. Do **not** offer to
+   configure a folder — `none` is a deliberate answer, not a missing one. **Stop here whatever
+   the `Row:` and `Active prospect:` lines say** — the template has the user write `none` in place
+   and delete those lines, so any leftover bracketed child is stale noise, never a reason to fall
+   back to branch 1. This stops **SharePoint/OneDrive document search only**.
+   **Teams and Outlook lookups are unaffected** — recovering a decision from Teams or Outlook
+   discussion works exactly as it does on any other project.
+3. **Parent names rows ⇒ read the active row.** Any other parent value points at the rows beneath
+   it; the template ships the sentinel **`rows below`**, which means "the `Row:` lines under this
+   entry are the answer." Only now apply the same token test to the children:
+   - If the **`Active prospect`** line — or the **site** or **folder** on the row it names — is
+     missing, empty, or an **unfilled angle-bracket placeholder** (`<prospect name>`,
+     `<SharePoint site>`, `<pinned folder>`), the rows aren't filled in yet: ask the user for the
+     site/folder (or search the tenant), read from there, and offer to record it via `/setup`.
+   - Otherwise the pinned folder **is** configured — search it as described next.
+
+**How to search — whenever a branch above sends you searching.** Prefer `sharepoint_search` with a
+**content** query (words from the project or plan title) over `sharepoint_folder_search` by name —
+folder-name search is unreliable when the folder isn't named after the project. This holds at full
+strength for a **tenant-wide** search, which is exactly what branch 1 and the unfilled-rows arm of
+branch 3 send you to do.
+
+**Narrow to the pinned folder — only once branch 3 has landed on a configured row.** Then filter
+results to the pinned folder on the **Active prospect**'s row, and confirm the path is still
+current if searches stop returning it (docs can move). No other branch has a pinned folder to
+narrow to; on those, do exactly what the branch you landed on says.
+
+## Reading (the only mode)
+
+Use only the connector's **read** tools:
+
+- **SharePoint / OneDrive** — `sharepoint_search`, `sharepoint_folder_search`
+  to locate a site/drive/document; `read_resource` to read its contents.
+- **Outlook** — `outlook_email_search`, `outlook_calendar_search` for email
+  threads and meeting context.
+- **Teams** — `teams_list_chats`, `chat_message_search` for discussion.
+
+Summarize what's relevant back into the conversation and **cite the document
+title or thread** so the architect can trace it.
+
+## Never write
+
+This surface is strictly read-only. Do **not** call any tool that sends,
+creates, uploads, updates, moves, copies, renames, or deletes — e.g.
+`outlook_send_mail`, `outlook_create_*`, `sharepoint_upload_file`,
+`sharepoint_update_file`, `sharepoint_delete_item`, `sharepoint_move_item`,
+`sharepoint_create_folder`. If a user asks the architect to send mail or edit a
+document, decline: that's execution, outside this advisory plugin. Reading and
+citing is the whole job.

@@ -1,5 +1,14 @@
 # Store the application identity in the graph skill; seed from it, don't resolve it live
 
+> **Superseded by [ADR-0010](0010-no-config-in-skill-files.md).** The rule this ADR
+> established survives unchanged — the application UUID is **recorded once and seeded from,
+> never resolved live** on every run. Only the **storage location** moved: plugin skills live in
+> a shared, read-only cache that is replaced on every update, so the name/nicknames/UUID now
+> live in **`docs/agents/project.md`** in the client's own repo, written by `/setup` and
+> injected ambiently by the session hook. The `Configuration` blocks described below — in
+> `iadc-graph/SKILL.md`, and the Appian version in `appian/SKILL.md` — no longer exist. Kept for
+> history.
+
 `/pressure-test` and `/orient` seed the `iadc` graph from a whole-application export, which
 needs the Appian **application UUID**. Rather than resolve that UUID live through the
 Appian MCP on every run, `/setup` captures the application name, nicknames, and UUID once

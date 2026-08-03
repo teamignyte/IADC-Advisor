@@ -1,0 +1,29 @@
+{
+  "_comment": "TEMPLATE — /setup asset. /setup writes the real .mcp.json (gitignored) into the app repo with LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json. Every _comment key is a note to /setup and is dropped from the file it writes.",
+  "mcpServers": {
+    "iadc": {
+      "_comment": "The graph MCP is served by the standalone Graph service on port 8001, over cleartext http — a separate service from the review API on 8000, which does NOT serve /mcp. The api-key is the Graph service's own key, not the review service's. The scheme becomes https once the endpoint is TLS-terminated; until then http is correct and https fails the handshake.",
+      "type": "http",
+      "url": "http://<your-graph-host>:8001/mcp/",
+      "headers": {
+        "appian-api-key": "<your-iadc-graph-api-key>"
+      }
+    },
+    "appian": {
+      "type": "stdio",
+      "command": "<path-to-uv-executable>",
+      "args": ["run", "--directory", "<path-to-mcp-bundle-extracted>", "python", "-m", "lcp_mcp_server"],
+      "env": {
+        "LCP_URL": "https://<your-tenant>.appiancloud.com",
+        "LCP_USERNAME": "<your.appian.username>",
+        "LCP_PASSWORD": "<your-appian-password>",
+        "LCP_API_PATH": "/suite/plugins/servlet/stateless/lcp-api",
+        "LCP_TOOL_MODE": "readonly"
+      }
+    },
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
+    }
+  }
+}
