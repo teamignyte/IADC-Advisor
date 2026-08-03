@@ -5,14 +5,14 @@ How the engineering skills should consume this repo's domain documentation when 
 ## Before exploring, read these
 
 The domain docs are **generated project artifacts** — they live in the `outputs/` workspace
-(git-ignored where `/setup`'s ignore rules were accepted; see `outputs/README.md`), not
+(git-ignored where `/iadc-advisor:setup`'s ignore rules were accepted; see `outputs/README.md`), not
 committed project files:
 
 - **`outputs/CONTEXT.md`** — the project glossary, or
 - **`outputs/CONTEXT-MAP.md`** if it exists — it points at one `CONTEXT.md` per context. Read each one relevant to the topic.
 - **`outputs/adr/`** — the chronological, project-wide ADR history (one per substantive decision); read the ADRs that touch the area you're about to work in. A ticket's `outputs/<TICKET-KEY>/decisions.md` rolls up and links the ADRs made for that ticket.
 
-If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/domain-modeling` skill (reached via `/pressure-test` or `/interrogate-with-docs`) creates them lazily when terms or decisions actually get resolved.
+If any of these files don't exist, **proceed silently**. Don't flag their absence; don't suggest creating them upfront. The `/iadc-advisor:domain-modeling` skill (reached via `/iadc-advisor:pressure-test` or `/iadc-advisor:interrogate-with-docs`) creates them lazily when terms or decisions actually get resolved.
 
 ## File structure
 
@@ -45,7 +45,7 @@ outputs/
 
 When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in `outputs/CONTEXT.md`. Don't drift to synonyms the glossary explicitly avoids.
 
-If the concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/domain-modeling`).
+If the concept you need isn't in the glossary yet, that's a signal — either you're inventing language the project doesn't use (reconsider) or there's a real gap (note it for `/iadc-advisor:domain-modeling`).
 
 ## Flag ADR conflicts
 

@@ -1,6 +1,6 @@
 ---
 name: context7
-description: Semantic search over Appian documentation via the context7 MCP. Use this as the FIRST stop whenever you need to look up how an Appian feature, SAIL function, component, or platform behaviour works — "how do I…", "what's the function for…", "does Appian support…". Reach for it before answering an Appian docs question from memory, and confirm version-sensitive answers against the authoritative docs.appian.com via the /appian skill.
+description: Semantic search over Appian documentation via the context7 MCP. Use this as the FIRST stop whenever you need to look up how an Appian feature, SAIL function, component, or platform behaviour works — "how do I…", "what's the function for…", "does Appian support…". Reach for it before answering an Appian docs question from memory, and confirm version-sensitive answers against the authoritative docs.appian.com via the /iadc-advisor:appian skill.
 ---
 
 # context7 — Appian documentation search
@@ -34,6 +34,6 @@ context7 is the fast **discovery** layer; it is **not** the source of truth. Its
 So use it in this order:
 
 1. **Search context7 first** to find the relevant behaviour, function, or pattern quickly.
-2. **Confirm against `docs.appian.com`** — via the `/appian` skill's version-specific documentation lookup — whenever the answer is **version-sensitive** (function signatures, availability, deprecations), whenever you're about to give a firm recommendation, or whenever context7 comes back thin or empty. `docs.appian.com`, at the project's configured version, is authoritative; context7 is not.
+2. **Confirm against `docs.appian.com`** — via the `/iadc-advisor:appian` skill's version-specific documentation lookup — whenever the answer is **version-sensitive** (function signatures, availability, deprecations), whenever you're about to give a firm recommendation, or whenever context7 comes back thin or empty. `docs.appian.com`, at the project's configured version, is authoritative; context7 is not.
 
 If context7 and `docs.appian.com` disagree, `docs.appian.com` wins — and note the discrepancy (usually a version gap between context7's index and the live environment).

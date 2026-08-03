@@ -1,6 +1,6 @@
 # ADR Format
 
-ADRs live in the **`outputs/adr/`** workspace (git-ignored where `/setup`'s ignore rules were accepted) and use **project-wide sequential numbering** — `0001-slug.md`, `0002-slug.md`, … — assigned in the order decisions are made. That single ascending sequence **is the chronological history of every decision on the project**, across all tickets. (Per-ticket `decisions.md` files roll these up and link back to them by number — the ADRs are the durable record; `decisions.md` is the index.)
+ADRs live in the **`outputs/adr/`** workspace (git-ignored where `/iadc-advisor:setup`'s ignore rules were accepted) and use **project-wide sequential numbering** — `0001-slug.md`, `0002-slug.md`, … — assigned in the order decisions are made. That single ascending sequence **is the chronological history of every decision on the project**, across all tickets. (Per-ticket `decisions.md` files roll these up and link back to them by number — the ADRs are the durable record; `decisions.md` is the index.)
 
 Create the `outputs/adr/` directory lazily — only when the first ADR is needed.
 

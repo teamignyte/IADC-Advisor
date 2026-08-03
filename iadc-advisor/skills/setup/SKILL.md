@@ -174,8 +174,8 @@ takes effect". If it fails, write no credential — go back and settle step 2, t
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
 - **`context7`** — HTTP docs search. Keyless works, which is why the template ships **no `headers` block** for it; add one carrying `CONTEXT7_API_KEY` only if the team has a key and wants the higher rate limits.
 - **Jira** — connected as a **Claude connector** (the Atlassian connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. Jira is **human-first**: the architect reads via the connector and does only light, gated writes. the `jira` and `to-tickets` skills both go through this connector; the project key lives in `docs/agents/issue-tracker.md` (step 5), not an env var.
-- **Office / Microsoft 365** — connected as a **Claude connector** (the Microsoft 365 connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. This surface is **read-only**: the `office` skill finds and reads SharePoint/OneDrive documents and Teams/Outlook discussion to ground planning, and never sends, uploads, or edits. Optional — if the project has no SharePoint/M365 source docs, leave the connector alone and record the deliberate `none` answer in step 4, so `/office` stops asking. (Its pinned source-of-truth folder is a project value — step 4.)
-- **Slack** — connected as a **Claude connector** (not in `.mcp.json`). Used only for **escalation**: `/pressure-test` can draft and — **gated** (propose → confirm → send) — send an architectural-gap question to the project lead's Slack channel. Point the user at their client's connector settings. Optional — skip if escalations go via a Jira comment or by handing the drafted text to the builder.
+- **Office / Microsoft 365** — connected as a **Claude connector** (the Microsoft 365 connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. This surface is **read-only**: the `office` skill finds and reads SharePoint/OneDrive documents and Teams/Outlook discussion to ground planning, and never sends, uploads, or edits. Optional — if the project has no SharePoint/M365 source docs, leave the connector alone and record the deliberate `none` answer in step 4, so `/iadc-advisor:office` stops asking. (Its pinned source-of-truth folder is a project value — step 4.)
+- **Slack** — connected as a **Claude connector** (not in `.mcp.json`). Used only for **escalation**: `/iadc-advisor:pressure-test` can draft and — **gated** (propose → confirm → send) — send an architectural-gap question to the project lead's Slack channel. Point the user at their client's connector settings. Optional — skip if escalations go via a Jira comment or by handing the drafted text to the builder.
 
 ### 4. Set project values
 
@@ -195,14 +195,14 @@ Fill every value **in place**, replacing the `<...>` placeholder with a real ans
 where a field doesn't apply, write the **deliberate** answer the template names (`none`
 for `Office source of truth`, `hand-off` for `Escalation`) rather than skipping it. A
 placeholder left standing is how a skill knows a field is genuinely unset, so it will ask
-again every session; that is the nag `/setup` exists to prevent. Never invent a value, and
+again every session; that is the nag `/iadc-advisor:setup` exists to prevent. Never invent a value, and
 never delete a line unless the template says to.
 
 - **Jira project key** (e.g. `IV`) — the one value that is *not* a `project.md` field: it
   belongs in `docs/agents/issue-tracker.md` (step 5), where the `jira` and `to-tickets`
   skills read it.
-- **`Appian version`** (e.g. `26.6`) — a bare version string, no trailing note. `/appian`
-  and `/context7` read this line for version-exact `docs.appian.com` lookups; it is the
+- **`Appian version`** (e.g. `26.6`) — a bare version string, no trailing note. `/iadc-advisor:appian`
+  and `/iadc-advisor:context7` read this line for version-exact `docs.appian.com` lookups; it is the
   single source of truth, so don't leave it to drift from a skill's fallback default.
 - **`Application`** — the Appian application the `iadc` graph is seeded from: its **full
   name** on `Application`, the team's shorthand on **`Nicknames`**, and the **`UUID`**.
@@ -215,27 +215,27 @@ never delete a line unless the template says to.
   unfilled `Nicknames`.
 - **`Office source of truth`** (+ **`Row`**, **`Active prospect`**) — the SharePoint/OneDrive
   **site** and **pinned folder** holding this project's requirements/design docs, so
-  `/office` searches there first instead of the whole tenant. Keep the template's shipped
+  `/iadc-advisor:office` searches there first instead of the whole tenant. Keep the template's shipped
   value `rows below`, fill the `Row:` line (prospect name, site, folder) and name the live
   one on `Active prospect:`; tracking more than one prospect in this repo, duplicate the
   `Row:` line per prospect — that one `Active prospect` line is then the whole toggle.
   **If this project has no M365 source documents, write the bare word `none` on the
   `Office source of truth` line and delete the `Row:` and `Active prospect:` lines** — do
   not skip the field and do not leave the placeholder. `none` is the deliberate answer
-  that tells `/office` to stop searching SharePoint/OneDrive; a placeholder left standing
+  that tells `/iadc-advisor:office` to stop searching SharePoint/OneDrive; a placeholder left standing
   only makes it ask again every session.
 - **`Audience`** — who the advisor is talking to: **`developer`** (the default — the person
   who will build the ticket), or `lead`/`architect` if the primary user owns architectural
-  decisions. The operating posture reads this line; it shapes how `/pressure-test` pitches
+  decisions. The operating posture reads this line; it shapes how `/iadc-advisor:pressure-test` pitches
   questions and whether it escalates gaps or asks the user directly.
-- **`Escalation`** (+ **`Project lead`**) — where `/pressure-test` sends an architectural
+- **`Escalation`** (+ **`Project lead`**) — where `/iadc-advisor:pressure-test` sends an architectural
   gap: the channel (`Slack` | `Jira comment` | `hand-off`) and the lead (Slack
   channel/handle, or Jira account). **No one to escalate to** — a lead/architect audience,
   say? Write **`hand-off`**, the deliberate "hand me the drafted text and I'll send it"
   answer, which needs no `Project lead`. Same rule as the field above: a written answer,
   never a placeholder left standing. **On `hand-off`, the `Project lead` line stays exactly
   as the template ships it, placeholder and all** — unlike the Office branch above, nothing
-  is deleted here, because the template doesn't say to and `/pressure-test` reads an unset
+  is deleted here, because the template doesn't say to and `/iadc-advisor:pressure-test` reads an unset
   `Project lead` as expected under `hand-off`. Any other channel needs a real `Project lead`,
   since that's who the escalation goes to.
 

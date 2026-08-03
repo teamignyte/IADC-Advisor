@@ -7,7 +7,7 @@ description: "The dialectic. Pressure-test and sharpen the approach to a specifi
 
 Pressure-test is how you start when you've **picked up a specific ticket** and want the approach right
 *before* building. It runs a **relentless, one-question-at-a-time Socratic interview** — but
-unlike `/interrogating`, Pressure-test **does not propose answers**. It asks; *you* reason; it probes
+unlike `/iadc-advisor:interrogating`, Pressure-test **does not propose answers**. It asks; *you* reason; it probes
 the next layer. The output is an approach you arrived at yourself and are ready to build,
 stress-tested against the live app and the ticket's own contradictions.
 
@@ -22,7 +22,7 @@ them**, not forced onto you — see *Escalate the gaps*.
 
 - **Questions only. No recommended answers.** During the interview, never hand over the
   answer — probe until the user reasons it out. This is the one deliberate deviation from
-  `/interrogating` (which recommends as it goes). _Escape hatch:_ if the user says "just
+  `/iadc-advisor:interrogating` (which recommends as it goes). _Escape hatch:_ if the user says "just
   tell me what you think," give your read, then resume probing.
 - **One question at a time.** No compound asks. Wait for the answer before the next one.
 - **Short and direct — one idea per question.** Numbered (`Q1`, `Q2`, …), each a single line the
@@ -76,7 +76,7 @@ for real delivery.
 
 ## The arc
 
-1. **Get the ticket.** Pull it from Jira (`/jira`) by key, or take what the user pastes.
+1. **Get the ticket.** Pull it from Jira (`/iadc-advisor:jira`) by key, or take what the user pastes.
    Read the full detail — acceptance criteria, parent epic, comments — and **pull every
    document the ticket itself points to**: file **attachments** on the issue, **remote /
    web links**, **linked Confluence pages**, and any URLs in the description or comments.
@@ -85,11 +85,11 @@ for real delivery.
 2. **Ground before probing.** Look up the facts the questions will stand on — never ask
    what the environment can tell you, and let the grounding expose where the ticket's
    assumptions don't match reality:
-   - the live objects (`/appian`) and the dependency graph / blast radius (`/iadc-graph:iadc-graph`) — seed
+   - the live objects (`/iadc-advisor:appian`) and the dependency graph / blast radius (`/iadc-graph:iadc-graph`) — seed
      the graph from the **application UUID in the Project configuration**, never from a
      live `listApplications` lookup; when the blast radius is wide, render it as a fan-in diagram
-     with `/to-diagram` and keep it with the ticket's `decisions.md`;
-   - **the project's own documentation (`/office`).** First read the documents the **ticket
+     with `/iadc-advisor:to-diagram` and keep it with the ticket's `decisions.md`;
+   - **the project's own documentation (`/iadc-advisor:office`).** First read the documents the **ticket
      itself references** (the attachments and links from step 1). Then **also search SharePoint
      by the ticket number/key** (e.g. `<TICKET-KEY>`) — related design and spec docs are routinely
      named after the ticket (`<TICKET-KEY> Design.pdf`) and belong in the ticket's subfolder under the
@@ -118,12 +118,12 @@ for real delivery.
    and what the code and docs actually say — with a concrete scenario ("A shares a rule with B; A
    deletes it — what happens to B?"). This stays with the dev and about the build; it does **not**
    re-open the scoping gaps already escalated in step 4.
-6. **Capture as you go** (via `/domain-modeling`) — to the **`outputs/` workspace** (see below;
-   gitignored where `/setup`'s ignore rules were accepted), never committed by you. Glossary
+6. **Capture as you go** (via `/iadc-advisor:domain-modeling`) — to the **`outputs/` workspace** (see below;
+   gitignored where `/iadc-advisor:setup`'s ignore rules were accepted), never committed by you. Glossary
    terms into `outputs/CONTEXT.md`. Every **substantive decision**
    gets captured **twice, as it lands** (don't batch):
    - a **numbered ADR** in `outputs/adr/NNNN-slug.md` — project-wide sequential numbering, so the
-     ADR sequence is the **chronological history of every decision** (see `/domain-modeling`'s
+     ADR sequence is the **chronological history of every decision** (see `/iadc-advisor:domain-modeling`'s
      ADR-FORMAT); and
    - a **rollup entry** in the ticket's `outputs/<TICKET-KEY>/decisions.md` that states the decision
      and **links its ADR number** — `decisions.md` is the per-ticket index over the ADRs.
@@ -137,11 +137,11 @@ for real delivery.
    has a reply, fold it in, and refresh the **`Status:`** line. **Do not act until the developer
    confirms** it's a shared understanding.
 8. **Hand off — when ready.** Once the approach is confirmed *and the ticket is* **`READY`** (no open
-   escalations), hand off to **`/to-spec`** — it turns this conversation into a build spec **you then
+   escalations), hand off to **`/iadc-advisor:to-spec`** — it turns this conversation into a build spec **you then
    implement** (offer a blast-radius pass first if the change is risky). If gaps are still open, the
-   ticket stays **not ready for dev**: tell the developer to run **`/reconcile <TICKET-KEY>`** once the
-   lead replies, and note that `/to-spec` produces only a **provisional** spec until then.
-   `ticket → /pressure-test → (/reconcile) → /to-spec → you build`.
+   ticket stays **not ready for dev**: tell the developer to run **`/iadc-advisor:reconcile <TICKET-KEY>`** once the
+   lead replies, and note that `/iadc-advisor:to-spec` produces only a **provisional** spec until then.
+   `ticket → /iadc-advisor:pressure-test → (/iadc-advisor:reconcile) → /iadc-advisor:to-spec → you build`.
 
 ## Escalate the gaps
 
@@ -177,7 +177,7 @@ to the project lead** so they can unblock it:
    `<channel>`? — y/n"), and send only on an explicit yes. There is **no auto-send.** Channel:
    whichever the **`Escalation`** line names — **Slack** (`slack_send_message`; stage it with
    `slack_send_message_draft` first if useful) or a **Jira comment** on the ticket tagging the lead
-   (via `/jira`). When it names **hand-off** there is nothing to send from here: hand the builder
+   (via `/iadc-advisor:jira`). When it names **hand-off** there is nothing to send from here: hand the builder
    the drafted text (the **`hand-off`** state in *Configuration* below).
    Prefer a destination the **developer also sees** (a shared channel, or @-mention the dev) so
    the lead's in-thread reply notifies them automatically.
@@ -193,14 +193,14 @@ only outward writes here, and both are **gated**.
 ### Configuration
 
 Escalation is configured in the ambient **Project configuration** (from
-`docs/agents/project.md`, written by `/setup`), after applying any **Personal overrides**:
+`docs/agents/project.md`, written by `/iadc-advisor:setup`), after applying any **Personal overrides**:
 the **`Escalation`** line (channel — Slack | Jira comment | hand-off) and
 **`Project lead`** (Slack channel/handle, or Jira account). Test in this order, first match wins
 — **exactly one remedy applies per state:**
 
 1. **Unfilled ⇒ not configured.** If **`Escalation`** is missing, empty, or still an
    **unfilled angle-bracket placeholder** (e.g. `<Slack | Jira comment | hand-off>`), nothing is
-   configured: ask the user where escalations should go and suggest running `/setup`. Judge this
+   configured: ask the user where escalations should go and suggest running `/iadc-advisor:setup`. Judge this
    by the **token, not the wording: angle brackets present ⇒ unfilled**, whatever words sit inside
    them — placeholder text may itself mention `hand-off`, which is *not* an answer.
 2. **`hand-off` ⇒ deliberate, and needs no `Project lead`.** Read this value
@@ -208,7 +208,7 @@ the **`Escalation`** line (channel — Slack | Jira comment | hand-off) and
    in any casing (`Hand-off`, `HANDOFF`) are all the same answer. A configured **hand-off** means
    the advisor sends nothing at all: **give the builder the drafted text** to send themselves, plus
    your read of who should see it. Do **not** ask where escalations should go and do **not**
-   suggest `/setup` — hand-off is a deliberate answer, not a missing one, and an unset
+   suggest `/iadc-advisor:setup` — hand-off is a deliberate answer, not a missing one, and an unset
    **`Project lead`** is expected in this state.
 3. **Any other named channel ⇒ a `Project lead` is required.** Any filled-in value that isn't a
    hand-off in one of branch 2's spellings names a channel the escalation goes out on — **Slack**
@@ -216,7 +216,7 @@ the **`Escalation`** line (channel — Slack | Jira comment | hand-off) and
    **whatever the line names** (Teams, email, a typo), so no configured value falls through. The
    send needs a recipient: if **`Project lead`** is missing, empty, or still an **unfilled
    angle-bracket placeholder** (e.g. `<Slack channel/handle, or Jira account>`), ask the user who
-   escalations should go to and suggest running `/setup`. Otherwise draft, then confirm-and-send
+   escalations should go to and suggest running `/iadc-advisor:setup`. Otherwise draft, then confirm-and-send
    under the gate in *Escalate the gaps* step 3 — propose → confirm → send is never skipped, and
    there is still **no auto-send**.
    If the named channel is one this plugin can't send on (anything other than Slack or a Jira
@@ -230,24 +230,24 @@ dead-waits. It proceeds on the provisional lean and tracks readiness explicitly.
 
 - **Status line.** The first line of `outputs/<TICKET-KEY>/decisions.md` is a status:
   `Status: READY` (no open escalations) or `Status: BLOCKED — N open escalation(s)`. Pressure-test and
-  `/reconcile` keep it current; `/to-spec` reads it. Optionally mirror it to a gated Jira
+  `/iadc-advisor:reconcile` keep it current; `/iadc-advisor:to-spec` reads it. Optionally mirror it to a gated Jira
   **`needs-info`** label so the board shows the block.
 - **Auto-reconcile (end of pass).** After synthesis, check each escalation raised this session for
   a reply already back — `slack_read_thread` on the stored `channel_id`+`message_ts`, or the Jira
   comment — and fold any answers in before you finish.
-- **`/reconcile <TICKET-KEY>` (later).** When the lead replies after the session, the builder
+- **`/iadc-advisor:reconcile <TICKET-KEY>` (later).** When the lead replies after the session, the builder
   runs this. It reads the ticket's *Open / escalated* items, checks their threads, and for each
   reply **plays back its reading** ("Liam replied A → recording *scope = visible set*; right?"),
-  records the resolved decision, re-checks impact (flagging any `/to-spec` step that changes), and
+  records the resolved decision, re-checks impact (flagging any `/iadc-advisor:to-spec` step that changes), and
   refreshes the status. Re-run until nothing is open.
 - **Readiness gate.** While `Status: BLOCKED` the ticket is **not ready for development**:
-  `/to-spec` produces only a clearly-marked **provisional** spec — never a final build-ready one —
+  `/iadc-advisor:to-spec` produces only a clearly-marked **provisional** spec — never a final build-ready one —
   until every escalation is resolved.
 
 ## Where outputs go
 
 The glossary, decision logs, and ADRs Pressure-test produces are **project artifacts, not plugin source**
-— written to the **`outputs/` workspace** (gitignored where `/setup`'s ignore rules were
+— written to the **`outputs/` workspace** (gitignored where `/iadc-advisor:setup`'s ignore rules were
 accepted), never committed by you:
 
 - **Glossary:** `outputs/CONTEXT.md` — the project-wide ubiquitous language (cross-cutting, not
@@ -260,20 +260,20 @@ accepted), never committed by you:
   this ticket's resolved decisions (**each linking its ADR number**), and its open/escalated items.
   It's the per-ticket index over the ADRs, not a separate record. Create the folder if it doesn't exist.
 
-Where `/setup`'s ignore rules were accepted, `outputs/` is git-ignored, so these stay close at
+Where `/iadc-advisor:setup`'s ignore rules were accepted, `outputs/` is git-ignored, so these stay close at
 hand without landing in version control.
 (SharePoint would be the firm's system of record, but its Microsoft 365 connector is read-only —
-so `/office` stays read-only, for grounding only.)
+so `/iadc-advisor:office` stays read-only, for grounding only.)
 
 ## Relationship to the other skills
 
-- Built on the `/interrogating` discipline, run in **pure-Socratic (no-recommendation) mode**.
-- Uses `/domain-modeling` to keep the glossary and ADRs sharp underneath.
-- Grounds through `/jira`, `/appian`, `/iadc-graph:iadc-graph`, and `/office`.
-- **Sibling to `/interrogate-with-docs`:** reach for **Pressure-test** when you're pressure-testing
+- Built on the `/iadc-advisor:interrogating` discipline, run in **pure-Socratic (no-recommendation) mode**.
+- Uses `/iadc-advisor:domain-modeling` to keep the glossary and ADRs sharp underneath.
+- Grounds through `/iadc-advisor:jira`, `/iadc-advisor:appian`, `/iadc-graph:iadc-graph`, and `/iadc-advisor:office`.
+- **Sibling to `/iadc-advisor:interrogate-with-docs`:** reach for **Pressure-test** when you're pressure-testing
   a *specific ticket* and want to do the reasoning yourself; reach for
-  `/interrogate-with-docs` when you want the interview to *propose* answers as it sharpens a
+  `/iadc-advisor:interrogate-with-docs` when you want the interview to *propose* answers as it sharpens a
   broader plan.
 - **The ticket-first entry point.** Pressure-test is where the main flow starts when you have a
-  defined piece of work: `ticket → /pressure-test → /to-spec`. It orients you in the app and sharpens
-  the *thinking*; `/to-spec` turns the result into the build spec.
+  defined piece of work: `ticket → /iadc-advisor:pressure-test → /iadc-advisor:to-spec`. It orients you in the app and sharpens
+  the *thinking*; `/iadc-advisor:to-spec` turns the result into the build spec.

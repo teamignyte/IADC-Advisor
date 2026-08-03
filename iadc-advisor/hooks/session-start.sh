@@ -32,10 +32,10 @@ safe_project_file() {
 cat "$plugin_root/hooks/posture.md"
 
 if safe_project_file "$project_dir/docs/agents/project.md"; then
-  printf '\n## Project configuration (from docs/agents/project.md — written by /setup)\n\n'
+  printf '\n## Project configuration (from docs/agents/project.md — written by /iadc-advisor:setup)\n\n'
   cat "$project_dir/docs/agents/project.md"
 else
-  printf '\n## Project configuration\n\nNot configured yet — run /setup to wire the MCP servers and project values.\n'
+  printf '\n## Project configuration\n\nNot configured yet — run /iadc-advisor:setup to wire the MCP servers and project values.\n'
 fi
 
 if safe_project_file "$project_dir/docs/agents/project.local.md"; then

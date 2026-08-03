@@ -1,6 +1,6 @@
 # Issue tracker: Jira
 
-> **Seed template.** `/setup` copies this into `docs/agents/issue-tracker.md` and fills the
+> **Seed template.** `/iadc-advisor:setup` copies this into `docs/agents/issue-tracker.md` and fills the
 > `<PLACEHOLDERS>` for your project. Replace the example workstream labels with your own.
 
 Issues and PRDs for this repo live in a **Jira board** — project key **`<PROJECT_KEY>`**. Drive the
