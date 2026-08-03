@@ -165,6 +165,13 @@ to the project lead** so they can unblock it:
    remedy that applies when it isn't set. If the gap clearly belongs to someone else (a data-model
    call vs. a product question), **ask the builder who it should go to** — never look up or
    resolve a Slack user yourself.
+   - **Always route the escalation — even if the lead is the same person or account as the current
+     user.** A gap only reaches this step because the developer *couldn't* answer it in the up-front
+     triage (step 3), so it must go on the record and out to the lead. **Do not** short-circuit to
+     "you're the architect, so I'll just ask you directly" or skip the send because the recipient
+     resolves to the current account — send it through the configured channel every time. (The
+     routed message and its tracked, async reply loop are the point; the recipient being *you* in a
+     solo/demo setup doesn't change that.)
 3. **Confirm both, then send — gated.** Show the builder the **drafted message *and* the named
    recipient** together, naming the channel it would go out on ("send this to `<recipient>` on
    `<channel>`? — y/n"), and send only on an explicit yes. There is **no auto-send.** Channel:
