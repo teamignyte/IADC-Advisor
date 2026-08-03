@@ -40,7 +40,7 @@ follows to build it. It is the handoff artifact — it replaces splitting work i
    **provisional** spec only (see the readiness gate in Posture). Then pull the plan together from the
    Pressure-test thread, `decisions.md`, and the glossary (`outputs/CONTEXT.md`). Reuse the grounding
    Pressure-test already did (record model, dependency order, blast radius); re-check the live app
-   (`/appian`, `/iadc-graph`) only where a build step needs a fact you don't have. Use the glossary's
+   (`/appian`, `/iadc-graph:iadc-graph`) only where a build step needs a fact you don't have. Use the glossary's
    vocabulary; respect existing ADRs.
 2. **Name every object — split NEW vs. MODIFY — in dependency order.** This is the heart of the
    spec: don't describe the work abstractly ("update the interface"), say **exactly which Appian
@@ -53,7 +53,7 @@ follows to build it. It is the handoff artifact — it replaces splitting work i
      field added and its type, the specific rule branch or expression altered, the process node
      inserted and how it's wired — never just "update X".
 
-   Confirm exact names and current shape against `/iadc-graph` + `/appian` rather than guessing.
+   Confirm exact names and current shape against `/iadc-graph:iadc-graph` + `/appian` rather than guessing.
    Then order the steps in **Appian dependency order** (data model → relationships → constants →
    rules → interfaces → process models → record actions/views → data migration → tests) so **every
    object exists before anything that references it**. Each step carries a **"done when"** check.
@@ -126,7 +126,7 @@ they usually add noise.)_
 - **Follows `/pressure-test`:** `ticket → /pressure-test` (dialectic) → **`/to-spec`** (build spec). It's the
   handoff step.
 - Uses `/domain-modeling`'s glossary + the decision record/ADR; grounds via `/appian`,
-  `/iadc-graph`, `/office`.
+  `/iadc-graph:iadc-graph`, `/office`.
 - **Replaces splitting a defined ticket into subtickets** — `/to-tickets` is the inverse
   (greenfield) direction. This is the **local**, **Appian-flavored** build spec: executable build
   steps, gated on your approval before writing.

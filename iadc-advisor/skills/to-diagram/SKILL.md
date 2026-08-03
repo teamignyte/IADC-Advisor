@@ -177,7 +177,7 @@ syntax has sharp edges, and these carry the full, verified detail:
 
 ## From the graph to a diagram
 
-When the source is the dependency graph (`/iadc-graph`), the return shapes map straight onto types —
+When the source is the dependency graph (`/iadc-graph:iadc-graph`), the return shapes map straight onto types —
 draw from what the graph returns, not from memory:
 
 - `record_model` → `erDiagram`

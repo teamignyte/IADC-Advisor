@@ -19,7 +19,7 @@ The line is **do you have a build in view?**
 - **Just understanding, no build** — "what is this app", "how does the Claims model work", "explain this object to me" → **you're in the right place.**
 - **A single Appian platform question** with no app attached — "what does `a!queryEntity` do" → that's **`/context7`** + `/appian`, not this.
 
-Orient is the *packaged, narrated* form of what `/iadc-graph` + `/appian` + `/jira` do as raw primitives. Reach for those directly when you already know exactly what one edge or one object you want; reach for orient when you want the synthesis and don't yet know what to ask.
+Orient is the *packaged, narrated* form of what `/iadc-graph:iadc-graph` + `/appian` + `/jira` do as raw primitives. Reach for those directly when you already know exactly what one edge or one object you want; reach for orient when you want the synthesis and don't yet know what to ask.
 
 ## Read-only, always
 
@@ -39,7 +39,7 @@ Before touching a tool, read the project glossary (`outputs/CONTEXT.md`, the pro
 
 ### 2. Seed the graph
 
-Load the **`/iadc-graph`** skill first — it is mandatory before any `iadc` call and carries the session lifecycle and node-id rules the tool schemas can't express. Then `seed` the configured application — its UUID is in the ambient **Project configuration** (the `Application` entry, written by `/setup`), so there's no live lookup — and poll `seed_status` until it's ready. Respect the 30-minute TTL, and `close` the session when you're done (step 6).
+Load the **`/iadc-graph:iadc-graph`** skill first — it is mandatory before any `iadc` call and carries the session lifecycle and node-id rules the tool schemas can't express. Then `seed` the configured application — its UUID is in the ambient **Project configuration** (the `Application` entry, written by `/setup`), so there's no live lookup — and poll `seed_status` until it's ready. Respect the 30-minute TTL, and `close` the session when you're done (step 6).
 
 ### 3. Find what matters — don't dump the inventory
 

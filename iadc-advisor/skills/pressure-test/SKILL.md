@@ -85,7 +85,7 @@ for real delivery.
 2. **Ground before probing.** Look up the facts the questions will stand on — never ask
    what the environment can tell you, and let the grounding expose where the ticket's
    assumptions don't match reality:
-   - the live objects (`/appian`) and the dependency graph / blast radius (`/iadc-graph`) — seed
+   - the live objects (`/appian`) and the dependency graph / blast radius (`/iadc-graph:iadc-graph`) — seed
      the graph from the **application UUID in the Project configuration**, never from a
      live `listApplications` lookup; when the blast radius is wide, render it as a fan-in diagram
      with `/to-diagram` and keep it with the ticket's `decisions.md`;
@@ -262,7 +262,7 @@ so `/office` stays read-only, for grounding only.)
 
 - Built on the `/interrogating` discipline, run in **pure-Socratic (no-recommendation) mode**.
 - Uses `/domain-modeling` to keep the glossary and ADRs sharp underneath.
-- Grounds through `/jira`, `/appian`, `/iadc-graph`, and `/office`.
+- Grounds through `/jira`, `/appian`, `/iadc-graph:iadc-graph`, and `/office`.
 - **Sibling to `/interrogate-with-docs`:** reach for **Pressure-test** when you're pressure-testing
   a *specific ticket* and want to do the reasoning yourself; reach for
   `/interrogate-with-docs` when you want the interview to *propose* answers as it sharpens a

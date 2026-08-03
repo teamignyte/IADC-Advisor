@@ -1,5 +1,24 @@
 # Changelog — iadc-advisor
 
+## 1.2.0 — 2026-08-03
+
+This plugin is now distributed from the family catalog rather than from its own repo, and it no
+longer carries its own copy of the `iadc-graph` skill.
+
+- **Action required for existing installs:** the marketplace moved. Re-add it, pointing at the
+  catalog rather than at this plugin's repo:
+  `claude plugin marketplace add https://github.com/teamignyte/IADC-Marketplace.git --scope project`,
+  then reinstall. Installing from the old URL will stop resolving.
+- **`iadc-graph` is now a separate plugin, installed automatically** as a dependency of this one.
+  You do not install it yourself, and there is no longer a copy inside this plugin to fall out of
+  step with the deployed server. The single mirror lives in the catalog, still taken at the sha
+  that built the deployed graph image.
+- **The graph skill is now addressed `/iadc-graph:iadc-graph`** — the skill `iadc-graph` inside the
+  plugin `iadc-graph`. The doubled name is correct, not a typo. Every reference in this plugin's
+  skills was updated.
+- To install the whole suite — this plugin plus Selenium test generation — install `iadc@ignyte`
+  instead, which pulls in both.
+
 ## 1.1.0 — 2026-07-31
 
 The IADC graph MCP moved to its own service, so this release repoints clients at it and

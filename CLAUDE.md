@@ -6,19 +6,18 @@ This is the **workshop**: the development environment for the Appian Architect-i
 
 The client receives the **`iadc-advisor` Claude Code plugin**: everything under
 [`iadc-advisor/`](iadc-advisor/) — its `.claude-plugin/plugin.json`, `skills/`, `hooks/`,
-and templates. This repo doubles as the private **marketplace**
-(`.claude-plugin/marketplace.json` at the root). Shipping is still an allowlist: the
-marketplace `source` points at `iadc-advisor/` and nothing else ships. Releases are
-deliberate: bump `version` in `plugin.json` and record it in `iadc-advisor/CHANGELOG.md`.
+and templates. Shipping is an allowlist: the catalog's `source` points at `iadc-advisor/`
+and nothing else ships. Releases are deliberate: bump `version` in `plugin.json` and record
+it in `iadc-advisor/CHANGELOG.md`.
 See [docs/adr/0001](docs/adr/0001-deliverable-lives-in-a-subfolder.md) and
 [docs/adr/0009](docs/adr/0009-ship-as-claude-code-plugin.md).
 
-**Before any release, byte-compare the vendored `iadc-graph` skill** against IADC at the sha
-recorded in [docs/vendored-iadc-graph-skill.md](docs/vendored-iadc-graph-skill.md) —
-`diff -r iadc-advisor/skills/iadc-graph <IADC>/.claude/skills/iadc-graph` must print nothing.
-If a graph image was deployed since that sha, refresh the copy **from the newly deployed sha
-first** (never from IADC `HEAD`) and then release: the skill may lag the deployed server, never
-lead it ([docs/adr/0011](docs/adr/0011-iadc-graph-skill-byte-identical-at-deployed-sha.md)).
+**The catalog no longer lives here.** It moved to
+[`teamignyte/IADC-Marketplace`](https://github.com/teamignyte/IADC-Marketplace), the family's
+client-facing distribution repo, which lists this plugin alongside `iadc-tester`, the shared
+`iadc-graph` skill, and an `iadc` bundle that installs the suite in one command. This repo is now
+*only* the workshop. See the family's
+[ADR 0001](https://github.com/teamignyte/IADC/blob/main/docs/adr/0001-iadc-family-is-five-repos-in-two-tiers.md).
 
 ## Dev docs live here at the root (never shipped)
 
@@ -30,15 +29,18 @@ lead it ([docs/adr/0011](docs/adr/0011-iadc-graph-skill-byte-identical-at-deploy
 - **Develop the plugin** by editing files under `iadc-advisor/`.
 - **Dogfood / test as a client sees it** in a scratch client repo — create one if you
   don't have it (`mkdir ../iadc-dogfood && git -C ../iadc-dogfood init`), a sibling of
-  this repo, outside it — never inside the marketplace tree. Add this repo as a local
-  marketplace (`claude plugin marketplace add .` from this repo's root), then from
-  `../iadc-dogfood` run `claude plugin install iadc-advisor@ignyte --scope project`,
-  open Claude there, and run `/setup`. The session hook, namespaced skills, and
-  per-project state behave exactly as they will for the client. After editing the
-  plugin, refresh **from `../iadc-dogfood`** (project scope is keyed to the working
-  directory) with
+  this repo, outside it. Add the **family catalog** as a marketplace
+  (`claude plugin marketplace add <path-to-IADC-Marketplace>` — a local path while you are
+  iterating, the git URL to test what a client gets), then from `../iadc-dogfood` run
+  `claude plugin install iadc-advisor@ignyte --scope project`, open Claude there, and run
+  `/setup`. The session hook, namespaced skills, and per-project state behave exactly as they
+  will for the client — including `iadc-graph` arriving as a dependency, which is the part a
+  local edit here can no longer fake. After editing the plugin, refresh **from
+  `../iadc-dogfood`** (project scope is keyed to the working directory) with
   `claude plugin marketplace update ignyte && claude plugin update iadc-advisor@ignyte --scope project`
   and start a fresh session.
+  > The catalog fetches this plugin from **`teamignyte/IADC-Advisor`**, not from your working
+  > tree, so an uncommitted edit will not appear in the dogfood repo. Push first, then refresh.
 - **Never install or enable `iadc-advisor` in this repo itself** — its SessionStart
   hook would inject the advisory-architect posture ("you do not write code") into every
   maintainer session. Dogfood only in the scratch repo. (Since the restructure, the
@@ -81,18 +83,25 @@ Refreshed to upstream `0ab639c4` on 2026-07-27. **Adding a local patch means add
 doc in the same commit** — an undocumented divergence is indistinguishable from staleness at
 refresh time, and one nearly cost us the skill's advisory posture.
 
-## The vendored `iadc-graph` skill
+## The `iadc-graph` skill is no longer vendored here
 
-`iadc-advisor/skills/iadc-graph/` is the opposite arrangement: a **byte-identical copy** of
-IADC's own `.claude/skills/iadc-graph/`, with **zero local patches**, taken at the sha that
-built the **deployed** graph image. That upstream is ours, so a divergence is never something to
-carry — it is something to upstream. **Never hand-edit that tree here**: fix it in IADC, where a
-drift-guard test couples the skill to the server's real tool roster per commit, then refresh.
-Refresh is triggered by a graph *deploy*, not by a plugin release, and always from the deployed
-sha — **the skill may lag the deployed server, never lead it.** Procedure, current sha, and the
-byte-identity consequences that must not be "fixed" locally:
-[docs/vendored-iadc-graph-skill.md](docs/vendored-iadc-graph-skill.md),
-[docs/adr/0011](docs/adr/0011-iadc-graph-skill-byte-identical-at-deployed-sha.md).
+This plugin used to carry its own copy at `iadc-advisor/skills/iadc-graph/`. It doesn't any more.
+`iadc-graph` is a **separate plugin** in the family catalog, and this plugin declares it as a
+dependency — so installing `iadc-advisor` installs it automatically, and there is nothing here to
+keep in sync.
+
+That has one consequence in the skills' prose: the graph skill is now addressed
+**`/iadc-graph:iadc-graph`** — the skill `iadc-graph` inside the plugin `iadc-graph`. The doubled
+name looks like a typo and is not.
+
+The single mirror now lives in `IADC-Marketplace`, still taken at the sha that built the
+**deployed** graph image, still never from IADC-Core `HEAD` — the skill may lag the deployed
+server, never lead it. Procedure and current sha:
+[IADC-Marketplace/docs/mirrored-iadc-graph-skill.md](https://github.com/teamignyte/IADC-Marketplace/blob/main/docs/mirrored-iadc-graph-skill.md).
+The rule and its rationale are unchanged; only the location and the copy-count are
+([docs/adr/0011](docs/adr/0011-iadc-graph-skill-byte-identical-at-deployed-sha.md), superseded by
+the family's
+[ADR 0003](https://github.com/teamignyte/IADC/blob/main/docs/adr/0003-shared-skills-ship-as-pinned-marketplace-plugins.md)).
 
 ## Agent skills
 

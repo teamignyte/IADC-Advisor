@@ -12,13 +12,16 @@ client's own `CONTEXT.md`, in the client's repo (see `docs/adr/0001`).
 **Plugin**:
 The shippable artifact — the Claude Code plugin named `iadc-advisor`: everything under
 `iadc-advisor/` (skills, the session hook, templates), installed by clients at project
-scope from this repo's marketplace. The product this repo produces.
+scope from the **Catalog**. The product this repo produces.
 
-**Marketplace**:
-This repo's `.claude-plugin/marketplace.json`, which lists the plugin. Clients declare it
-at **project scope, once per app repo**
-(`claude plugin marketplace add <this repo's git URL> --scope project`), then install and
-update the plugin from it. The `/plugin marketplace add` slash form takes no `--scope` and
+**Catalog**:
+`IADC-Marketplace`'s `.claude-plugin/marketplace.json`, which lists this plugin alongside the
+rest of the IADC family. It is a *separate repo* — this one is only the workshop. Clients
+declare it at **project scope, once per app repo**
+(`claude plugin marketplace add https://github.com/teamignyte/IADC-Marketplace.git --scope project`),
+then install and update the plugin from it.
+_Avoid_: marketplace (ambiguous — the catalog file, the repo holding it, and the `ignyte`
+registration are three different things) The `/plugin marketplace add` slash form takes no `--scope` and
 lands at **user** scope — which leaves the repo declaring a plugin its teammates cannot
 resolve, so it is not the path to hand a client.
 

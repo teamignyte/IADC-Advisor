@@ -49,13 +49,15 @@ your machine simply reports as not installed for everyone else, with nothing to 
 why.)
 
 1. **Add the marketplace** (once per repo), from a terminal in that repo:
-   `claude plugin marketplace add https://github.com/teamignyte/IADC-Advisor.git --scope project`
-   — that repo is the plugin's marketplace, and access uses your usual GitHub credentials for
-   it. (It is *not* your app repo: adding your own repo instead is what produces
-   "Plugin not found in any marketplace".)
+   `claude plugin marketplace add https://github.com/teamignyte/IADC-Marketplace.git --scope project`
+   — that repo is the catalog, and access uses your usual GitHub credentials for it. (It is
+   *not* your app repo, and it is *not* the plugin's own repo: adding either instead is what
+   produces "Plugin not found in any marketplace".)
 2. **Install the plugin** (once per repo):
    `claude plugin install iadc-advisor@ignyte --scope project`. Commit the resulting
-   `.claude/settings.json`.
+   `.claude/settings.json`. This also installs **`iadc-graph`**, which this plugin depends on —
+   you never install that one yourself. To get the test-generation plugin as well, install
+   `iadc@ignyte` instead, which pulls in both products.
 
    **Desktop app:** the `/plugin` browser can install the plugin at **project** scope, but
    adding a marketplace through it always lands at **user** scope — which leaves the repo
