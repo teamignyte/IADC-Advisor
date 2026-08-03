@@ -3,7 +3,7 @@
 ## ⚠️ CRITICAL: Icon Parameter Validation
 
 **BEFORE using ANY icons in stampField, you MUST:**
-- [ ] Look the icon alias up in the Appian documentation — search `/context7` for the icon alias list, then confirm it against version-exact `docs.appian.com` via the **Appian Documentation Search** workflow in this skill's `SKILL.md`
+- [ ] Look the icon alias up in the Appian documentation — search `/iadc-advisor:context7` for the icon alias list, then confirm it against version-exact `docs.appian.com` via the **Appian Documentation Search** workflow in this skill's `SKILL.md`
 - [ ] ONLY use icon names the documentation lists verbatim, character for character
 - [ ] NEVER guess icon names - always verify first
 
@@ -27,7 +27,7 @@ StampField creates an icon and/or text displayed on a colored background shape. 
 ## Core StampField Parameters
 
 ### Icon Parameter
-- **icon**: Valid icon alias string, verified in the Appian documentation (`/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**)
+- **icon**: Valid icon alias string, verified in the Appian documentation (`/iadc-advisor:context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**)
 - **⚠️ MANDATORY**: Look the icon name up in the Appian documentation BEFORE use
 - **❌ DO NOT GUESS** icon names - they must match exactly
 
@@ -157,7 +157,7 @@ a!stampField(
 ## Best Practices
 
 ### ✅ DO:
-- **ALWAYS verify the icon alias in the Appian documentation — `/context7`, then version-exact `docs.appian.com` via Appian Documentation Search — before using ANY icon parameter**
+- **ALWAYS verify the icon alias in the Appian documentation — `/iadc-advisor:context7`, then version-exact `docs.appian.com` via Appian Documentation Search — before using ANY icon parameter**
 - Choose shape based on content: ROUNDED for avatars/status, SEMI_ROUNDED for modern badges
 - Use TINY size for most UI elements to avoid overwhelming the interface
 - Provide tooltips for icon-only stamps
@@ -214,7 +214,7 @@ Remember: StampField is for simple badges and indicators with background shapes.
 Before using stampField in your code:
 
 ### Icon Validation (CRITICAL):
-- [ ] **IF using `icon` parameter:** Look the alias up in the Appian documentation FIRST — `/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**
+- [ ] **IF using `icon` parameter:** Look the alias up in the Appian documentation FIRST — `/iadc-advisor:context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**
 - [ ] **Verify icon name exists** in the Appian documentation using exact string match
 - [ ] **DO NOT GUESS** icon names based on other frameworks (Font Awesome, Material Icons, etc.)
 - [ ] Common mistake: "chart-bar" ❌ → Correct: "bar-chart" ✅ (always check the docs!)

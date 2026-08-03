@@ -33,7 +33,7 @@ client-facing distribution repo, which lists this plugin alongside `iadc-tester`
   (`claude plugin marketplace add <path-to-IADC-Marketplace>` — a local path while you are
   iterating, the git URL to test what a client gets), then from `../iadc-dogfood` run
   `claude plugin install iadc-advisor@ignyte --scope project`, open Claude there, and run
-  `/setup`. The session hook, namespaced skills, and per-project state behave exactly as they
+  `/iadc-advisor:setup`. The session hook, namespaced skills, and per-project state behave exactly as they
   will for the client — including `iadc-graph` arriving as a dependency, which is the part a
   local edit here can no longer fake. After editing the plugin, refresh **from
   `../iadc-dogfood`** (project scope is keyed to the working directory) with

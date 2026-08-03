@@ -48,9 +48,11 @@ Upstream fixed none of these as of `0ab639c4`; assume all four still apply.
 
 That cannot work here. Plugin skills live in a **shared, read-only cache serving every
 client project**, wiped and replaced on every plugin update — so there is exactly one copy
-of that line, whatever it says is served to all clients, and `/setup` cannot write to it.
-Ours reads the value from the ambient **Project configuration** the SessionStart hook
-injects from each client's own `docs/agents/project.md`.
+of that line, whatever it says is served to all clients, and `/iadc-advisor:setup` cannot
+write to it. (Address it namespaced, never bare `/setup` — a bare form is only safe until a
+second plugin ships a skill of the same name, and this epic ships one in each of the other
+two products.) Ours reads the value from the ambient **Project configuration** the
+SessionStart hook injects from each client's own `docs/agents/project.md`.
 
 | File | Patch |
 |---|---|
@@ -76,9 +78,10 @@ parameter"*, *"MUST … DO NOT GUESS"* — because an Appian icon alias is a clo
 that fails silently when wrong. An agent obeying them stalls or guesses: the exact failure
 the instruction existed to prevent.
 
-We repoint each at the plugin's real capabilities — `/context7` semantic docs search, then
-version-exact `docs.appian.com` per the `appian` skill's own documentation workflow —
-**keeping the imperative force**: the value is verified, never guessed.
+We repoint each at the plugin's real capabilities — `/iadc-advisor:context7` semantic docs
+search (namespaced — Advisor ships its own `context7` skill, never address it as bare
+`/context7`), then version-exact `docs.appian.com` per the `appian` skill's own documentation
+workflow — **keeping the imperative force**: the value is verified, never guessed.
 
 Patched: `references/components/{button,rich-text,stamp-field,grid-field}-instructions.md`,
 `references/sail.md`, `references/applications.md`, `SKILL.md`.
