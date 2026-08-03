@@ -37,7 +37,7 @@ intelligence; the app repo holds the per-project state.
 
 **Session hook**:
 The plugin's SessionStart hook — the replacement for the shipped `CLAUDE.md` (plugins
-cannot load one). Injects the operating posture plus `project.md`/`project.local.md`
+cannot load one). Injects the operating posture plus `advisor.md`/`advisor.local.md`
 into every session in an app repo where the plugin is enabled.
 
 **Dev docs**:

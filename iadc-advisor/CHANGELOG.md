@@ -1,5 +1,16 @@
 # Changelog — iadc-advisor
 
+## 1.3.0 — 2026-08-03
+
+Per-project state files are renamed to match the plugin that owns them, ahead of the Tester
+shipping its own alongside.
+
+- **Action required for existing installs:** `docs/agents/project.md` / `project.local.md` are
+  now `docs/agents/advisor.md` / `advisor.local.md` — a generic name would have read as
+  family-wide configuration once the Tester ships `tester.md` alongside it. Re-run
+  `/iadc-advisor:setup`: it detects the old files and offers to rename them in place, carrying
+  their values over rather than re-asking, and fixes the matching `.gitignore` line.
+
 ## 1.2.0 — 2026-08-03
 
 This plugin is now distributed from the family catalog rather than from its own repo, and it no
@@ -18,12 +29,6 @@ longer carries its own copy of the `iadc-graph` skill.
   skills was updated.
 - To install the whole suite — this plugin plus Selenium test generation — install `iadc@ignyte`
   instead, which pulls in both.
-- **Action required for existing installs:** the per-project files are renamed —
-  `docs/agents/project.md` / `project.local.md` are now `docs/agents/advisor.md` /
-  `advisor.local.md`, so a generic name doesn't read as family-wide configuration now that the
-  Tester ships its own `tester.md` alongside it. Re-run `/iadc-advisor:setup`: it detects the old
-  files and offers to rename them in place, carrying their values over rather than re-asking, and
-  fixes the matching `.gitignore` line.
 
 ## 1.1.0 — 2026-07-31
 

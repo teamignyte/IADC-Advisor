@@ -52,26 +52,52 @@ existing content alone):
   `docs/agents/project.local.md` before creating anything new. If `docs/agents/advisor.md` is
   still absent and either old file is present, this repo ran an earlier version of this skill,
   under the names this plugin used before — offer to rename rather than writing
-  `advisor.md`/`advisor.local.md` beside them and leaving the repo with both:
+  `advisor.md`/`advisor.local.md` beside them and leaving the repo with both. Name only the
+  file(s) you actually found — don't assume both exist:
 
   > Found `docs/agents/project.md` from an earlier setup. Rename it to `docs/agents/advisor.md`
   > (and `project.local.md` → `advisor.local.md`, if present too)? (recommended: **yes**)
 
-  On **yes**: `git mv docs/agents/project.md docs/agents/advisor.md` — it's a committed file, so
-  a plain `mv` would show as a delete-and-add rather than a rename. Rename `project.local.md`
-  the same way if it's present, but with a plain `mv`: gitignored files are untracked, so
-  there's nothing for `git mv` to move in the index. **Fix `.gitignore` in the same pass, before
-  moving on:** a repo on the old names has `docs/agents/project.local.md` committed in its
-  `.gitignore`; left standing after the rename it matches nothing, and the renamed
-  `advisor.local.md` would show up trackable. Replace that line with
-  `docs/agents/advisor.local.md` — don't just add the new line beside the stale one. Show the
-  user the rename and the `.gitignore` line together and get one yes for both before doing
-  either.
+  On **yes**, in this order — the `.gitignore` fix has to land before either file moves, or
+  there's a window where a freshly-renamed `.local` file exists and nothing ignores it yet:
 
-  On **decline** — rename nothing and don't ask again this run. Say plainly what that means: the
-  session hook and every skill below read `advisor.md`, not `project.md`, so until this repo is
-  renamed (this run or a later one) its existing values won't be picked up, and step 4 will
-  treat project values as unset.
+  1. **Fix `.gitignore` first, if the old line is there.** A repo on the old names has
+     `docs/agents/project.local.md` committed in its `.gitignore`; left standing after the
+     rename it matches nothing, and the renamed `advisor.local.md` would show up trackable.
+     Replace that line with `docs/agents/advisor.local.md` — don't just add the new line beside
+     the stale one. **If the old line isn't there** (the user declined step 2's rules on an
+     earlier run), there's nothing to replace — the `.gitignore` bullet below still offers to
+     add the new line on its own, same as any other missing entry.
+  2. **Rename `docs/agents/project.md`, only if it's present.** Check whether it's tracked
+     (`git ls-files --error-unmatch docs/agents/project.md`) before choosing how: **tracked** →
+     `git mv docs/agents/project.md docs/agents/advisor.md` (renames and stages the move in one
+     step). **Present but untracked** → a plain `mv` instead — `git mv` refuses an untracked
+     source outright (`fatal: not under version control`, exit 128). **Not present at all**
+     (only `.local` existed) → nothing to do here, move on to the next file.
+  3. **Rename `docs/agents/project.local.md` the same way, only if it's present** — always a
+     plain `mv`: gitignored files are untracked by design, so there's nothing for `git mv` to
+     move in the index.
+  4. **Fix the renamed file's own contents, not just its name — only if step 2 renamed
+     `project.md`.** Its first line, written from this skill's template at the time of the
+     original setup, names `docs/agents/project.local.md` as where personal overrides go. That
+     sentence is now sitting inside `advisor.md` and still says the old name: leave it, and the
+     ambient configuration the hook injects tells the user (and Claude) to write overrides into
+     a file the hook no longer reads and `.gitignore` no longer covers — a silently unapplied
+     override, next committed by an ordinary `git add -A`. Rewrite just that one filename
+     mention to `docs/agents/advisor.local.md` inside the renamed file — the same substitution
+     the template itself now carries — and touch nothing else in it.
+
+  Show the user the rename and the `.gitignore` line together and get one yes for both before
+  doing either.
+
+  On **decline** — rename nothing and don't ask again this run, **and skip step 4's write this
+  run too: don't create a fresh `docs/agents/advisor.md` either** (step 4 says so). That's what
+  makes this promise true rather than empty: leaving `advisor.md` absent keeps this bullet's own
+  gate open, so the offer genuinely returns on a later run instead of closing the moment step 4
+  would otherwise write a brand-new file over the question. Say plainly what that means: the
+  session hook and every skill below read `advisor.md`, not `project.md`, so this repo's
+  existing values won't be picked up until it's renamed (this run or a later one) — everything
+  else this run does (issue tracker, labels, domain docs) proceeds normally.
 
 - **`.gitignore`** — these entries must exist:
 
@@ -208,9 +234,16 @@ takes effect". If it fails, write no credential — go back and settle step 2, t
 
 Collect these and write them into **`docs/agents/advisor.md`**, from this skill's
 [project-config-template.md](./project-config-template.md) — never into any `SKILL.md`
-(plugin skills are shared, read-only, and replaced on update; workshop ADR 0010). That
-file is the whole per-project schema: the session hook injects it verbatim as the ambient
-**Project configuration**, and six skills read it.
+(plugin skills are shared, read-only, and replaced on update; workshop ADR 0010). **Skip this
+step entirely if step 2's migration offer was just declined:** writing a fresh `advisor.md` now
+would permanently close the gate that offer depends on, stranding the old file's values exactly
+as step 2 says won't happen. That file is the whole per-project schema: the session hook
+injects it verbatim as the ambient **Project configuration**, and six skills read it.
+
+**On a repo that already has real values here** — a prior run, or a file step 2 just renamed
+from `project.md` this run — don't re-ask a field that already carries a real answer; only ask
+about one still showing its `<...>` placeholder, the same signal used everywhere else in this
+step. Confirm the existing values with the user rather than re-collecting them from scratch.
 
 **Keep the template's field labels verbatim** — `Audience`, `Appian version`,
 `Application` (+ `Nicknames`, `UUID`), `Escalation` (+ `Project lead`),
@@ -372,7 +405,10 @@ This is the payoff — confirm the configuration actually works, don't just writ
    as a failure to fix now. If `advisor.local.md` was written or renamed from
    `project.local.md` this run, `git check-ignore` confirms it's ignored — unless the user
    declined the ignore entries (step 2), in which case it is trackable by their choice, and that
-   is what you report.
+   is what you report. **If `advisor.md` was renamed from `project.md` this run**, also confirm
+   its content was fixed, not just its name: `git grep -q project.local.md docs/agents/advisor.md`
+   should fail (no match) — if it still matches, step 2's content fix (its item 4) was missed
+   and needs to be applied now, not reported as done.
 5. **The session hook fires** — tell the user to start a fresh session in this repo and
    confirm the "iadc-advisor — operating posture" and "Project configuration" sections
    appear at the top of context.
