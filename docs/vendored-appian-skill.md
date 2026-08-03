@@ -52,7 +52,9 @@ of that line, whatever it says is served to all clients, and `/iadc-advisor:setu
 write to it. (Address it namespaced, never bare `/setup` — a bare form is only safe until a
 second plugin ships a skill of the same name, and this epic ships one in each of the other
 two products.) Ours reads the value from the ambient **Project configuration** the
-SessionStart hook injects from each client's own `docs/agents/project.md`.
+SessionStart hook injects from each client's own `docs/agents/advisor.md` (renamed from
+`project.md`, so a generic name wouldn't read as family-wide config once the Tester ships
+`tester.md` alongside it).
 
 | File | Patch |
 |---|---|

@@ -43,8 +43,8 @@ Main flow: `ticket → /iadc-advisor:pressure-test → (/iadc-advisor:reconcile)
 - `outputs/` — glossary `outputs/CONTEXT.md`, ADRs `outputs/adr/`, per-ticket
   `outputs/<TICKET-KEY>/` (decisions + build specs). Where `/iadc-advisor:setup`'s ignore rules were
   accepted, `outputs/` is git-ignored — see `outputs/README.md`.
-- `docs/agents/` — this project's configuration: `project.md` (+ personal
-  `project.local.md`), `issue-tracker.md`, `triage-labels.md`, `domain.md`.
+- `docs/agents/` — this project's configuration: `advisor.md` (+ personal
+  `advisor.local.md`), `issue-tracker.md`, `triage-labels.md`, `domain.md`.
 
 ## Working principles
 

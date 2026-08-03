@@ -19,7 +19,7 @@ This is a **read-only** lookup — it retrieves documentation, it changes nothin
 
 The context7 server exposes two tools (exact prefix depends on config; look for these names):
 
-1. **`resolve-library-id`** — find the Appian documentation library. Pass `libraryName: "appian"` (plus your `query` — both are required) and pick the Appian Suite help entry (e.g. an id like `/websites/appian_suite_help_26_6`). Prefer the version closest to the **`Appian version`** in the ambient **Project configuration** (from `docs/agents/project.md`, after any **Personal overrides**).
+1. **`resolve-library-id`** — find the Appian documentation library. Pass `libraryName: "appian"` (plus your `query` — both are required) and pick the Appian Suite help entry (e.g. an id like `/websites/appian_suite_help_26_6`). Prefer the version closest to the **`Appian version`** in the ambient **Project configuration** (from `docs/agents/advisor.md`, after any **Personal overrides**).
 2. **`query-docs`** — fetch documentation for that library id (`libraryId`), passing the topic you're researching as `query` (e.g. "a!queryRecordType", "record type security", "interface component grid"). Narrow the topic so the returned snippets are relevant.
 
 Read the returned snippets, then answer with a citation to the doc they came from.

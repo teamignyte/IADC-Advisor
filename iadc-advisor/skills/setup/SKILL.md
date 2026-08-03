@@ -30,8 +30,10 @@ Read the current state; don't assume:
   here: on a re-run the file you are reading is already filled in with live values. Every
   later place this skill shows `.mcp.json` (the merge diff in step 3, the review in step 8)
   means this rule.
-- `docs/agents/` — `project.md`, `project.local.md`, `issue-tracker.md`,
-  `triage-labels.md`, `domain.md` — which exist from a prior run?
+- `docs/agents/` — `advisor.md`, `advisor.local.md`, `issue-tracker.md`,
+  `triage-labels.md`, `domain.md` — which exist from a prior run? A `project.md` or
+  `project.local.md` here instead means an earlier version of this skill ran — step 2 offers to
+  rename them.
 - `outputs/` — does the workspace exist yet?
 - `.gitignore` — does it have the entries listed in step 2?
 - `git remote -v` — is there a remote, and where?
@@ -46,12 +48,37 @@ ordering is the reason this step comes first, not a formality.
 The plugin can't ship files into this repo, so create them here (idempotently — leave
 existing content alone):
 
+- **Old names, if this repo already ran setup.** Check for `docs/agents/project.md` and
+  `docs/agents/project.local.md` before creating anything new. If `docs/agents/advisor.md` is
+  still absent and either old file is present, this repo ran an earlier version of this skill,
+  under the names this plugin used before — offer to rename rather than writing
+  `advisor.md`/`advisor.local.md` beside them and leaving the repo with both:
+
+  > Found `docs/agents/project.md` from an earlier setup. Rename it to `docs/agents/advisor.md`
+  > (and `project.local.md` → `advisor.local.md`, if present too)? (recommended: **yes**)
+
+  On **yes**: `git mv docs/agents/project.md docs/agents/advisor.md` — it's a committed file, so
+  a plain `mv` would show as a delete-and-add rather than a rename. Rename `project.local.md`
+  the same way if it's present, but with a plain `mv`: gitignored files are untracked, so
+  there's nothing for `git mv` to move in the index. **Fix `.gitignore` in the same pass, before
+  moving on:** a repo on the old names has `docs/agents/project.local.md` committed in its
+  `.gitignore`; left standing after the rename it matches nothing, and the renamed
+  `advisor.local.md` would show up trackable. Replace that line with
+  `docs/agents/advisor.local.md` — don't just add the new line beside the stale one. Show the
+  user the rename and the `.gitignore` line together and get one yes for both before doing
+  either.
+
+  On **decline** — rename nothing and don't ask again this run. Say plainly what that means: the
+  session hook and every skill below read `advisor.md`, not `project.md`, so until this repo is
+  renamed (this run or a later one) its existing values won't be picked up, and step 4 will
+  treat project values as unset.
+
 - **`.gitignore`** — these entries must exist:
 
   ```
   # iadc-advisor per-project state — secrets and personal overrides, never committed
   .mcp.json
-  docs/agents/project.local.md
+  docs/agents/advisor.local.md
   # generated planning artifacts (glossary, ADRs, specs) — working files, not source
   /outputs/*
   !/outputs/README.md
@@ -70,7 +97,7 @@ existing content alone):
   - **The `outputs/` workspace** below is still created, but **don't write
     `outputs/README.md`**: its opening line says the folder's contents are git-ignored, which
     would be false in this repo. Say that out loud instead, and let the team decide.
-  - **A personal override** in `docs/agents/project.local.md` (step 4) would be a trackable
+  - **A personal override** in `docs/agents/advisor.local.md` (step 4) would be a trackable
     file. Only write one if the user says yes knowing that.
 
   Step 9 expects `git check-ignore` to fail on all of these here, and reports them as
@@ -179,7 +206,7 @@ takes effect". If it fails, write no credential — go back and settle step 2, t
 
 ### 4. Set project values
 
-Collect these and write them into **`docs/agents/project.md`**, from this skill's
+Collect these and write them into **`docs/agents/advisor.md`**, from this skill's
 [project-config-template.md](./project-config-template.md) — never into any `SKILL.md`
 (plugin skills are shared, read-only, and replaced on update; workshop ADR 0010). That
 file is the whole per-project schema: the session hook injects it verbatim as the ambient
@@ -198,7 +225,7 @@ placeholder left standing is how a skill knows a field is genuinely unset, so it
 again every session; that is the nag `/iadc-advisor:setup` exists to prevent. Never invent a value, and
 never delete a line unless the template says to.
 
-- **Jira project key** (e.g. `IV`) — the one value that is *not* a `project.md` field: it
+- **Jira project key** (e.g. `IV`) — the one value that is *not* an `advisor.md` field: it
   belongs in `docs/agents/issue-tracker.md` (step 5), where the `jira` and `to-tickets`
   skills read it.
 - **`Appian version`** (e.g. `26.6`) — a bare version string, no trailing note. `/iadc-advisor:appian`
@@ -241,10 +268,10 @@ never delete a line unless the template says to.
 
 **Per-person override:** ask whether this user's role differs from the repo default
 (e.g. a lead in a `developer`-default repo). If so, write just the differing lines to
-**`docs/agents/project.local.md`** (gitignored by step 2's entry — unless the user declined
+**`docs/agents/advisor.local.md`** (gitignored by step 2's entry — unless the user declined
 that append, in which case take the decline branch there before writing one): same field
 names; the session
-hook injects it after `project.md`, so its values win. Any teammate can do the same on
+hook injects it after `advisor.md`, so its values win. Any teammate can do the same on
 their machine without touching the committed default.
 
 ### 5. Issue tracker
@@ -298,8 +325,9 @@ done.
 - **`outputs/`** — created or already present, and whether `README.md` was written, left as
   the team had it, declined, or withheld by this skill because the ignore rules were declined
   (step 2).
-- **`docs/agents/project.md`** first, then `issue-tracker.md`, `triage-labels.md`, `domain.md`,
-  and `project.local.md` if there's a personal override.
+- **`docs/agents/advisor.md`** first (note if it was renamed from `project.md` this run), then
+  `issue-tracker.md`, `triage-labels.md`, `domain.md`, and `advisor.local.md` if there's a
+  personal override.
 
 Merge into files that already exist rather than clobbering them, and don't touch surrounding content. The client's `CLAUDE.md` is theirs: this skill writes nothing into it and needs nothing from it — the plugin's operating posture arrives through its session hook.
 
@@ -333,7 +361,7 @@ This is the payoff — confirm the configuration actually works, don't just writ
      `/outputs/*` rule is absent, or the user declined the `.gitignore` append (step 2). If
      they declined, this is the state step 2 predicted, not a failure: report the workspace as
      deliberately unignored and leave it.
-4. **Project configuration is live** — `docs/agents/project.md` exists and every field carries a
+4. **Project configuration is live** — `docs/agents/advisor.md` exists and every field carries a
    real answer, with the two exceptions this file documents: `Project lead` stays a placeholder
    when `Escalation` is `hand-off`, and `Nicknames` stays one when the team has no shorthand
    (step 4). Any **other** `<...>` still standing means that field is genuinely unset — go back
@@ -341,9 +369,10 @@ This is the payoff — confirm the configuration actually works, don't just writ
    deliberately-unconfigured path: with `.mcp.json` left placeholder-valued the `appian` MCP
    can't run `listApplications`, so if the user doesn't know the `Application` `UUID` by hand
    that placeholder stands for a reason — report it with the other values they still owe, not
-   as a failure to fix now. If `project.local.md` was written,
-   `git check-ignore` confirms it's ignored — unless the user declined the ignore entries
-   (step 2), in which case it is trackable by their choice, and that is what you report.
+   as a failure to fix now. If `advisor.local.md` was written or renamed from
+   `project.local.md` this run, `git check-ignore` confirms it's ignored — unless the user
+   declined the ignore entries (step 2), in which case it is trackable by their choice, and that
+   is what you report.
 5. **The session hook fires** — tell the user to start a fresh session in this repo and
    confirm the "iadc-advisor — operating posture" and "Project configuration" sections
    appear at the top of context.

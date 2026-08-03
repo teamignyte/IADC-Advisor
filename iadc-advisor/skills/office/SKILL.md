@@ -31,7 +31,7 @@ pulls requirements before sharpening a plan.
 
 The advisor searches a **pinned source-of-truth folder** first, rather than scanning the
 whole tenant. Read the **`Office source of truth`** entry from the ambient
-**Project configuration** (from `docs/agents/project.md`, written by `/iadc-advisor:setup`), after
+**Project configuration** (from `docs/agents/advisor.md`, written by `/iadc-advisor:setup`), after
 applying any **Personal overrides**: one **row per prospect**, each carrying that
 prospect's site + pinned folder, with the **`Active prospect`** line naming which row is
 live. Tracking several prospects in this one repo? Add a row per prospect and switch by

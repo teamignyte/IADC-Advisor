@@ -13,7 +13,7 @@ stress-tested against the live app and the ticket's own contradictions.
 
 **Who it's talking to.** By default the **developer who will build the ticket** — the `Audience`
 line in the ambient **Project configuration**, which reads `developer` unless configured
-otherwise (a personal `project.local.md` override wins). The questions are there to sharpen
+otherwise (a personal `advisor.local.md` override wins). The questions are there to sharpen
 *your* understanding and readiness to implement — not to extract decisions above your authority.
 A decision that genuinely needs the project lead (an **architectural gap**) is **routed to
 them**, not forced onto you — see *Escalate the gaps*.
@@ -193,7 +193,7 @@ only outward writes here, and both are **gated**.
 ### Configuration
 
 Escalation is configured in the ambient **Project configuration** (from
-`docs/agents/project.md`, written by `/iadc-advisor:setup`), after applying any **Personal overrides**:
+`docs/agents/advisor.md`, written by `/iadc-advisor:setup`), after applying any **Personal overrides**:
 the **`Escalation`** line (channel — Slack | Jira comment | hand-off) and
 **`Project lead`** (Slack channel/handle, or Jira account). Test in this order, first match wins
 — **exactly one remedy applies per state:**

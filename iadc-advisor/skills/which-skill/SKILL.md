@@ -76,4 +76,4 @@ Off the main flow entirely.
 
 ## Precondition
 
-**`/iadc-advisor:setup`** — run once before your first flow. It materializes this project's own state **into this repo**, since the plugin itself ships none of it: `.mcp.json` (the MCP servers and their literal credentials), `docs/agents/project.md` (the project configuration the session hook injects and six skills read), the `.gitignore` entries that keep those out of git, the `outputs/` workspace, and the issue-tracker and domain-doc config the other skills assume — then verifies every connection is live.
+**`/iadc-advisor:setup`** — run once before your first flow. It materializes this project's own state **into this repo**, since the plugin itself ships none of it: `.mcp.json` (the MCP servers and their literal credentials), `docs/agents/advisor.md` (the project configuration the session hook injects and six skills read), the `.gitignore` entries that keep those out of git, the `outputs/` workspace, and the issue-tracker and domain-doc config the other skills assume — then verifies every connection is live.

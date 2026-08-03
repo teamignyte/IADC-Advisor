@@ -72,7 +72,7 @@ why.)
    silently skipped.)
 4. **Run `/iadc-advisor:setup`** in that repo. It generates the gitignored `.mcp.json` (graph, Appian,
    docs — literal values, no secrets tracked), writes the project configuration
-   (`docs/agents/project.md` — Appian version, application UUID, audience, escalation),
+   (`docs/agents/advisor.md` — Appian version, application UUID, audience, escalation),
    points the Jira/Microsoft 365 connectors, lays out the tracker + domain docs and the
    `outputs/` workspace — then verifies everything connects.
 5. **Ask `/iadc-advisor:which-skill`** any time you're not sure which flow fits.
@@ -96,6 +96,6 @@ You have a ticket (or a described task). **`/iadc-advisor:pressure-test`** orien
 
 Nothing secret is ever committed: `/iadc-advisor:setup` writes real credentials only to the gitignored
 `.mcp.json`, and your personal role override lives in the gitignored
-`docs/agents/project.local.md`. Jira and Microsoft 365 connect as Claude connectors — no
-tokens on disk. The committed `docs/agents/project.md` holds only team-shared,
+`docs/agents/advisor.local.md`. Jira and Microsoft 365 connect as Claude connectors — no
+tokens on disk. The committed `docs/agents/advisor.md` holds only team-shared,
 non-secret values.
