@@ -48,9 +48,17 @@ client-facing distribution repo, which lists this plugin alongside `iadc-tester`
 - **The advisory posture holds even in the workshop:** this repo produces docs,
   decisions, and configuration — it does not build client Appian objects.
 
-## Deploying
+## Pushing
 
-Push this workshop repo with the **PAT in `.secrets/git-credentials`** (gitignored; never committed) — that PAT is the deploy identity. Don't fall back to ambient GitHub or `gh` auth. It needs `repo` scope and must be SSO-authorized for the `teamignyte` org; refresh it there when it expires.
+Authentication is a **per-device SSH key**, configured at the machine level rather than in this
+repo, so a fresh clone inherits it: an `~/.ssh/config` host alias carrying the work key, plus a
+global URL rewrite that routes `teamignyte` URLs through it. Remotes stay canonical HTTPS and are
+routed over SSH transparently, so a plain `git push` works with no flags.
+
+**There is no PAT and no credential store** — they were retired and the tokens revoked. So a failed
+push is always machine configuration, never an expired credential: check the key, the host alias,
+and that `github.com` is in `known_hosts`. Rationale and setup are in the family's
+[ADR 0007](https://github.com/teamignyte/IADC/blob/main/docs/adr/0007-per-device-ssh-keys-key-by-org-identity-by-directory.md).
 
 ## Extending the plugin
 
@@ -107,14 +115,14 @@ the family's
 
 ### Issue tracker
 
-Work on the plugin is tracked as plan-and-progress files, not tickets: the implementation plan
-lives in `docs/superpowers/plans/` (committed), and task-by-task progress in `.superpowers/sdd/`
-(gitignored working notes). There is no `.scratch/` tree here — `docs/agents/issue-tracker.md`
-records the local-markdown ticket conventions for if issues are ever filed as files.
+Work on the plugin is tracked on the **shared IADC Jira board**, alongside the other two products —
+tracking is a family concern, so the CLI, its convention docs and the triage vocabulary all live in
+the umbrella (family
+[ADR 0004](https://github.com/teamignyte/IADC/blob/main/docs/adr/0004-family-work-tracked-in-jira-iv.md)).
 
-### Triage labels
-
-The five canonical roles, unchanged — `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`, recorded as a `Status:` line in each issue file. See `docs/agents/triage-labels.md`.
+Implementation *plans* still live here as files: `docs/superpowers/plans/` (committed) and
+task-by-task progress in `.superpowers/sdd/` (gitignored working notes). Those are plans, not
+tickets.
 
 ### Domain docs
 
