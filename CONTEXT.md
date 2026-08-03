@@ -50,6 +50,14 @@ The `CONTEXT.md` and ADRs a *client* produces when they use the plugin on their 
 Appian app. They live in the client's repo and describe the client's project; the
 plugin never ships them.
 
+**Doubled path**:
+A file path that names a **Dev doc** here and a **Usage doc** in a client's repo — the same
+name, two documents, two repositories. `docs/agents/` is the standing example: `domain.md`
+exists in both senses, and `skills/setup/` holds seed *templates* whose prose refers to the
+client's copy, not this repo's. So a search for one of these names returns hits belonging to
+two different projects, and a hit is not evidence that this repo's copy is still needed.
+_Avoid_: duplicate, shared doc (neither is a copy of the other)
+
 ### Flow and posture
 
 **Spine** (a.k.a. the main flow):
