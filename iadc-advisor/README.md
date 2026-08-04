@@ -80,8 +80,9 @@ why.)
    for the graph connection (step 5) instead of asking for it itself.
 5. **Run `/iadc-graph:setup`** to wire the `iadc` graph — its URL and `appian-api-key`. A separate
    command, from the `iadc-graph` plugin this one depends on (installed automatically in step 2).
-   Fine to run before step 4, during, or well after — nothing here waits on it, and it skips
-   itself if a teammate already configured a working entry.
+   Fine to run before step 4, during, or well after — nothing here waits on it. It never silently
+   overwrites a working entry: if this repo's `.mcp.json` already has one — an older install, or
+   your own clone from a previous run — it's kept as-is unless you choose to replace it.
 6. **Ask `/iadc-advisor:which-skill`** any time you're not sure which flow fits.
 
 Updates: from that repo, `claude plugin update iadc-advisor@ignyte --scope project`, then
