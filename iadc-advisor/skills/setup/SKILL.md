@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Configure the iadc-advisor plugin for this Appian project — write the per-project state into this repo (MCP servers + secrets, project configuration, issue tracker, domain docs), verify everything connects. Run once per app repo after installing the plugin, before first use of the other skills.
+description: Configure the iadc-advisor plugin for this Appian project — write the per-project state into this repo (project configuration, issue tracker, domain docs), wire the MCP servers and their credentials, verify everything connects. Run once per app repo after installing the plugin, before first use of the other skills.
 disable-model-invocation: true
 ---
 
@@ -106,11 +106,25 @@ existing content alone):
   existing values won't be picked up until it's renamed (this run or a later one) — everything
   else this run does (issue tracker, labels, domain docs) proceeds normally.
 
+- **Old `.gitignore` comment wording, if this repo ran setup before this correction.** Earlier
+  versions of this skill wrote the comment `# iadc-advisor per-project state — secrets and
+  personal overrides, never committed` above `.mcp.json` — wrongly grouping MCP credentials under
+  that term. The family's per-project-state convention is explicit that credentials follow a
+  separate rule: the plugin that owns the server owns its configuration. If that **exact** line
+  is present, offer to replace it with the two corrected comments below, the same way as any
+  other `.gitignore` change in this step: show the diff, get an explicit yes. Match it
+  **verbatim only** — a line the user has since reworded, duplicated, or moved onto a different
+  entry no longer matches, and a blind replace risks clobbering an edit they made on purpose;
+  leave it exactly as it is instead. On decline, or no exact match, don't ask again and don't
+  touch the line. This changes only the comment's wording — which files are ignored is unaffected
+  either way.
+
 - **`.gitignore`** — these entries must exist:
 
   ```
-  # iadc-advisor per-project state — secrets and personal overrides, never committed
+  # iadc-advisor MCP credentials — never committed
   .mcp.json
+  # iadc-advisor per-project state — personal overrides, never committed
   docs/agents/advisor.local.md
   # generated planning artifacts (glossary, ADRs, specs) — working files, not source
   /outputs/*
@@ -122,8 +136,8 @@ existing content alone):
   append nothing and don't ask again (one narrow exception, spelled out in step 3: if the user
   there agrees to `git rm --cached` a tracked `.mcp.json`, that changes the facts this refusal
   was made against, so that single re-ask is legitimate — and a second decline is final). Tell
-  them plainly what follows — the decline reaches every piece of per-project state this run
-  would write, not just the secrets:
+  them plainly what follows — the decline reaches everything this run would otherwise write
+  next, not just `.mcp.json`'s credentials:
 
   - **`.mcp.json`** stays placeholder-valued (step 3), because this skill does not write
     credentials into a repo that doesn't ignore them.
