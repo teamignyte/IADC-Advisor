@@ -169,8 +169,9 @@ the user declined them**, don't re-ask and don't append them anyway — that ans
 Produce the outcome step 2 named instead: generate `.mcp.json` — **merging** into it rather
 than clobbering it if one is already there, per the merge rule below — with every
 `<placeholder>` left standing, write **no** credential value into it, and hand the values off
-exactly the way the decline branch below does. With the rules in place `.mcp.json` is
-gitignored and no secret is ever tracked; the template stays in the plugin.
+exactly the way the decline branch below does. The template stays in the plugin regardless —
+whether `.mcp.json` ends up gitignored with no secret ever committed is what the gate later in
+this step confirms, not something the rules merely being in place guarantees on their own.
 
 This is an existing app repo, not a fresh clone — respect what's already there. Take these two
 in order, the tracked check **first**, before you write anything:
@@ -230,25 +231,32 @@ the two guards above stopped you**, in which case the `<placeholder>` stays and 
 handed off instead of written. **Before the first literal value goes in, this repo has to clear
 the same bar every credential write into `.mcp.json` clears in this family: would a fresh clone of
 this repo also protect the file, not just does it look protected right now.** `git check-ignore
-.mcp.json` alone only answers the second question — it goes green when the match lives in
-`.git/info/exclude` or `core.excludesFile` (neither ever travels with a clone), when a later
-`.gitignore` line negates the match back out, or regardless of whether `.mcp.json` is already a
-committed blob at HEAD. Re-confirm all of it here, regardless of what step 2 already did —
-protection can be lost again in between (a `stash`, a `checkout -- .gitignore`, another commit
-landing):
+.mcp.json` alone doesn't distinguish that on its own: it goes green identically whether the match
+comes from the tracked `.gitignore`, from `.git/info/exclude`, or from `core.excludesFile` — the
+last two never travel with a clone — and, separately, it says nothing about whether `.mcp.json`
+itself might already be a committed blob at HEAD regardless of what `.gitignore` currently says.
+Re-confirm all of it here, regardless of what step 2 already did — protection can be lost again in
+between (a `stash`, a `checkout -- .gitignore`, another commit landing):
 
-- `git check-ignore .mcp.json` succeeds — the path reads as ignored right now.
+- `git check-ignore .mcp.json` succeeds — the path reads as ignored right now. This plain form
+  already handles a later `.gitignore` line negating an earlier match back out correctly: a
+  negated path is genuinely not ignored, and this exits non-zero for it, the same as no match at
+  all — the negation trap sits elsewhere, in the next bullet's `-v` half, not here.
 - `git check-ignore -- .mcp.json 2>/dev/null && git check-ignore -v -- .mcp.json 2>/dev/null |
-  grep -q '^\.gitignore:[0-9]*:[^!]'` — the match is real, not one a later line negates back out,
-  **and** it traces to the tracked `.gitignore`, not to one of the two machine-local sources above.
+  grep -q '^\.gitignore:[0-9]*:[^!]'` — the plain half repeats the bullet above so this check
+  stays correct read on its own, since `-v` alone is not enough: it prints a source and exits 0
+  even for a line that negates the match back out, which is why the pattern also excludes a
+  `!`-prefixed source rather than relying only on the plain half in front of it. Together they
+  confirm the match is real **and** traces to the tracked `.gitignore`, not to one of the two
+  machine-local sources named above.
 - `git cat-file -e HEAD:.gitignore 2>/dev/null && git diff --quiet HEAD -- .gitignore 2>/dev/null`
   — that `.gitignore` copy is committed at HEAD, not only sitting in the working tree or the index.
 - `git cat-file -e HEAD:.mcp.json` **fails** — no committed blob for this file exists at HEAD
   already (the tracked branch above is what gets this file to that state; this confirms it held).
 
-If any part fails, write no credential — name which one, and offer to settle it the same way the
-tracked branch above does (stage and commit `.gitignore`, or the pending `git rm --cached`, only
-on an explicit yes) before trying again.
+If any check above does not hold, write no credential — name which one, and offer to settle it the
+same way the tracked branch above does (stage and commit `.gitignore`, or the pending `git rm
+--cached`, only on an explicit yes) before trying again.
 
 - **`iadc`** (graph) — no longer configured here: tell the user to run `/iadc-graph:setup` (installed automatically — this plugin declares `iadc-graph` as a dependency), and say plainly that it can wait — before, during, or after this setup; the other skill runs fine mid-session, it's only its *connection* that needs a fresh session before it shows as live — since nothing below depends on it. That skill writes this entry and runs its own credential-safety sequence, and never silently overwrites a working entry — a repo that ran an older version of this skill keeps what it already has unless the user chooses otherwise. This skill neither writes that entry nor waits on the other one — mention it here and move on to the servers below.
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
@@ -434,16 +442,19 @@ Merge into files that already exist rather than clobbering them, and don't touch
 
 This is the payoff — confirm the configuration actually works, don't just write files:
 
-1. **`.mcp.json` is configured and ignored** — it exists (generated from the template), parses
-   as JSON, carries no `<placeholder>` string and no `_comment` key, and is matched by a
-   `.gitignore` entry (`git check-ignore .mcp.json` succeeds). If `check-ignore` fails,
-   diagnose before you fix: run `git ls-files --error-unmatch .mcp.json` — if **that** succeeds
-   the file is **tracked**, and no `.gitignore` line can ignore a tracked file, so the fix is
-   `git rm --cached .mcp.json` (with the user's yes), not another entry; only when it's
-   untracked is a missing `.gitignore` entry the explanation. If the user declined the ignore
-   entries (step 2) or the `git rm --cached` (step 3), report `.mcp.json` as **deliberately
-   unconfigured** with the list of values they still owe — don't call that a failure and don't
-   quietly fill it in now.
+1. **`.mcp.json` is configured and durably protected** — it exists (generated from the template),
+   parses as JSON, carries no `<placeholder>` string and no `_comment` key, and clears step 3's
+   whole four-part check again, not `git check-ignore .mcp.json` alone: that plain form reads
+   green off a rule sitting only in `.git/info/exclude` or `core.excludesFile`, or off a
+   `.gitignore` line that isn't yet committed at HEAD, exactly as readily as off real, durable
+   protection — the same gap step 3 exists to close, so step 9 must not certify a state step 3
+   would have refused to write into. If any part of that check fails, diagnose before you fix: run
+   `git ls-files --error-unmatch .mcp.json` — if **that** succeeds the file is **tracked**, and no
+   `.gitignore` line can ignore a tracked file, so the fix is `git rm --cached .mcp.json` (with the
+   user's yes), not another entry; only when it's untracked is a missing or not-yet-durable
+   `.gitignore` entry the explanation. If the user declined the ignore entries (step 2) or the `git
+   rm --cached` (step 3), report `.mcp.json` as **deliberately unconfigured** with the list of
+   values they still owe — don't call that a failure and don't quietly fill it in now.
 2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call). For Slack (if used for escalation), confirm the Slack connector is connected. **Exception — if `.mcp.json` was deliberately left placeholder-valued (item 1), `appian` has no values to connect with *by design*:** report it as deliberately unconfigured, exactly as item 1 does, not as a failed handshake. (`context7` is keyless and should still come up.) **`iadc` is a separate case — this skill never writes that entry (step 3). If its tools are absent, that's not this skill's failed handshake, for any of several reasons: `/iadc-graph:setup` may not have run yet, may have run this same session (its write needs a fresh one to take effect), may have been declined inside it, or the key on file may be wrong (the graph service is fail-closed on it, so a bad key and no key look identical from here). Point the user at that command rather than diagnosing which.**
 3. **The workspace is live** — `outputs/` exists and holds its `README.md` (unless that write
    was withheld: the user declined it, or step 2's ignore rules were declined and this skill

@@ -1,18 +1,35 @@
 # Changelog — iadc-advisor
 
+## 1.4.1 — 2026-08-04
+
+Two follow-ups to 1.4.0's gate, no change to the gate's own logic:
+
+- **Step 9's report matched the write gate to the weak check the write gate no longer uses.** A
+  repo with a pre-existing `.mcp.json` and only a `.git/info/exclude` rule could have step 3 refuse
+  to write (correctly), then step 9 report `.mcp.json` "configured and ignored" off plain
+  `check-ignore` anyway — the run contradicting itself in one pass. Step 9 now re-runs the same
+  four-part check step 3 does, so it can't certify a state step 3 just refused.
+- **1.4.0's own explanation of the negation case was backwards**, here and in
+  `per-project-state.md`. Plain `git check-ignore` correctly reads a negated `.gitignore` line as
+  *not* ignored — it does not "go green" for one. The trap belongs to `git check-ignore -v`, which
+  reports a source and exits 0 even when that source is the negation, which is why the compound's
+  second bullet excludes a `!`-prefixed source rather than leaning on the plain half alone. No
+  command changed; only the write-up of why the compound is correct.
+
+No action needed for an existing install: no gate command changed in this release.
+
 ## 1.4.0 — 2026-08-04
 
 `/iadc-advisor:setup` gates the `appian`/`context7` credential write into `.mcp.json` more
 strictly. The old check asked only whether `git check-ignore .mcp.json` currently succeeds, which
 also goes green when the match lives in `.git/info/exclude` or `core.excludesFile` (neither
-travels with a clone), when a later `.gitignore` line negates the match back out, or regardless of
-whether `.mcp.json` is already a committed blob at HEAD — states where a fresh clone of the repo
-would commit the credential even though this check reported it as protected. The gate now also
-confirms the match traces to a committed, non-negated `.gitignore` line at HEAD, and that no
-committed blob for `.mcp.json` already exists there — the same minimum bar `/iadc-graph:setup`
-holds its own credential write to. No action needed for an existing install: this only makes the
-gate refuse a write in states it previously let through; it never removes protection it granted
-before.
+travels with a clone), or regardless of whether `.mcp.json` is already a committed blob at HEAD —
+states where a fresh clone of the repo would commit the credential even though this check reported
+it as protected. The gate now also confirms the match traces to a committed, non-negated
+`.gitignore` line at HEAD, and that no committed blob for `.mcp.json` already exists there — the
+same minimum bar `/iadc-graph:setup` holds its own credential write to. No action needed for an
+existing install: this only makes the gate refuse a write in states it previously let through; it
+never removes protection it granted before.
 
 ## 1.3.1 — 2026-08-04
 
