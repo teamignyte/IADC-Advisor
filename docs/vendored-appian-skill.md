@@ -194,15 +194,26 @@ grep -c '^## Posture: read-only / advisory' iadc-advisor/skills/appian/SKILL.md 
 grep -rln "Project configuration" \
   iadc-advisor/skills/{appian,context7,office,orient,pressure-test,setup}/SKILL.md | wc -l   # expect 6
 
-# E. Namespaced addresses only — no bare /setup or /context7 survives in the vendored tree
-#    (Patch A, B; IV-362 amended both to require this).
-grep -rn "/setup\b\|/context7\b" iadc-advisor/skills/appian/
+# E. Namespaced addresses only — no bare reference to ANY Advisor skill, or to iadc-graph,
+#    survives in the vendored tree (Patch A, B; IV-362 amended both to require this). Every
+#    skill name except appian itself (self-reference isn't this rule's concern) plus
+#    iadc-graph, which is no longer a local directory to list.
+grep -rnoE "(^|[^:[:alnum:]/])/($(ls iadc-advisor/skills | grep -v '^appian$' | paste -sd'|')|iadc-graph)\b" \
+  iadc-advisor/skills/appian/
 
 # F. Per-project state is advisor.md, never the old project.md name (Patch A; IV-361).
-grep -rn "project\.md\|project\.local\.md" iadc-advisor/skills/appian/
+#    Word-bounded so it doesn't fire on subproject.md/myproject.md. Paired with a positive
+#    count so a refresher picking a third wrong name (or dropping the mention) can't pass
+#    just by avoiding the literal string "project.md".
+grep -rn '\bproject\.md\b\|\bproject\.local\.md\b' iadc-advisor/skills/appian/   # must return nothing
+grep -rl 'advisor\.md' iadc-advisor/skills/appian/ | wc -l                      # expect 3
 
-# G. No dangling guidelines/ prefix from the tabs cross-reference fix (Patch C).
-grep -rn "guidelines/" iadc-advisor/skills/appian/
+# G. No dangling references/ or guidelines/ citation anywhere in the tree — generalizes past
+#    Patch C's specific guidelines/ prefix (which "Design Guidelines" prose and
+#    "logic-guidelines" compounds would have false-fired on) to every *.md citation actually
+#    resolving to a real file.
+grep -rhoE "(references|guidelines)/[A-Za-z0-9._/-]+\.md" iadc-advisor/skills/appian/ | sort -u | \
+  while read -r p; do [ -e "iadc-advisor/skills/appian/$p" ] || echo "dangling: $p"; done
 
 # Hygiene: LF only (CRLF makes every future diff unreadable).
 git ls-files iadc-advisor/skills/appian | while read -r f; do
@@ -210,23 +221,41 @@ git ls-files iadc-advisor/skills/appian | while read -r f; do
 done
 ```
 
-**A, B, E, F, G and the CRLF check must return nothing. The posture check must print 1, the
-config-readers check 6.**
+**A, B, E, G and the CRLF check must return nothing. F's first line must return nothing too; its
+second line prints `3`. The posture check must print 1, the config-readers check 6.**
 
 The config-readers glob names each of the six skills explicitly rather than globbing
-`skills/*/SKILL.md` — `iadc-graph` was dropped because it is no longer vendored here (it ships
-from `IADC-Marketplace` as a separate plugin dependency, and its mirror carries no Configuration
-block to read), and `setup` was added because it both writes and reads back `advisor.md`'s
-values. A stale literal name in that list fails **silently on stderr** (`ugrep`/`grep` warns
-`No such file or directory` and `wc -l` still returns a count) — pipe the check through `2>&1`
-if you want the warning where you'll see it.
+`skills/*/SKILL.md` — `iadc-graph` was dropped because **it is not vendored here**: there is no
+`iadc-advisor/skills/iadc-graph/` directory to glob any more, since it ships from
+`IADC-Marketplace` as a separate plugin dependency (§ "The `iadc-graph` skill is no longer
+vendored here" in the workshop `CLAUDE.md`). That is the whole reason — the mirror's own content
+is beside the point, since this glob never reaches it either way; for the record, the mirror does
+match the phrase this check greps (`grep -c "Project configuration"` on it returns `4`), so a
+"no Configuration block" rationale would have been false had it been the actual reason. `setup`
+was added because it both writes and reads back `advisor.md`'s
+values. A stale literal name in that list fails **on stderr, not in the count** — `ugrep`/`grep`
+warns `No such file or directory` there, and `wc -l` still returns a number from stdout alone.
+That warning already reaches the terminal with no extra flag; **never run this as
+`… 2>&1 | wc -l`** to "make it visible" — that folds the warning text itself into the piped
+stream, so every stale name adds a line to the count instead of removing a real hit. One stale
+name turns the true 5 back into the expected 6; two stale names (with `setup` also missing) turns
+4 real hits + 2 folded warnings into 6 again — a doubly-broken glob silently matching the same
+expectation. Read stderr as its own line, never merge it into what `wc -l` counts.
 
 **Deliberately left unasserted:** Patch D's two carve-outs (`getObjectDependents` is live;
-accessibility audits are in scope) have no check of their own — a keyword-presence grep would
-pass just as happily on prose whose polarity flipped (e.g. "is NOT live"), which would launder
-exactly the silent-revert failure this section exists to catch. The posture-heading count above
-is the part of Patch D that's safe to assert this way; the carve-outs still need the line-by-line
-read on every refresh that the rest of this section is meant to make unnecessary.
+accessibility audits are in scope) have no check of their own — not because a keyword grep is
+defeated by a polarity flip (it isn't: an exact-phrase `grep -c` does go 1→0 when "is live"
+becomes "is NOT live", verified by direct test). The real reason is §3 step 2: it tells a
+refresher to reproduce a patch's *intent* against upstream's new prose, not paste the old sentence
+back verbatim. A phrase anchor tight enough to catch a revert fires on a faithful re-authoring
+that words the same intent differently; loosened enough to survive rewording, it stops catching
+the revert it was meant to. Either way it asserts a sentence, not the invariant §1 actually cares
+about — and the live text doesn't even hand you a clean sentence to anchor to: `SKILL.md` reads
+"the deletion workflow's dependency check is live … `getObjectDependents` is a `get*` tool and it
+works", not "`getObjectDependents` is live" — §1's own paraphrase above is already not a literal
+quote of it. The posture-heading count above is the part of Patch D that *is* safe to assert this
+way; the carve-outs still need the line-by-line read on every refresh that the rest of this
+section exists to make unnecessary.
 
 Then the real gate — a plugin that validates can still be broken:
 
