@@ -106,19 +106,6 @@ existing content alone):
   existing values won't be picked up until it's renamed (this run or a later one) — everything
   else this run does (issue tracker, labels, domain docs) proceeds normally.
 
-- **Old `.gitignore` comment wording, if this repo ran setup before this correction.** Earlier
-  versions of this skill wrote the comment `# iadc-advisor per-project state — secrets and
-  personal overrides, never committed` above `.mcp.json` — wrongly grouping MCP credentials under
-  that term. The family's per-project-state convention is explicit that credentials follow a
-  separate rule: the plugin that owns the server owns its configuration. If that **exact** line
-  is present, offer to replace it with the two corrected comments below, the same way as any
-  other `.gitignore` change in this step: show the diff, get an explicit yes. Match it
-  **verbatim only** — a line the user has since reworded, duplicated, or moved onto a different
-  entry no longer matches, and a blind replace risks clobbering an edit they made on purpose;
-  leave it exactly as it is instead. On decline, or no exact match, don't ask again and don't
-  touch the line. This changes only the comment's wording — which files are ignored is unaffected
-  either way.
-
 - **`.gitignore`** — these entries must exist:
 
   ```

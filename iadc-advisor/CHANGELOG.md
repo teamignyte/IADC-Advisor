@@ -1,19 +1,12 @@
 # Changelog — iadc-advisor
 
-## 1.4.0 — 2026-08-04
+## 1.3.1 — 2026-08-04
 
-`/iadc-advisor:setup` no longer calls MCP credentials "per-project state". The family convention
-is explicit that a credential file follows a separate rule — the plugin that owns the server owns
-its configuration — and this skill's frontmatter description and prose repeated the old,
-over-broad reading.
-
-- **Action required for existing installs:** the `.gitignore` comment `/setup` writes above
-  `.mcp.json` used to read `# iadc-advisor per-project state — secrets and personal overrides,
-  never committed`, wrongly grouping credentials under that term. Re-run `/iadc-advisor:setup`:
-  if that exact line is still present, it now offers to split it into two accurate comments —
-  gated on an explicit yes, and only on a verbatim match, so a line you've since reworded,
-  duplicated, or moved onto a different entry is left alone rather than guessed at. Which files
-  are ignored is unchanged; only the comment's wording is.
+`/iadc-advisor:setup` no longer calls MCP credentials "per-project state" in its frontmatter
+description or prose. The `.gitignore` comment it writes above `.mcp.json` is now separate from
+the one above `docs/agents/advisor.local.md` — one comment per entry, matching the `outputs/`
+pair below them. Wording only: which files get written or ignored is unchanged, and there is no
+existing install for this to affect — nothing to do on update.
 
 ## 1.3.0 — 2026-08-03
 
