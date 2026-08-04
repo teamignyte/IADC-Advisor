@@ -200,7 +200,12 @@ grep -rln "Project configuration" \
 #    list). The trailing class — not \b — excludes a following ':' on purpose: \b matches at
 #    a colon too, which made this fire identically on bare /iadc-graph and on the correct,
 #    required /iadc-graph:iadc-graph (the one reference CLAUDE.md warns looks like a typo and
-#    isn't), with byte-identical -o output either way.
+#    isn't), with byte-identical -o output either way. ':' is the exclusion doing that real
+#    work. The same class also excludes '-' and '/', which narrows E below plain \b with zero
+#    current instances either way: a hyphenated compound (/orient-style) or a path-like
+#    continuation (/orient/…) no longer fires, and ':' additionally drops a legitimate prose
+#    colon (/orient: the router) that old E caught. Not worth widening for either — both stay
+#    latent unless a future reference actually needs them.
 grep -rnoE "(^|[^:[:alnum:]/])/($(ls iadc-advisor/skills | paste -sd'|')|iadc-graph)([^:[:alnum:]/-]|$)" \
   iadc-advisor/skills/appian/
 
