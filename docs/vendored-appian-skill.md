@@ -194,11 +194,14 @@ grep -c '^## Posture: read-only / advisory' iadc-advisor/skills/appian/SKILL.md 
 grep -rln "Project configuration" \
   iadc-advisor/skills/{appian,context7,office,orient,pressure-test,setup}/SKILL.md | wc -l   # expect 6
 
-# E. Namespaced addresses only — no bare reference to ANY Advisor skill, or to iadc-graph,
+# E. Namespaced addresses only — no bare reference to any Advisor skill, or to iadc-graph,
 #    survives in the vendored tree (Patch A, B; IV-362 amended both to require this). Every
-#    skill name except appian itself (self-reference isn't this rule's concern) plus
-#    iadc-graph, which is no longer a local directory to list.
-grep -rnoE "(^|[^:[:alnum:]/])/($(ls iadc-advisor/skills | grep -v '^appian$' | paste -sd'|')|iadc-graph)\b" \
+#    skill name including appian itself, plus iadc-graph (no longer a local directory to
+#    list). The trailing class — not \b — excludes a following ':' on purpose: \b matches at
+#    a colon too, which made this fire identically on bare /iadc-graph and on the correct,
+#    required /iadc-graph:iadc-graph (the one reference CLAUDE.md warns looks like a typo and
+#    isn't), with byte-identical -o output either way.
+grep -rnoE "(^|[^:[:alnum:]/])/($(ls iadc-advisor/skills | paste -sd'|')|iadc-graph)([^:[:alnum:]/-]|$)" \
   iadc-advisor/skills/appian/
 
 # F. Per-project state is advisor.md, never the old project.md name (Patch A; IV-361).
@@ -229,10 +232,10 @@ The config-readers glob names each of the six skills explicitly rather than glob
 `iadc-advisor/skills/iadc-graph/` directory to glob any more, since it ships from
 `IADC-Marketplace` as a separate plugin dependency (§ "The `iadc-graph` skill is no longer
 vendored here" in the workshop `CLAUDE.md`). That is the whole reason — the mirror's own content
-is beside the point, since this glob never reaches it either way; for the record, the mirror does
-match the phrase this check greps (`grep -c "Project configuration"` on it returns `4`), so a
-"no Configuration block" rationale would have been false had it been the actual reason. `setup`
-was added because it both writes and reads back `advisor.md`'s
+is beside the point, since this glob never reaches it either way, and it is a file this repo does
+not own (`IADC-Marketplace/docs/mirrored-iadc-graph-skill.md` owns its refresh schedule and its
+own checks; do not assert a fact about its current content here — it drifts on its own timeline,
+not this doc's). `setup` was added because it both writes and reads back `advisor.md`'s
 values. A stale literal name in that list fails **on stderr, not in the count** — `ugrep`/`grep`
 warns `No such file or directory` there, and `wc -l` still returns a number from stdout alone.
 That warning already reaches the terminal with no extra flag; **never run this as
