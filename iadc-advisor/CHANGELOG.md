@@ -13,9 +13,10 @@ shipping its own alongside.
 - **`/iadc-advisor:setup` no longer writes the `iadc` (graph) entry.** It now tells the user to
   run `/iadc-graph:setup` instead — installed automatically as this plugin's dependency, and now
   the one place in the family that writes that credential (family ADR 0010). This plugin keeps
-  only `appian` and `context7`, the entries that are its own. Nothing changes for an existing
-  install: `/iadc-graph:setup` detects a working `iadc` entry and skips itself, so a repo that
-  ran the old setup is left alone.
+  only `appian` and `context7`, the entries that are its own. It can be run any time, before or
+  after this one, and never disturbs an existing install: `/iadc-graph:setup` never silently
+  overwrites a working `iadc` entry, so a repo that ran the old setup keeps what it already has
+  unless the user chooses otherwise.
 
 ## 1.2.0 — 2026-08-03
 

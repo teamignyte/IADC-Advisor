@@ -26,7 +26,6 @@ The architect **advises and plans**; your developers build. It reads and reasons
 
 `/iadc-advisor:setup` (step 4 below) asks for these and can't finish without them, so have them to hand:
 
-- **The `iadc` graph** — its URL, and its `appian-api-key`.
 - **The Appian MCP server** — a path to the **`uv`** executable on this machine, and a path to
   the **extracted LCP MCP server bundle** (you'll be given the zip; unpack it somewhere stable
   first — `/iadc-advisor:setup` needs the folder, not the archive).
@@ -39,6 +38,9 @@ The architect **advises and plans**; your developers build. It reads and reasons
 
 The Appian documentation search needs no key. `/iadc-advisor:setup` can look up your application's UUID for
 you once the Appian server is connected.
+
+Separately, have **the `iadc` graph's URL and `appian-api-key`** to hand too — `/iadc-advisor:setup`
+doesn't ask for them. `/iadc-graph:setup` does (step 5 below), any time before or after this one.
 
 ## Getting started
 
@@ -70,12 +72,17 @@ why.)
    to trust the folder — accept, and it installs the repo's declared plugin in the
    background, with nothing else to configure. (Decline the trust prompt and the plugin is
    silently skipped.)
-4. **Run `/iadc-advisor:setup`** in that repo. It generates the gitignored `.mcp.json` (graph, Appian,
+4. **Run `/iadc-advisor:setup`** in that repo. It generates the gitignored `.mcp.json` (Appian,
    docs — literal values, no secrets tracked), writes the project configuration
    (`docs/agents/advisor.md` — Appian version, application UUID, audience, escalation),
    points the Jira/Microsoft 365 connectors, lays out the tracker + domain docs and the
-   `outputs/` workspace — then verifies everything connects.
-5. **Ask `/iadc-advisor:which-skill`** any time you're not sure which flow fits.
+   `outputs/` workspace — then verifies everything connects. It points you at `/iadc-graph:setup`
+   for the graph connection (step 5) instead of asking for it itself.
+5. **Run `/iadc-graph:setup`** to wire the `iadc` graph — its URL and `appian-api-key`. A separate
+   command, from the `iadc-graph` plugin this one depends on (installed automatically in step 2).
+   Fine to run before step 4, during, or well after — nothing here waits on it, and it skips
+   itself if a teammate already configured a working entry.
+6. **Ask `/iadc-advisor:which-skill`** any time you're not sure which flow fits.
 
 Updates: from that repo, `claude plugin update iadc-advisor@ignyte --scope project`, then
 start a fresh session — the update only takes effect on restart. (Both parts matter:

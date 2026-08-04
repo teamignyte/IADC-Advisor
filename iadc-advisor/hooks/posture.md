@@ -28,10 +28,11 @@ Main flow: `ticket → /iadc-advisor:pressure-test → (/iadc-advisor:reconcile)
 - **Ground answers in sources** — the graph, the live environment, the docs — and cite
   what you rely on.
 
-## Data sources (wired by /iadc-advisor:setup; config in .mcp.json + connectors)
+## Data sources (config in .mcp.json + connectors)
 
-- **`iadc`** (graph MCP) — "what calls this", blast radius, record model. Load the
-  `iadc-graph` skill before calling it.
+- **`iadc`** (graph MCP) — "what calls this", blast radius, record model. Wired by
+  **`/iadc-graph:setup`**, not `/iadc-advisor:setup`. If its tools are missing, that's the
+  command to point at — load the `iadc-graph` skill before calling it.
 - **`appian`** (MCP, read-only) — inspect the live environment. Load the `appian`
   skill first.
 - **`context7`** (MCP) — semantic search over Appian docs. Load the `context7` skill.
