@@ -251,12 +251,26 @@ between (a `stash`, a `checkout -- .gitignore`, another commit landing):
   machine-local sources named above.
 - `git cat-file -e HEAD:.gitignore 2>/dev/null && git diff --quiet HEAD -- .gitignore 2>/dev/null`
   — that `.gitignore` copy is committed at HEAD, not only sitting in the working tree or the index.
+- `git ls-files -v .gitignore | grep -q '^H '` — and git is actually comparing that committed copy
+  to the working tree, not skipping the comparison. `git update-index --skip-worktree .gitignore`
+  or `--assume-unchanged .gitignore` — the standard idiom for keeping a personal ignore line out of
+  a shared file — makes git treat HEAD's copy as authoritative and stop looking at the working tree
+  for this one file, so the bullet above reports **no** difference even when the working copy
+  carries a `.mcp.json` rule the committed copy at HEAD lacks. `ls-files -v` is the one place either
+  flag is actually visible: `H` marks a plain cached entry, `S` marks skip-worktree, lowercase `h`
+  marks assume-unchanged — `git diff` has no flag of its own to see past either one, which is why the
+  bullet above cannot catch this case by itself. This doesn't replace that bullet: an ordinary
+  edited-but-uncommitted `.gitignore` carrying neither flag is still caught there, not here.
 - `git cat-file -e HEAD:.mcp.json` **fails** — no committed blob for this file exists at HEAD
   already (the tracked branch above is what gets this file to that state; this confirms it held).
 
 If any check above does not hold, write no credential — name which one, and offer to settle it the
 same way the tracked branch above does (stage and commit `.gitignore`, or the pending `git rm
---cached`, only on an explicit yes) before trying again.
+--cached`, only on an explicit yes) before trying again — **except the `ls-files -v` bullet's own
+failure, which neither of those fixes**: offer `git update-index --no-skip-worktree .gitignore` (or
+`--no-assume-unchanged`, matching whichever flag was reported) instead, same explicit-yes basis.
+Either flag exists specifically to hide a personal working-tree edit from git, so clearing it may
+surface an edit the user meant to keep local — say so before running it.
 
 - **`iadc`** (graph) — no longer configured here: tell the user to run `/iadc-graph:setup` (installed automatically — this plugin declares `iadc-graph` as a dependency), and say plainly that it can wait — before, during, or after this setup; the other skill runs fine mid-session, it's only its *connection* that needs a fresh session before it shows as live — since nothing below depends on it. That skill writes this entry and runs its own credential-safety sequence, and never silently overwrites a working entry — a repo that ran an older version of this skill keeps what it already has unless the user chooses otherwise. This skill neither writes that entry nor waits on the other one — mention it here and move on to the servers below.
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
@@ -444,7 +458,7 @@ This is the payoff — confirm the configuration actually works, don't just writ
 
 1. **`.mcp.json` is configured and durably protected** — it exists (generated from the template),
    parses as JSON, carries no `<placeholder>` string and no `_comment` key, and clears step 3's
-   whole four-part check again, not `git check-ignore .mcp.json` alone: that plain form reads
+   whole five-part check again, not `git check-ignore .mcp.json` alone: that plain form reads
    green off a rule sitting only in `.git/info/exclude` or `core.excludesFile`, or off a
    `.gitignore` line that isn't yet committed at HEAD, exactly as readily as off real, durable
    protection — the same gap step 3 exists to close, so step 9 must not certify a state step 3

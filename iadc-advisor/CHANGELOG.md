@@ -1,5 +1,26 @@
 # Changelog — iadc-advisor
 
+## 1.5.0 — 2026-08-04
+
+**HIGH severity fix.** `/iadc-advisor:setup`'s credential-write gate could be bypassed by a
+`.gitignore` flagged `git update-index --skip-worktree` or `--assume-unchanged` — the standard
+idiom for keeping a personal ignore line out of a shared file. Either flag makes git stop
+comparing that file's working-tree copy to the index at all, so `git diff --quiet HEAD --
+.gitignore` reported no difference even when the working copy carried a `.mcp.json` rule the
+committed copy at HEAD lacked — every other check in the gate agreed the file was durably
+protected when it was not, and a fresh clone (which starts with no such flag) would stage the
+credential on the next `git add -A`.
+
+The gate now also requires `git ls-files -v .gitignore | grep -q '^H '` — `ls-files -v` is the
+only place either flag is actually visible (`H` = plain cached entry, `S` = skip-worktree,
+lowercase `h` = assume-unchanged), since `git diff` has no flag of its own to see past either one.
+This is additive, not a replacement: the existing `cat-file`/`diff` pair still catches an ordinary
+edited-but-uncommitted `.gitignore` that carries neither flag. **Action for an existing install:**
+none required — this only makes the gate refuse a write in a state it previously let through; it
+never removes protection it granted before. A repo already flagged this way on `.gitignore` will
+be told to clear it (`git update-index --no-skip-worktree` / `--no-assume-unchanged`) before the
+next credential write.
+
 ## 1.4.1 — 2026-08-04
 
 Two follow-ups to 1.4.0's gate, no change to the gate's own logic:
