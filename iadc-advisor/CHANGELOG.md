@@ -10,6 +10,12 @@ shipping its own alongside.
   family-wide configuration once the Tester ships `tester.md` alongside it. Re-run
   `/iadc-advisor:setup`: it detects the old files and offers to rename them in place, carrying
   their values over rather than re-asking, and fixes the matching `.gitignore` line.
+- **`/iadc-advisor:setup` no longer writes the `iadc` (graph) entry.** It now tells the user to
+  run `/iadc-graph:setup` instead — installed automatically as this plugin's dependency, and now
+  the one place in the family that writes that credential (family ADR 0010). This plugin keeps
+  only `appian` and `context7`, the entries that are its own. Nothing changes for an existing
+  install: `/iadc-graph:setup` detects a working `iadc` entry and skips itself, so a repo that
+  ran the old setup is left alone.
 
 ## 1.2.0 — 2026-08-03
 

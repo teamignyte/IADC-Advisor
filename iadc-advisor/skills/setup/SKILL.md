@@ -41,9 +41,9 @@ Read the current state; don't assume:
 ### 2. Establish the ignore rules and the workspace
 
 **This step runs before anything writes a credential.** Step 3 puts a literal Appian password
-and API keys into `.mcp.json` at the repo root; **the ignore rules must exist before any
-credential is written**, or a `git add -A` in the gap between the two stages the secret. That
-ordering is the reason this step comes first, not a formality.
+(and, if the team wants one, a context7 API key) into `.mcp.json` at the repo root; **the ignore
+rules must exist before any credential is written**, or a `git add -A` in the gap between the two
+stages the secret. That ordering is the reason this step comes first, not a formality.
 
 The plugin can't ship files into this repo, so create them here (idempotently — leave
 existing content alone):
@@ -208,18 +208,19 @@ in order, the tracked check **first**, before you write anything:
   - **They decline** → **this step ends here for `.mcp.json`.** Write **no** credential value
     into a tracked file — not the password, not an API key, not "just the URL and username".
     Leave every `<placeholder>` standing exactly as it is. Then tell the user which values are
-    still needed, named one by one (`iadc`: `url` + `appian-api-key`; `appian`: `command`,
-    `--directory`, `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`; `context7`: nothing unless they
-    want a key), and that those have to go wherever they told you their team keeps secrets —
-    outside this repo. Skip only the rest of this step's `.mcp.json` write-up (the merge
-    bullet and the three server-value bullets); **still walk the connector bullets** — Jira,
-    Office, Slack — with the user, since those are Claude connectors that hold no credential
-    in this repo, and Office's deliberate `none` still gets recorded in step 4. Then move on
+    still needed, named one by one (`appian`: `command`, `--directory`, `LCP_URL`,
+    `LCP_USERNAME`, `LCP_PASSWORD`; `context7`: nothing unless they want a key), and that those
+    have to go wherever they told you their team keeps secrets — outside this repo. Skip only
+    the rest of this step's `.mcp.json` write-up (the merge bullet and the two server-value
+    bullets); **still walk the `iadc` bullet and the connector bullets** — Jira, Office, Slack —
+    with the user, since none of them write a credential into this file: `iadc` only points at
+    `/iadc-graph:setup`. Office's deliberate `none` still gets recorded in step 4. Then move on
     to step 4. Step 9 will report `.mcp.json` as deliberately unconfigured; that is the
     correct outcome, not a failure to paper over.
 - **`.mcp.json` already exists** (and the check above cleared) → **merge, never overwrite**:
-  add or update only the `iadc`, `appian`, and `context7` entries; preserve every other server
-  the team has configured. Show the diff before writing, redacted per the redaction rule in
+  add or update only the `appian` and `context7` entries; preserve every other server the team
+  has configured — `iadc` included, since `/iadc-graph:setup` owns that entry and does its own
+  merge into this same file. Show the diff before writing, redacted per the redaction rule in
   step 1.
 
 Servers this plugin expects — collect each value with the user and write it into `.mcp.json`,
@@ -230,7 +231,7 @@ actually bites: `git check-ignore .mcp.json` must succeed.** The tracked branch 
 reads that check; on the ordinary paths it is what turns "we appended the line" into "the line
 takes effect". If it fails, write no credential — go back and settle step 2, then re-check.
 
-- **`iadc`** (graph) — HTTP `url` + `appian-api-key` header. Builds and serves a dependency graph for any Appian application.
+- **`iadc`** (graph) — no longer configured here: tell the user to run `/iadc-graph:setup` (installed automatically — this plugin declares `iadc-graph` as a dependency). It writes this entry and runs its own credential-safety sequence, and skips itself when a working entry already exists, so a repo that ran an older version of this skill is left untouched. This skill neither writes that entry nor waits on the other one — mention it here and move on to the servers below.
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
 - **`context7`** — HTTP docs search. Keyless works, which is why the template ships **no `headers` block** for it; add one carrying `CONTEXT7_API_KEY` only if the team has a key and wants the higher rate limits.
 - **Jira** — connected as a **Claude connector** (the Atlassian connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. Jira is **human-first**: the architect reads via the connector and does only light, gated writes. the `jira` and `to-tickets` skills both go through this connector; the project key lives in `docs/agents/issue-tracker.md` (step 5), not an env var.
@@ -390,7 +391,7 @@ This is the payoff — confirm the configuration actually works, don't just writ
    entries (step 2) or the `git rm --cached` (step 3), report `.mcp.json` as **deliberately
    unconfigured** with the list of values they still owe — don't call that a failure and don't
    quietly fill it in now.
-2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call). For Slack (if used for escalation), confirm the Slack connector is connected. **Exception — if `.mcp.json` was deliberately left placeholder-valued (item 1), `iadc` and `appian` have no values to connect with *by design*:** report them as deliberately unconfigured, exactly as item 1 does, not as a failed handshake. (`context7` is keyless and should still come up.)
+2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call). For Slack (if used for escalation), confirm the Slack connector is connected. **Exception — if `.mcp.json` was deliberately left placeholder-valued (item 1), `appian` has no values to connect with *by design*:** report it as deliberately unconfigured, exactly as item 1 does, not as a failed handshake. (`context7` is keyless and should still come up.) **`iadc` is a separate case — this skill never writes that entry (step 3): if its tools are absent, that means `/iadc-graph:setup` hasn't run yet, or ran this same session (its write needs a fresh session to take effect before it shows up). Point the user at that command; it is not this skill's failed handshake.**
 3. **The workspace is live** — `outputs/` exists and holds its `README.md` (unless that write
    was withheld: the user declined it, or step 2's ignore rules were declined and this skill
    held the README back on its own), and the ignore actually bites:
