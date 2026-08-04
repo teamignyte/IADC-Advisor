@@ -271,8 +271,11 @@ already open in this step is the only one guaranteed current. A field-label bull
 starting `- **Label:**` (any indent) in the template's data section — not a label merely
 mentioned in its prose: the *How to fill these in* paragraph names `` `- **Row:**` `` as an
 example of the duplication syntax, which doesn't make it a second `Row` field. Every such bullet
-the template carries should have a matching line somewhere in `docs/agents/advisor.md`. A label
-with **no** matching line at all — not a placeholder, no line, nothing to show the user — is
+the template carries should have a matching bullet in `docs/agents/advisor.md`'s **own data
+section** too — not just any matching line anywhere in the file: `advisor.md` keeps that same
+*How to fill these in* paragraph (below, this step says so), so it can carry the same literal
+`` `- **Row:**` `` mention, which doesn't count there any more than it does in the template. A
+label with **no** matching line at all — not a placeholder, no line, nothing to show the user — is
 unset exactly like a standing placeholder: ask for it now, the same way, using the template's
 guidance for that field, and add the line where the template positions it relative to its
 neighbors. **Except** a nested field whose parent already holds the value that deletes it by
