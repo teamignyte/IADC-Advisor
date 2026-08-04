@@ -259,18 +259,27 @@ them from scratch.
 
 **A field can also be missing outright — no placeholder, no line at all.** A file written
 against an older template predates a field this one has since gained, so there's nothing
-standing for the placeholder check above to catch. Check for this too, against the same
-template you're already reading field guidance from: every field-label bullet in
-[project-config-template.md](./project-config-template.md) — a line matching `- **Label:**`, at
-any indent — should have a matching line somewhere in the file. Reliably:
-`grep -oE '^ *- \*\*[A-Za-z ]+:\*\*' <path>` against each file, trim the leading spaces, sort,
-and diff (`comm -23` on the two sorted lists is every label the template has that the file
-doesn't). A label with **no** matching line at all — not a placeholder, no line, nothing to show
-the user — is unset exactly like a standing placeholder: ask for it now, the same way, using the
-template's guidance for that field, and add the line where the template positions it relative to
-its neighbors. **Except** a nested field whose parent already holds the value that deletes it by
-design: `Office source of truth: none` deletes `Row` and `Active prospect` below it, so their
-absence there is correct, not a gap — don't ask.
+standing for the placeholder check above to catch. Check for this too: compare the field-label
+bullets already in front of you — the ones in
+[project-config-template.md](./project-config-template.md), the copy you just read for this
+step's field guidance, against the ones in `docs/agents/advisor.md`. **Don't go looking for
+another copy of the template to check this against.** The plugin runs from a **read-only shared
+cache that can hold more than one installed version side by side** (step 1) — a freshly-resolved
+path can land on a stale version and silently pass a file that's missing exactly what the
+version actually running just added, which is this exact failure with extra steps. The copy
+already open in this step is the only one guaranteed current. A field-label bullet is a line
+starting `- **Label:**` (any indent) in the template's data section — not a label merely
+mentioned in its prose: the *How to fill these in* paragraph names `` `- **Row:**` `` as an
+example of the duplication syntax, which doesn't make it a second `Row` field. Every such bullet
+the template carries should have a matching line somewhere in `docs/agents/advisor.md`. A label
+with **no** matching line at all — not a placeholder, no line, nothing to show the user — is
+unset exactly like a standing placeholder: ask for it now, the same way, using the template's
+guidance for that field, and add the line where the template positions it relative to its
+neighbors. **Except** a nested field whose parent already holds the value that deletes it by
+design: `Office source of truth` holding the deliberate `none` answer — matched the same way
+`/iadc-advisor:office` matches it, **case-insensitively** (`none` / `None` / `NONE`), a bare
+`N/A` included — deletes `Row` and `Active prospect` below it, so their absence there is
+correct, not a gap — don't ask.
 
 **Keep the template's field labels verbatim** — `Audience`, `Appian version`,
 `Application` (+ `Nicknames`, `UUID`), `Escalation` (+ `Project lead`),
@@ -442,16 +451,15 @@ This is the payoff — confirm the configuration actually works, don't just writ
    can't run `listApplications`, so if the user doesn't know the `Application` `UUID` by hand
    that placeholder stands for a reason — report it with the other values they still owe, not
    as a failure to fix now. **That placeholder check alone misses a field with no line at
-   all** — re-apply step 4's field-label comparison against
-   [project-config-template.md](./project-config-template.md): every template `- **Label:**`
-   bullet, top-level and nested, should have a matching line in the file (same exception as
-   step 4: `Office source of truth: none` deletes `Row` and `Active prospect` by design). A
-   template label with no matching line at all is a gap — report it and go back and ask, the
-   same as a standing placeholder, not success. Where `Row` is present, also confirm
-   `Active prospect` names one of its entries exactly; naming one that doesn't exist as a
-   `Row` — stale from before `Row` existed, or from a rename — is the same gap, not a pass
-   just because neither field is individually a placeholder. If `advisor.local.md` was
-   written or renamed from
+   all** — re-apply step 4's field-label comparison, the same way, to
+   **`docs/agents/advisor.md`** specifically (not `advisor.local.md`, named two sentences below:
+   it's partial **by design** — step 4 says so — and would diff as several gaps for a reason
+   that has nothing to do with this one). A template label with no matching line in
+   `docs/agents/advisor.md` at all is a gap — report it and go back and ask, the same as a
+   standing placeholder, not success. Where `Row` is present, also confirm `Active prospect`
+   names one of its entries exactly; naming one that doesn't exist as a `Row` — stale from
+   before `Row` existed, or from a rename — is the same gap, not a pass just because neither
+   field is individually a placeholder. If `advisor.local.md` was written or renamed from
    `project.local.md` this run, `git check-ignore` confirms it's ignored — unless the user
    declined the ignore entries (step 2), in which case it is trackable by their choice, and that
    is what you report. **If `advisor.md` was renamed from `project.md` this run**, also confirm
