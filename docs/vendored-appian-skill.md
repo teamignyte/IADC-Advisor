@@ -192,7 +192,17 @@ grep -rn "rich-text-icon-aliases\|node-types\.md\|display-conversion-\|/ui-guide
 # C./D. The posture block survived, and the six config-readers still read the ambient block.
 grep -c '^## Posture: read-only / advisory' iadc-advisor/skills/appian/SKILL.md   # expect 1
 grep -rln "Project configuration" \
-  iadc-advisor/skills/{appian,iadc-graph,pressure-test,office,orient,context7}/SKILL.md | wc -l   # expect 6
+  iadc-advisor/skills/{appian,context7,office,orient,pressure-test,setup}/SKILL.md | wc -l   # expect 6
+
+# E. Namespaced addresses only — no bare /setup or /context7 survives in the vendored tree
+#    (Patch A, B; IV-362 amended both to require this).
+grep -rn "/setup\b\|/context7\b" iadc-advisor/skills/appian/
+
+# F. Per-project state is advisor.md, never the old project.md name (Patch A; IV-361).
+grep -rn "project\.md\|project\.local\.md" iadc-advisor/skills/appian/
+
+# G. No dangling guidelines/ prefix from the tabs cross-reference fix (Patch C).
+grep -rn "guidelines/" iadc-advisor/skills/appian/
 
 # Hygiene: LF only (CRLF makes every future diff unreadable).
 git ls-files iadc-advisor/skills/appian | while read -r f; do
@@ -200,8 +210,23 @@ git ls-files iadc-advisor/skills/appian | while read -r f; do
 done
 ```
 
-**A, B and the CRLF check must return nothing. The posture check must print 1, the
+**A, B, E, F, G and the CRLF check must return nothing. The posture check must print 1, the
 config-readers check 6.**
+
+The config-readers glob names each of the six skills explicitly rather than globbing
+`skills/*/SKILL.md` — `iadc-graph` was dropped because it is no longer vendored here (it ships
+from `IADC-Marketplace` as a separate plugin dependency, and its mirror carries no Configuration
+block to read), and `setup` was added because it both writes and reads back `advisor.md`'s
+values. A stale literal name in that list fails **silently on stderr** (`ugrep`/`grep` warns
+`No such file or directory` and `wc -l` still returns a count) — pipe the check through `2>&1`
+if you want the warning where you'll see it.
+
+**Deliberately left unasserted:** Patch D's two carve-outs (`getObjectDependents` is live;
+accessibility audits are in scope) have no check of their own — a keyword-presence grep would
+pass just as happily on prose whose polarity flipped (e.g. "is NOT live"), which would launder
+exactly the silent-revert failure this section exists to catch. The posture-heading count above
+is the part of Patch D that's safe to assert this way; the carve-outs still need the line-by-line
+read on every refresh that the rest of this section is meant to make unnecessary.
 
 Then the real gate — a plugin that validates can still be broken:
 
