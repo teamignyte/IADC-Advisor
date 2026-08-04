@@ -227,10 +227,28 @@ in order, the tracked check **first**, before you write anything:
 Servers this plugin expects — collect each value with the user and write it into `.mcp.json`,
 **unless the user declined step 2's ignore rules (the stop at the top of this step) or one of
 the two guards above stopped you**, in which case the `<placeholder>` stays and the value is
-handed off instead of written. **Before the first literal value goes in, confirm the rule
-actually bites: `git check-ignore .mcp.json` must succeed.** The tracked branch above already
-reads that check; on the ordinary paths it is what turns "we appended the line" into "the line
-takes effect". If it fails, write no credential — go back and settle step 2, then re-check.
+handed off instead of written. **Before the first literal value goes in, this repo has to clear
+the same bar every credential write into `.mcp.json` clears in this family: would a fresh clone of
+this repo also protect the file, not just does it look protected right now.** `git check-ignore
+.mcp.json` alone only answers the second question — it goes green when the match lives in
+`.git/info/exclude` or `core.excludesFile` (neither ever travels with a clone), when a later
+`.gitignore` line negates the match back out, or regardless of whether `.mcp.json` is already a
+committed blob at HEAD. Re-confirm all of it here, regardless of what step 2 already did —
+protection can be lost again in between (a `stash`, a `checkout -- .gitignore`, another commit
+landing):
+
+- `git check-ignore .mcp.json` succeeds — the path reads as ignored right now.
+- `git check-ignore -- .mcp.json 2>/dev/null && git check-ignore -v -- .mcp.json 2>/dev/null |
+  grep -q '^\.gitignore:[0-9]*:[^!]'` — the match is real, not one a later line negates back out,
+  **and** it traces to the tracked `.gitignore`, not to one of the two machine-local sources above.
+- `git cat-file -e HEAD:.gitignore 2>/dev/null && git diff --quiet HEAD -- .gitignore 2>/dev/null`
+  — that `.gitignore` copy is committed at HEAD, not only sitting in the working tree or the index.
+- `git cat-file -e HEAD:.mcp.json` **fails** — no committed blob for this file exists at HEAD
+  already (the tracked branch above is what gets this file to that state; this confirms it held).
+
+If any part fails, write no credential — name which one, and offer to settle it the same way the
+tracked branch above does (stage and commit `.gitignore`, or the pending `git rm --cached`, only
+on an explicit yes) before trying again.
 
 - **`iadc`** (graph) — no longer configured here: tell the user to run `/iadc-graph:setup` (installed automatically — this plugin declares `iadc-graph` as a dependency), and say plainly that it can wait — before, during, or after this setup; the other skill runs fine mid-session, it's only its *connection* that needs a fresh session before it shows as live — since nothing below depends on it. That skill writes this entry and runs its own credential-safety sequence, and never silently overwrites a working entry — a repo that ran an older version of this skill keeps what it already has unless the user chooses otherwise. This skill neither writes that entry nor waits on the other one — mention it here and move on to the servers below.
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.

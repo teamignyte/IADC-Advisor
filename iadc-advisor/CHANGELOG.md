@@ -1,5 +1,19 @@
 # Changelog — iadc-advisor
 
+## 1.4.0 — 2026-08-04
+
+`/iadc-advisor:setup` gates the `appian`/`context7` credential write into `.mcp.json` more
+strictly. The old check asked only whether `git check-ignore .mcp.json` currently succeeds, which
+also goes green when the match lives in `.git/info/exclude` or `core.excludesFile` (neither
+travels with a clone), when a later `.gitignore` line negates the match back out, or regardless of
+whether `.mcp.json` is already a committed blob at HEAD — states where a fresh clone of the repo
+would commit the credential even though this check reported it as protected. The gate now also
+confirms the match traces to a committed, non-negated `.gitignore` line at HEAD, and that no
+committed blob for `.mcp.json` already exists there — the same minimum bar `/iadc-graph:setup`
+holds its own credential write to. No action needed for an existing install: this only makes the
+gate refuse a write in states it previously let through; it never removes protection it granted
+before.
+
 ## 1.3.1 — 2026-08-04
 
 `/iadc-advisor:setup` no longer calls MCP credentials "per-project state" in its frontmatter
