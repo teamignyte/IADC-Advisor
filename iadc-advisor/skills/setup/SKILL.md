@@ -253,8 +253,24 @@ file is the whole per-project schema: the session hook injects it verbatim as th
 
 **On a repo that already has real values here** — a prior run, or a file step 2 just renamed
 from `project.md` this run — don't re-ask a field that already carries a real answer; only ask
-about one still showing its `<...>` placeholder, the same signal used everywhere else in this
-step. Confirm the existing values with the user rather than re-collecting them from scratch.
+about one still showing its `<...>` placeholder or missing outright (next paragraph) — the two
+signals this step goes on. Confirm the existing values with the user rather than re-collecting
+them from scratch.
+
+**A field can also be missing outright — no placeholder, no line at all.** A file written
+against an older template predates a field this one has since gained, so there's nothing
+standing for the placeholder check above to catch. Check for this too, against the same
+template you're already reading field guidance from: every field-label bullet in
+[project-config-template.md](./project-config-template.md) — a line matching `- **Label:**`, at
+any indent — should have a matching line somewhere in the file. Reliably:
+`grep -oE '^ *- \*\*[A-Za-z ]+:\*\*' <path>` against each file, trim the leading spaces, sort,
+and diff (`comm -23` on the two sorted lists is every label the template has that the file
+doesn't). A label with **no** matching line at all — not a placeholder, no line, nothing to show
+the user — is unset exactly like a standing placeholder: ask for it now, the same way, using the
+template's guidance for that field, and add the line where the template positions it relative to
+its neighbors. **Except** a nested field whose parent already holds the value that deletes it by
+design: `Office source of truth: none` deletes `Row` and `Active prospect` below it, so their
+absence there is correct, not a gap — don't ask.
 
 **Keep the template's field labels verbatim** — `Audience`, `Appian version`,
 `Application` (+ `Nicknames`, `UUID`), `Escalation` (+ `Project lead`),
@@ -296,6 +312,12 @@ never delete a line unless the template says to.
   not skip the field and do not leave the placeholder. `none` is the deliberate answer
   that tells `/iadc-advisor:office` to stop searching SharePoint/OneDrive; a placeholder left standing
   only makes it ask again every session.
+  **`Row` missing outright while `Active prospect` already has a real answer** — the shape a
+  file written before `Row` existed arrives in — means that answer isn't settled just because
+  it isn't a placeholder: it was given with no `Row` line to name. Offer it back as the likely
+  name when you ask for `Row` rather than asking blind, and once `Row` is written, confirm
+  `Active prospect` names one of the `Row` entries exactly — fix `Active prospect` to match if
+  the user gives `Row` a different name, rather than leaving the two to disagree.
 - **`Audience`** — who the advisor is talking to: **`developer`** (the default — the person
   who will build the ticket), or `lead`/`architect` if the primary user owns architectural
   decisions. The operating posture reads this line; it shapes how `/iadc-advisor:pressure-test` pitches
@@ -419,7 +441,17 @@ This is the payoff — confirm the configuration actually works, don't just writ
    deliberately-unconfigured path: with `.mcp.json` left placeholder-valued the `appian` MCP
    can't run `listApplications`, so if the user doesn't know the `Application` `UUID` by hand
    that placeholder stands for a reason — report it with the other values they still owe, not
-   as a failure to fix now. If `advisor.local.md` was written or renamed from
+   as a failure to fix now. **That placeholder check alone misses a field with no line at
+   all** — re-apply step 4's field-label comparison against
+   [project-config-template.md](./project-config-template.md): every template `- **Label:**`
+   bullet, top-level and nested, should have a matching line in the file (same exception as
+   step 4: `Office source of truth: none` deletes `Row` and `Active prospect` by design). A
+   template label with no matching line at all is a gap — report it and go back and ask, the
+   same as a standing placeholder, not success. Where `Row` is present, also confirm
+   `Active prospect` names one of its entries exactly; naming one that doesn't exist as a
+   `Row` — stale from before `Row` existed, or from a rename — is the same gap, not a pass
+   just because neither field is individually a placeholder. If `advisor.local.md` was
+   written or renamed from
    `project.local.md` this run, `git check-ignore` confirms it's ignored — unless the user
    declined the ignore entries (step 2), in which case it is trackable by their choice, and that
    is what you report. **If `advisor.md` was renamed from `project.md` this run**, also confirm

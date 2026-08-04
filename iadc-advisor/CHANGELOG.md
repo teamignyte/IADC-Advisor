@@ -9,7 +9,9 @@ shipping its own alongside.
   now `docs/agents/advisor.md` / `advisor.local.md` — a generic name would have read as
   family-wide configuration once the Tester ships `tester.md` alongside it. Re-run
   `/iadc-advisor:setup`: it detects the old files and offers to rename them in place, carrying
-  their values over rather than re-asking, and fixes the matching `.gitignore` line.
+  their values over rather than re-asking, and fixes the matching `.gitignore` line. It also now
+  asks for any field the template has gained since your install ran — `Row`, on a file this old
+  — instead of reporting the migrated file complete with one missing outright.
 - **`/iadc-advisor:setup` no longer writes the `iadc` (graph) entry.** It now tells the user to
   run `/iadc-graph:setup` instead — installed automatically as this plugin's dependency, and now
   the one place in the family that writes that credential (family ADR 0010). This plugin keeps
