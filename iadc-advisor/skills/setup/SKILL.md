@@ -236,7 +236,7 @@ comes from the tracked `.gitignore`, from `.git/info/exclude`, or from `core.exc
 last two never travel with a clone — and, separately, it says nothing about whether `.mcp.json`
 itself might already be a committed blob at HEAD regardless of what `.gitignore` currently says.
 Re-confirm all of it here, regardless of what step 2 already did — protection can be lost again in
-between (a `stash`, a `checkout -- .gitignore`, another commit landing):
+between (a `stash`, a `checkout -- .gitignore`, a flag re-applied, another commit landing):
 
 - `git check-ignore .mcp.json` succeeds — the path reads as ignored right now. This plain form
   already handles a later `.gitignore` line negating an earlier match back out correctly: a
@@ -251,7 +251,7 @@ between (a `stash`, a `checkout -- .gitignore`, another commit landing):
   machine-local sources named above.
 - `git cat-file -e HEAD:.gitignore 2>/dev/null && git diff --quiet HEAD -- .gitignore 2>/dev/null`
   — that `.gitignore` copy is committed at HEAD, not only sitting in the working tree or the index.
-- `git ls-files -v .gitignore | grep -q '^H '` — and git is actually comparing that committed copy
+- `git ls-files -v .gitignore 2>/dev/null | grep -q '^H '` — and git is actually comparing that committed copy
   to the working tree, not skipping the comparison. `git update-index --skip-worktree .gitignore`
   or `--assume-unchanged .gitignore` — the standard idiom for keeping a personal ignore line out of
   a shared file — makes git treat HEAD's copy as authoritative and stop looking at the working tree
@@ -266,11 +266,16 @@ between (a `stash`, a `checkout -- .gitignore`, another commit landing):
 
 If any check above does not hold, write no credential — name which one, and offer to settle it the
 same way the tracked branch above does (stage and commit `.gitignore`, or the pending `git rm
---cached`, only on an explicit yes) before trying again — **except the `ls-files -v` bullet's own
-failure, which neither of those fixes**: offer `git update-index --no-skip-worktree .gitignore` (or
-`--no-assume-unchanged`, matching whichever flag was reported) instead, same explicit-yes basis.
-Either flag exists specifically to hide a personal working-tree edit from git, so clearing it may
-surface an edit the user meant to keep local — say so before running it.
+--cached`, only on an explicit yes) before trying again — **except when the `cat-file`/`diff` bullet
+passed and the `ls-files -v` bullet alone fails with a letter actually reported**, which neither of
+those fixes: offer `git update-index --no-skip-worktree .gitignore` (or `--no-assume-unchanged`,
+matching whichever flag was reported) instead, same explicit-yes basis. **A `.gitignore` that was
+never committed at all fails the `cat-file`/`diff` bullet and the `ls-files -v` bullet together, and
+`ls-files -v` prints no letter for it** — it lists nothing for a path outside the index, so `git
+update-index --no-skip-worktree` has nothing to clear (`fatal: Unable to mark file`); that's the
+ordinary missing/not-yet-durable case above, not this one. Either flag exists specifically to hide a
+personal working-tree edit from git, so clearing it may surface an edit the user meant to keep local
+— say so before running it.
 
 - **`iadc`** (graph) — no longer configured here: tell the user to run `/iadc-graph:setup` (installed automatically — this plugin declares `iadc-graph` as a dependency), and say plainly that it can wait — before, during, or after this setup; the other skill runs fine mid-session, it's only its *connection* that needs a fresh session before it shows as live — since nothing below depends on it. That skill writes this entry and runs its own credential-safety sequence, and never silently overwrites a working entry — a repo that ran an older version of this skill keeps what it already has unless the user chooses otherwise. This skill neither writes that entry nor waits on the other one — mention it here and move on to the servers below.
 - **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
@@ -459,16 +464,27 @@ This is the payoff — confirm the configuration actually works, don't just writ
 1. **`.mcp.json` is configured and durably protected** — it exists (generated from the template),
    parses as JSON, carries no `<placeholder>` string and no `_comment` key, and clears step 3's
    whole five-part check again, not `git check-ignore .mcp.json` alone: that plain form reads
-   green off a rule sitting only in `.git/info/exclude` or `core.excludesFile`, or off a
-   `.gitignore` line that isn't yet committed at HEAD, exactly as readily as off real, durable
-   protection — the same gap step 3 exists to close, so step 9 must not certify a state step 3
-   would have refused to write into. If any part of that check fails, diagnose before you fix: run
-   `git ls-files --error-unmatch .mcp.json` — if **that** succeeds the file is **tracked**, and no
-   `.gitignore` line can ignore a tracked file, so the fix is `git rm --cached .mcp.json` (with the
-   user's yes), not another entry; only when it's untracked is a missing or not-yet-durable
-   `.gitignore` entry the explanation. If the user declined the ignore entries (step 2) or the `git
-   rm --cached` (step 3), report `.mcp.json` as **deliberately unconfigured** with the list of
-   values they still owe — don't call that a failure and don't quietly fill it in now.
+   green off a rule sitting only in `.git/info/exclude` or `core.excludesFile`, off a `.gitignore`
+   line that isn't yet committed at HEAD, or off a `.gitignore` flagged `--skip-worktree`/
+   `--assume-unchanged` that stops git from ever comparing the working copy against what's actually
+   committed — exactly as readily as off real, durable protection — the same gap step 3 exists to
+   close, so step 9 must not certify a state step 3 would have refused to write into. If any part of
+   that check fails, diagnose before you fix: run `git ls-files --error-unmatch .mcp.json` — if
+   **that** succeeds the file is **tracked**, and no `.gitignore` line can ignore a tracked file, so
+   the fix is `git rm --cached .mcp.json` (with the user's yes), not another entry. If it's
+   untracked, name which part of step 3's five-part check actually failed before naming a fix —
+   **except when the `cat-file`/`diff` bullet passed and the `ls-files -v` bullet alone fails with a
+   letter reported, a missing or not-yet-durable `.gitignore` entry is not the explanation, the same
+   exception step 3 itself makes**: that shape means `.gitignore` is flagged `--skip-worktree` or
+   `--assume-unchanged`, and offering to commit an entry or re-run `git rm --cached` is a no-op
+   against it — offer `git update-index --no-skip-worktree .gitignore` (or `--no-assume-unchanged`,
+   matching whichever flag was reported) instead, same explicit-yes basis as step 3. Only when the
+   failure is one of the other four parts — or the `cat-file`/`diff` and `ls-files -v` bullets fail
+   together with no letter reported, the fully-untracked-`.gitignore` case step 3 also carves out —
+   is a missing or not-yet-durable `.gitignore` entry the explanation. If the user declined the
+   ignore entries (step 2) or the `git rm --cached` (step 3), report `.mcp.json` as **deliberately
+   unconfigured** with the list of values they still owe — don't call that a failure and don't
+   quietly fill it in now.
 2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call). For Slack (if used for escalation), confirm the Slack connector is connected. **Exception — if `.mcp.json` was deliberately left placeholder-valued (item 1), `appian` has no values to connect with *by design*:** report it as deliberately unconfigured, exactly as item 1 does, not as a failed handshake. (`context7` is keyless and should still come up.) **`iadc` is a separate case — this skill never writes that entry (step 3). If its tools are absent, that's not this skill's failed handshake, for any of several reasons: `/iadc-graph:setup` may not have run yet, may have run this same session (its write needs a fresh one to take effect), may have been declined inside it, or the key on file may be wrong (the graph service is fail-closed on it, so a bad key and no key look identical from here). Point the user at that command rather than diagnosing which.**
 3. **The workspace is live** — `outputs/` exists and holds its `README.md` (unless that write
    was withheld: the user declined it, or step 2's ignore rules were declined and this skill
