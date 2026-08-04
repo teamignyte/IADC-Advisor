@@ -50,3 +50,14 @@ package".
   directory no longer tests anything: install the plugin from this repo as a **local-path
   marketplace** into a scratch client repo (a sibling of this repo, never inside it), and run
   it there. See `CLAUDE.md` → "Working here".
+
+> **Amended by IV-373.** The bullet above calls `.mcp.json`, `docs/agents/*.md`, `.gitignore`
+> entries, and `outputs/` "the per-project state the client does hold" — that predates the family
+> convention and is no longer the term's current meaning. Per-project state now names exactly the
+> two files per plugin that the umbrella's `docs/agents/per-project-state.md` governs (family
+> [ADR 0009](https://github.com/teamignyte/IADC/blob/main/docs/adr/0009-umbrella-owns-per-project-state-convention.md)),
+> not the four items above. `.mcp.json` credentials follow a separate rule instead — the plugin
+> that owns the server owns its configuration — and the `docs/agents/*.md` glob also sweeps in
+> `issue-tracker.md`, `triage-labels.md`, and `domain.md`, which the convention does not govern.
+> What `/setup` writes into the app repo is unchanged; only which of it the term "per-project
+> state" names is corrected.

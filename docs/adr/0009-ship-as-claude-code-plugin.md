@@ -53,3 +53,14 @@ docs explicitly steer self-hosted stdio servers to project `.mcp.json`.
   plugin validate` passes on the broken manifest**, so validation is not a gate. The only check
   that catches it is a real install reporting the plugin as `enabled` in `claude plugin list` —
   which is therefore the release check, not `validate`.
+
+> **Amended by IV-373.** The Consequences bullet above calls `.mcp.json`, `docs/agents/*.md`,
+> `.gitignore` entries, and `outputs/` "per-project state" — that predates the family convention
+> and is no longer the term's current meaning. Per-project state now names exactly the two files
+> per plugin that the umbrella's `docs/agents/per-project-state.md` governs (family
+> [ADR 0009](https://github.com/teamignyte/IADC/blob/main/docs/adr/0009-umbrella-owns-per-project-state-convention.md)),
+> not the four items above. `.mcp.json` credentials follow a separate rule instead — the plugin
+> that owns the server owns its configuration — and the `docs/agents/*.md` glob also sweeps in
+> `issue-tracker.md`, `triage-labels.md`, and `domain.md`, which the convention does not govern.
+> `/setup` still writes all four into the app repo; only which of them the term "per-project
+> state" names is corrected.
