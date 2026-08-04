@@ -11,7 +11,7 @@ committed copy at HEAD lacked — every other check in the gate agreed the file 
 protected when it was not, and a fresh clone (which starts with no such flag) would stage the
 credential on the next `git add -A`.
 
-The gate now also requires `git ls-files -v .gitignore | grep -q '^H '` — `ls-files -v` is the
+The gate now also requires `git ls-files -v .gitignore 2>/dev/null | grep -q '^H '` — `ls-files -v` is the
 only place either flag is actually visible (`H` = plain cached entry, `S` = skip-worktree,
 lowercase `h` = assume-unchanged), since `git diff` has no flag of its own to see past either one.
 This is additive, not a replacement: the existing `cat-file`/`diff` pair still catches an ordinary
