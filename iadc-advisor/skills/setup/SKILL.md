@@ -532,8 +532,10 @@ This is the payoff — confirm the configuration actually works, don't just writ
    **`docs/agents/advisor.md`** specifically (not `advisor.local.md`, named two sentences below:
    it's partial **by design** — step 4 says so — and would diff as several gaps for a reason
    that has nothing to do with this one). A template label with no matching bullet in
-   `docs/agents/advisor.md`'s own data lines is a gap — report it and go back and ask, the same as
-   a standing placeholder, not success. Where `Row` is present, also confirm `Active prospect`
+   `docs/agents/advisor.md`'s own data lines is a gap — unless step 4's nested-field exception
+   already covers it (a parent field holding, on its own data line, the value that deletes that
+   label by design) — report it and go back and ask, the same as a standing placeholder, not
+   success. Where `Row` is present, also confirm `Active prospect`
    names one of its entries exactly; naming one that doesn't exist as a `Row` — stale from
    before `Row` existed, or from a rename — is the same gap, not a pass just because neither
    field is individually a placeholder. If `advisor.local.md` was written or renamed from
