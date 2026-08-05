@@ -256,12 +256,14 @@ that changes.
 
 **Check E — the trailing class is insurance, not a current repair.** `iadc-graph` occurs zero
 times under `iadc-advisor/skills/appian/`, so none of the three exclusions in the trailing class —
-`:`, `-`, `/` — is catching anything at check E's actual scope today. All 25 places a plain `\b`
-would additionally match `/iadc-graph` sit in files check E never reads: `hooks/posture.md` (1),
-`README.md` (3), `CHANGELOG.md` (4), and six non-vendored skills' `SKILL.md` files — `orient` (2),
-`pressure-test` (2), `setup` (5), `to-diagram` (1), `to-spec` (3), `which-skill` (4). No hyphenated
-(`/orient-style`) or path-continuation (`/orient/…`) false positive exists in the appian tree
-either.
+`:`, `-`, `/` — is catching anything at check E's actual scope today. `/iadc-graph` is written
+freely everywhere else in the repo — the plugin's README and CHANGELOG, the non-vendored skills,
+`CLAUDE.md`, the ADRs, this doc, the test module — and a plain `\b` would match at many of those
+sites. None of them is in check E's scope: it reads `iadc-advisor/skills/appian/` and nothing else
+(`APPIAN_ROOT` in the test module). No count of those outside sites is given here on purpose — any
+census of them goes stale the next time anyone cites the graph skill, and the scope is the part
+that matters. No hyphenated (`/orient-style`) or path-continuation (`/orient/…`) false positive
+exists in the appian tree either.
 
 Each exclusion is forward-looking. `:` protects the correct, required `/iadc-graph:iadc-graph`
 citation (the one reference CLAUDE.md warns looks like a typo and isn't) from being flagged as
