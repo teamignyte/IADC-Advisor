@@ -128,6 +128,12 @@ because only the dispatcher's own filename is what Claude Code's command string 
    }
    ```
 
+   Write both paths as literals, as above: `${CLAUDE_PLUGIN_ROOT}` is the only variable the
+   portability check substitutes, and it expands no wildcards. A path carrying any other variable
+   or a `*`/`?` glob names no one file the check can look for, so it is reported as a violation
+   rather than passed — the check refuses to certify a path it cannot resolve, on the grounds that
+   "could not look" and "looked and found it" must not share an exit code.
+
    The Unix and Windows halves are **not equivalent** in one respect: the Unix `exec bash ...
    "$@"` line forwards an unlimited number of arguments with quoting preserved, while the batch
    half hardcodes `%2 %3 %4 %5 %6 %7 %8 %9` — a cap of 8 forwarded arguments, silently truncated

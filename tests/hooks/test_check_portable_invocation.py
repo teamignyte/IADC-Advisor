@@ -13,13 +13,18 @@ names check-portable-invocation.py verbatim — proof it ran, not an inference f
 own name.
 
 The happy-path test proves the script accepts a valid hooks.json; it says nothing about whether
-the script would reject an invalid one. Every test after it builds a minimal hooks.json (and, for
-most, a `hooks/` directory alongside it — the checker resolves a dispatcher and its script
-argument against real files on disk, not just the command string) that violates exactly one of the
-script's own predicates, and asserts both that the script exits 1 and that its stdout carries a
-message fragment unique to that predicate — so a checker that stopped enforcing one rule (returns
-success unconditionally, or falls through to a different check that happens to share the same
-generic wording) is caught, not just a checker that stopped running entirely.
+the script would reject an invalid one. Almost every test after it builds a minimal hooks.json
+(and, for most, a `hooks/` directory alongside it — the checker resolves a dispatcher and its
+script argument against real files on disk, not just the command string) that violates exactly one
+of the script's own predicates, and asserts both that the script exits 1 and that its stdout
+carries a message fragment unique to that predicate — so a checker that stopped enforcing one rule
+(returns success unconditionally, or falls through to a different check that happens to share the
+same generic wording) is caught, not just a checker that stopped running entirely.
+
+The exceptions are the handful of tests named `test_accepts_*`, which assert the opposite bound:
+that a shape the checker is *not* meant to refuse still passes. A rule tightened until it rejects
+everything passes every rejection fixture in this file, so the rejection fixtures alone cannot tell
+a discriminating check from an indiscriminate one.
 
 **Isolation matters more than exit code.** A fixture that merely deletes the file its own target
 names, without also creating the dispatcher, can still fail for the *wrong* reason (a missing
@@ -31,11 +36,15 @@ predicate it claims to guard. Every fixture below that exercises an on-disk chec
 the predicate in a scratch copy of the script, confirm the corresponding test then fails, restore
 the script, confirm the suite passes again.
 
-Every distinct `FAIL:`-producing site and the one usage-error exit code has an isolated fixture
-below — walk the script's own `raise TypeError`/`violations.append`/`return 2` sites to check this
-claim against the source rather than against this sentence, which is exactly the kind of hand-kept
-enumeration that goes stale. The one deliberate exception is `test_rejects_malformed_hooks_value`'s
-three parameters: they exercise a single branch (`"hooks"` not a dict) with three differently-typed
+Every way this script can refuse a hooks.json has an isolated fixture below. Refusal is the
+property to check that claim against — an input the script answers with anything other than its
+one `PASS:` line and exit 0 — and not any particular spelling of it: refusals reach stdout by four
+different routes (a violation collected into the list, a structural `TypeError` the top-level
+handler prints, a direct `print` + `return 1` in `main`, and the usage `return 2`), so a walk that
+enumerates spellings silently omits whichever route it did not think to name. Walk the script for
+the property rather than trusting this sentence, which is exactly the kind of hand-kept enumeration
+that goes stale. The one deliberate exception is `test_rejects_malformed_hooks_value`'s three
+parameters: they exercise a single branch (`"hooks"` not a dict) with three differently-typed
 payloads to prove the check is type-generic, not three distinct predicates.
 """
 from __future__ import annotations
@@ -61,6 +70,11 @@ def _run_check(hooks_json_path):
         [sys.executable, str(CHECK_SCRIPT), str(hooks_json_path)],
         capture_output=True,
         text=True,
+        # The checker reads one file and touches no network, so it has no reason to take
+        # seconds. A bound turns any future input that makes it wait on something — stdin, most
+        # plausibly, which is where a tokenizer handed a non-string would go looking — into a
+        # failed test rather than a suite that never finishes and reports nothing at all.
+        timeout=60,
     )
 
 
@@ -100,6 +114,25 @@ def test_check_portable_invocation_passes_on_shipped_hooks_json(script_name):
         f"{script_name} rejected the shipped hooks.json (exit {result.returncode}):\n"
         f"{result.stdout}{result.stderr}"
     )
+
+
+def test_accepts_a_dollar_sign_path_that_resolves(tmp_path):
+    """A `$` in a path is not itself the defect — `${CLAUDE_PLUGIN_ROOT}` is how this repo's own
+    convention writes every hook path, and it substitutes to a real directory. This is the upper
+    bound on the unresolvable-path rejections below: they must fire on a token that still names a
+    variable *after* substitution, never on the presence of a metacharacter.
+    """
+    hooks_dir = _hooks_dir(tmp_path)
+    (hooks_dir / "dispatch.cmd").write_text("echo dispatcher\n")
+    (hooks_dir / "script").write_text("#!/bin/bash\n")
+    hooks_json_path = _write_hooks_json(
+        hooks_dir, f'{DISPATCHER_CMD} "${{CLAUDE_PLUGIN_ROOT}}/hooks/script"'
+    )
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "PASS:" in result.stdout, result.stdout
 
 
 # --- Rule 3: "shell": "bash" -------------------------------------------------------------
@@ -226,6 +259,35 @@ def test_rejects_dispatcher_missing_from_disk(tmp_path):
     assert result.stdout.count("FAIL:") == 1, result.stdout
 
 
+@pytest.mark.parametrize(
+    "dispatcher_token",
+    ['"$UNRESOLVED/dispatch.cmd"', '"*.cmd"', '"dispatch?.cmd"'],
+    ids=["unresolved-variable", "star-glob", "question-glob"],
+)
+def test_rejects_unresolvable_dispatcher_path(tmp_path, dispatcher_token):
+    """A dispatcher token that still names a shell variable or a glob after
+    `${CLAUDE_PLUGIN_ROOT}` substitution points at no one file. The checker runs no shell and
+    expands no wildcard, so it can neither confirm nor deny that the dispatcher is there — and
+    "could not look" must not be reported as "looked and found it", which is what skipping the
+    on-disk check quietly does.
+
+    Isolated: a real `dispatch.cmd` and a real `script` both exist in `hooks/`, so a checker that
+    resolved these tokens some other way would find files rather than a second violation. The one
+    violation can only be the unresolvable dispatcher itself.
+    """
+    hooks_dir = _hooks_dir(tmp_path)
+    (hooks_dir / "dispatch.cmd").write_text("echo dispatcher\n")
+    (hooks_dir / "script").write_text("#!/bin/bash\n")
+    hooks_json_path = _write_hooks_json(hooks_dir, f"{dispatcher_token} script")
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "dispatcher" in result.stdout, result.stdout
+    assert "cannot be resolved to a path on disk" in result.stdout, result.stdout
+    assert result.stdout.count("FAIL:") == 1, result.stdout
+
+
 # --- Rule 1: extensionless target, one is required, and it must exist ---------------------
 
 
@@ -288,7 +350,59 @@ def test_rejects_target_missing_from_disk(tmp_path):
     assert result.stdout.count("FAIL:") == 1, result.stdout
 
 
+@pytest.mark.parametrize(
+    "target_token",
+    ['"$OTHER/script"', '"scr*"', '"scrip?"'],
+    ids=["unresolved-variable", "star-glob", "question-glob"],
+)
+def test_rejects_unresolvable_target_path(tmp_path, target_token):
+    """The same reasoning as the dispatcher case, one token to the right: a script argument that
+    still names a variable or a glob after substitution cannot be looked for, so rule 1's on-disk
+    check cannot run — and an entry it did not run on is not an entry it certified.
+
+    Isolated: the dispatcher exists on disk and resolves cleanly, so the only violation possible
+    is the target's own unresolvable token.
+    """
+    hooks_dir = _hooks_dir(tmp_path)
+    (hooks_dir / "dispatch.cmd").write_text("echo dispatcher\n")
+    (hooks_dir / "script").write_text("#!/bin/bash\n")
+    hooks_json_path = _write_hooks_json(hooks_dir, f"{DISPATCHER_CMD} {target_token}")
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "invoked script" in result.stdout, result.stdout
+    assert "cannot be resolved to a path on disk" in result.stdout, result.stdout
+    assert result.stdout.count("FAIL:") == 1, result.stdout
+
+
 # --- Tokenizer: unparseable input, comment-character truncation, chained commands ---------
+
+
+@pytest.mark.parametrize(
+    "command",
+    [None, 123, 1.5, True, [], {}],
+    ids=["null", "int", "float", "bool", "array", "object"],
+)
+def test_rejects_non_string_command(tmp_path, command):
+    """A "command" that is not a string is not command text at all, so no rule can be applied to
+    it, so it must be refused by name.
+
+    Left to reach the tokenizer, each of these answers from somewhere other than the file under
+    test: `shlex` reads a non-string as a *stream*, so JSON `null` sends it to this process's
+    stdin (a hang against an open one, an empty command against a closed one) and every other
+    type raises AttributeError from inside the lexer — an exit 1 with empty stdout and no named
+    reason, which reads as a violation whose message went missing.
+    """
+    hooks_dir = _hooks_dir(tmp_path)
+    (hooks_dir / "dispatch.cmd").write_text("echo dispatcher\n")
+    hooks_json_path = _write_hooks_json(hooks_dir, command)
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "not a string" in result.stdout, result.stdout
+    assert result.stdout.count("FAIL:") == 1, result.stdout
 
 
 def test_rejects_unparseable_command(tmp_path):

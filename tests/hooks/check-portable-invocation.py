@@ -37,6 +37,12 @@ then the script argument resolved against the *dispatcher's* directory, matching
 `run-hook.cmd`'s own `SCRIPT_DIR="$(dirname "$0")"`), not against hooks.json's directory —
 those two directories only coincide because this repo's convention keeps them together.
 
+Those on-disk checks are unconditional. A token that still names a shell variable or a glob
+after `${CLAUDE_PLUGIN_ROOT}` is substituted points at no filesystem path this check can name:
+it runs no shell, so it can neither confirm nor deny that anything is there. That is a
+violation in its own right, worded as such. Skipping the check instead would report the one
+outcome the token cannot support — that the file was looked for and found.
+
 A command chained with `;`, `&`, or `|` is not one command but several; every segment is held
 to rules 1 and 2 independently; rule 3 ("shell": "bash") is an entry-level property and is
 still checked once.
@@ -49,10 +55,14 @@ A hooks.json with no `type: command` entry anywhere (wrong file, emptied hooks, 
 missing or non-command) is its own failure: a checker that certifies a file it never actually
 validated would be a check that cannot fail, which is worse than no check at all.
 
-The same failure mode exists one level down, inside a single entry: a `command` that tokenizes
-to nothing invokable — empty, whitespace-only, only a control operator, or only a shell variable
-assignment with nothing after it — still counts toward `command_entry_count`, so it must be
-named as a violation rather than certified as satisfying rules it was never actually held to.
+The same failure mode exists one level down, inside a single entry, and it has one shape wherever
+it appears: an input this check cannot evaluate must never leave the entry looking evaluated.
+Every such input is therefore a violation with its own wording — a `command` that is not a string
+at all; a `command` that tokenizes to nothing invokable (empty, whitespace-only, only a control
+operator, or only a shell variable assignment with nothing after it); and a dispatcher or script
+token that cannot be resolved to a filesystem path. Each still counts toward
+`command_entry_count`, so each must be named rather than certified as satisfying rules it was
+never actually held to.
 
 Usage: check-portable-invocation.py <path-to-hooks.json>
 
@@ -60,6 +70,13 @@ Exit code is the machine-readable result: 0 if every command entry in every hook
 satisfies all three rules, 1 if any violation is found (including "no command hooks found" and
 a malformed/unparseable file), 2 on a usage error (wrong argument count). Stdout is the
 human-readable reason, one line per violation, naming the rule that failed.
+
+There is deliberately no fourth exit code for "could not be evaluated". Exit 0 is the only value
+a caller reads as "this file is fine", so anything short of a verified pass has to land in 1 or it
+lands in the outcome it least deserves; and a new code would oblige every consumer — CI, the test
+module, docs/hooks-dispatcher.md — to learn what it means before it means anything. Stdout carries
+the distinction instead: those violations say the path could not be resolved, not that the file is
+missing.
 """
 import json
 import os
@@ -84,6 +101,21 @@ ASSIGNMENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 # (or third, ...) invocation and gets the same scrutiny as the first.
 CONTROL_OPERATORS = (";", "&", "|")
 
+# Characters that mean a token still needs a shell before it names a file: a surviving variable
+# reference, and the two glob wildcards. `[` is left out on purpose — a literal bracket in a
+# filename is far more common than a bracket expression in a hooks.json path.
+UNRESOLVED_MARKERS = "$*?"
+
+
+class UnresolvablePath(Exception):
+    """A command token that names no filesystem path this check can determine without a shell.
+
+    Deliberately an exception rather than a falsy return value. A `None` is skippable at the call
+    site by writing nothing at all, and "the check did not run" then looks identical to "the check
+    passed" in the exit code — which is the one thing an unresolvable path must never look like.
+    Raising forces every caller to say out loud what it does about a path it cannot resolve.
+    """
+
 
 def tokenize(command):
     """Split a hooks.json command string into shell-like tokens.
@@ -100,11 +132,13 @@ def tokenize(command):
 
     Raises ValueError when `command` is a string shlex cannot tokenize (e.g. unbalanced
     quoting) — the caller treats that as a violation, not a shape to fall back and re-parse
-    more permissively. A `command` that is not a string at all (a JSON `null`, for example) is
-    a different case this function does not guard against: `shlex.shlex` treats a non-string
-    argument as a stream to read from and blocks on stdin instead of raising, and the caller
-    does not catch that either. That gap predates this docstring; the claim here is narrowed to
-    what `tokenize` actually raises for a string `command`.
+    more permissively.
+
+    `command` must be a string, and the caller checks that before calling: `shlex.shlex` reads a
+    non-string argument as a *stream*, so a JSON `null` makes it consult this process's stdin
+    (blocking on an open one, reading an empty command from a closed one) and any other
+    non-string raises AttributeError from inside the lexer. Both would answer from something
+    other than the file under test, which is why the type is rejected before it gets here.
     """
     import shlex
 
@@ -152,15 +186,28 @@ def plugin_root(hooks_json_path):
     return os.path.dirname(os.path.dirname(os.path.abspath(hooks_json_path)))
 
 
-def resolve_plugin_path(token, hooks_json_path):
-    """Resolve a command token to an absolute filesystem path, or None if it can't be resolved
-    without a shell (it still names a variable other than `${CLAUDE_PLUGIN_ROOT}`, or a glob).
+def resolve_plugin_path(token, hooks_json_path, base_dir=None):
+    """Resolve a command token to an absolute filesystem path.
+
+    `${CLAUDE_PLUGIN_ROOT}` is substituted from hooks.json's own location. A result that is still
+    relative is resolved against `base_dir` — the plugin root for the dispatcher token itself, the
+    dispatcher's own directory for the script argument it is handed.
+
+    Raises UnresolvablePath when what is left still carries a variable reference or a glob. This
+    check runs no shell and expands no wildcard, so such a token names no one file it could look
+    for; the caller turns that into a violation naming the token, rather than a check that
+    quietly does not happen.
     """
-    resolved = token.replace("${CLAUDE_PLUGIN_ROOT}", plugin_root(hooks_json_path))
-    if any(c in resolved for c in "$*?"):
-        return None
+    root = plugin_root(hooks_json_path)
+    resolved = token.replace("${CLAUDE_PLUGIN_ROOT}", root)
+    remaining = sorted({c for c in resolved if c in UNRESOLVED_MARKERS})
+    if remaining:
+        raise UnresolvablePath(
+            "still carries " + ", ".join(repr(c) for c in remaining)
+            + " after ${CLAUDE_PLUGIN_ROOT} substitution, so it names no single file on disk"
+        )
     if not os.path.isabs(resolved):
-        resolved = os.path.join(plugin_root(hooks_json_path), resolved)
+        resolved = os.path.join(root if base_dir is None else base_dir, resolved)
     return os.path.normpath(resolved)
 
 
@@ -188,6 +235,10 @@ def check_invocation(tokens, hooks_json_path, where, command):
     command_ext = os.path.splitext(os.path.basename(command_token))[1].lower()
     is_dispatcher = command_ext in DISPATCHER_EXTENSIONS
 
+    # Set below only if the dispatcher token resolves to a real path; rule 1's on-disk check
+    # needs it, because that is the directory the script argument resolves against.
+    dispatcher_dir = None
+
     # Rule 2: the segment's first real token must itself be a dispatcher, and that dispatcher
     # must actually exist on disk. Both are positive requirements, not a substring scan or a
     # command-string-only check — a deleted dispatcher, a bare `bash`/`sh`/`python3` prefix
@@ -201,14 +252,25 @@ def check_invocation(tokens, hooks_json_path, where, command):
             f"not a dispatcher (rule 2): {command!r}"
         )
     else:
-        dispatcher_path = resolve_plugin_path(command_token, hooks_json_path)
-        if dispatcher_path is not None and not os.path.isfile(dispatcher_path):
+        try:
+            dispatcher_path = resolve_plugin_path(command_token, hooks_json_path)
+        except UnresolvablePath as e:
             violations.append(
-                f"{where}: dispatcher {command_token!r} does not exist at {dispatcher_path} — "
-                f"hooks.json invokes a dispatcher that is not on disk (rule 2: a deleted or "
-                f"renamed dispatcher with hooks.json left unchanged runs silently until it "
-                f"fails at the real invocation, exit 127): {command!r}"
+                f"{where}: dispatcher {command_token!r} cannot be resolved to a path on disk "
+                f"— it {e} (rule 2: this check runs no shell, so a dispatcher it cannot locate "
+                f"is one whose presence it can neither confirm nor deny; write the path as a "
+                f"${{CLAUDE_PLUGIN_ROOT}}-rooted literal so it can be verified): {command!r}"
             )
+        else:
+            dispatcher_dir = os.path.dirname(dispatcher_path)
+            if not os.path.isfile(dispatcher_path):
+                violations.append(
+                    f"{where}: dispatcher {command_token!r} does not exist at "
+                    f"{dispatcher_path} — hooks.json invokes a dispatcher that is not on disk "
+                    f"(rule 2: a deleted or renamed dispatcher with hooks.json left unchanged "
+                    f"runs silently until it fails at the real invocation, exit 127): "
+                    f"{command!r}"
+                )
 
     # Rule 1: the token immediately after the segment's first real token — the script name the
     # dispatcher (or, if rule 2 already failed, the bare interpreter) is handed — must exist and
@@ -235,18 +297,33 @@ def check_invocation(tokens, hooks_json_path, where, command):
             f"and an extension outside any fixed list is not a safe assumption otherwise): "
             f"{command!r}"
         )
-    elif is_dispatcher and not any(c in target for c in "$*?"):
-        # The target names a plain file, not a shell variable or glob — this is exactly the
-        # shape a dispatcher argument takes in this repo's convention. Verify it actually
-        # exists, resolved against the *dispatcher's* own directory (matching run-hook.cmd's
-        # own `SCRIPT_DIR="$(dirname "$0")"` at runtime) rather than hooks.json's directory —
-        # those coincide here only because this repo keeps hooks.json and its scripts together.
-        # A renamed on-disk file with hooks.json left unchanged is invisible to every check
-        # above and is the exact blind spot this assertion exists to close.
-        dispatcher_path = resolve_plugin_path(command_token, hooks_json_path)
-        if dispatcher_path is not None:
-            script_dir = os.path.dirname(dispatcher_path)
-            candidate = os.path.join(script_dir, target)
+    elif not is_dispatcher or dispatcher_dir is None:
+        # Two reasons to stop short of the on-disk check, and the same justification for both:
+        # the segment already has a violation naming a worse problem. Either the first token is
+        # a bare interpreter (rule 2 — where its argument lives on disk decides nothing), or the
+        # dispatcher token could not be resolved, and the dispatcher's own directory is exactly
+        # what the script argument resolves against. Stated as an assertion rather than left to
+        # the comment, so that a later edit which reaches here with nothing on the list crashes
+        # loudly instead of printing PASS on an entry no rule was ever applied to.
+        assert violations, (
+            f"{where}: skipped the target's on-disk check without having named a reason"
+        )
+    else:
+        # Verify the target actually exists, resolved against the *dispatcher's* own directory
+        # (matching run-hook.cmd's own `SCRIPT_DIR="$(dirname "$0")"` at runtime) rather than
+        # hooks.json's directory — those coincide here only because this repo keeps hooks.json
+        # and its scripts together. A renamed on-disk file with hooks.json left unchanged is
+        # invisible to every check above and is the blind spot this assertion exists to close.
+        try:
+            candidate = resolve_plugin_path(target, hooks_json_path, base_dir=dispatcher_dir)
+        except UnresolvablePath as e:
+            violations.append(
+                f"{where}: invoked script {target!r} cannot be resolved to a path on disk — it "
+                f"{e} (rule 1: this check runs no shell, so a target it cannot locate is one "
+                f"whose presence it can neither confirm nor deny; name the script literally, as "
+                f"the dispatcher's own directory is what it resolves against): {command!r}"
+            )
+        else:
             if not os.path.isfile(candidate):
                 violations.append(
                     f"{where}: invoked script {target!r} does not exist at {candidate} — "
@@ -283,6 +360,18 @@ def check_command_entry(hooks_json_path, event_name, group_index, entry_index, e
             f'{where}: missing "shell": "bash" (rule 3 — Windows falls through to '
             f"PowerShell/CMD, neither of which can parse this command)"
         )
+
+    if not isinstance(command, str):
+        # A JSON number, boolean, array, object or null in the "command" slot. Handing one to
+        # the tokenizer makes it read from stdin or raise from inside the lexer — either way the
+        # answer stops coming from the file under test. It is named here instead, before that
+        # can happen, because a command this check cannot read as text is one it can hold to no
+        # rule at all, and an entry held to no rule is not an entry that passed.
+        violations.append(
+            f'{where}: "command" is {type(command).__name__}, not a string — there is no '
+            f"command text to hold to any rule (rule 2): {command!r}"
+        )
+        return violations
 
     try:
         tokens = tokenize(command)
