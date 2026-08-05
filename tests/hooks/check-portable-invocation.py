@@ -49,6 +49,11 @@ A hooks.json with no `type: command` entry anywhere (wrong file, emptied hooks, 
 missing or non-command) is its own failure: a checker that certifies a file it never actually
 validated would be a check that cannot fail, which is worse than no check at all.
 
+The same failure mode exists one level down, inside a single entry: a `command` that tokenizes
+to nothing invokable — empty, whitespace-only, only a control operator, or only a shell variable
+assignment with nothing after it — still counts toward `command_entry_count`, so it must be
+named as a violation rather than certified as satisfying rules it was never actually held to.
+
 Usage: check-portable-invocation.py <path-to-hooks.json>
 
 Exit code is the machine-readable result: 0 if every command entry in every hook array
@@ -93,9 +98,13 @@ def tokenize(command):
     semantics where `#` starts a comment, and treating it as one would let text after a `#`
     vanish before any rule ever sees it.
 
-    Raises ValueError if `command` cannot be tokenized (e.g. unbalanced quoting). The caller
-    must treat that as a violation, not fall back to a more permissive split — a command a real
-    shell would refuse to parse is not a shape this check may certify.
+    Raises ValueError when `command` is a string shlex cannot tokenize (e.g. unbalanced
+    quoting) — the caller treats that as a violation, not a shape to fall back and re-parse
+    more permissively. A `command` that is not a string at all (a JSON `null`, for example) is
+    a different case this function does not guard against: `shlex.shlex` treats a non-string
+    argument as a stream to read from and blocks on stdin instead of raising, and the caller
+    does not catch that either. That gap predates this docstring; the claim here is narrowed to
+    what `tokenize` actually raises for a string `command`.
     """
     import shlex
 
@@ -116,7 +125,10 @@ def split_segments(tokens):
     Each resulting segment is itself checked as a full invocation (rules 1 and 2) — a command
     appended after a control operator is a second command, not decoration on the first, and
     must be held to the same rules. Empty segments (a trailing separator, or two separators in
-    a row) are dropped: there is nothing to check in an empty segment.
+    a row) are dropped: there is nothing to check in an empty segment. If dropping empty
+    segments leaves none at all — the whole command was empty, whitespace-only, or made only of
+    control operators — the caller treats that as its own violation instead of certifying an
+    entry no segment was ever checked against.
     """
     segments = []
     current = []
@@ -162,8 +174,14 @@ def check_invocation(tokens, hooks_json_path, where, command):
     while idx < len(tokens) and ASSIGNMENT_RE.match(tokens[idx]):
         idx += 1
     if idx >= len(tokens):
-        # nothing left after stripping leading assignments (e.g. a bare "FOO=1" segment) —
-        # nothing to check.
+        # Nothing left after stripping leading assignments — a bare "FOO=1" segment sets an
+        # environment variable and invokes nothing at all. That is not a pass: no dispatcher
+        # was named, so this is rule 2 violated by omission, not a shape with nothing to check.
+        violations.append(
+            f"{where}: command is not invoked through a cross-platform dispatcher — there is "
+            f"nothing left to invoke once any leading assignment(s) are stripped (rule 2): "
+            f"{command!r}"
+        )
         return violations
 
     command_token = tokens[idx]
@@ -275,7 +293,19 @@ def check_command_entry(hooks_json_path, event_name, group_index, entry_index, e
         )
         return violations
 
-    for segment_index, segment in enumerate(split_segments(tokens)):
+    segments = split_segments(tokens)
+    if not segments:
+        # An empty command, one that is only whitespace, or one that is only a stray control
+        # operator all tokenize to no segments at all. The loop below would never run, and this
+        # entry — already counted in command_entry_count — would be certified without a single
+        # rule ever evaluating it.
+        violations.append(
+            f"{where}: command is not invoked through a cross-platform dispatcher — the "
+            f"command is empty or carries nothing to invoke (rule 2): {command!r}"
+        )
+        return violations
+
+    for segment_index, segment in enumerate(segments):
         segment_where = (
             where if segment_index == 0 else f"{where} (chained command {segment_index + 1})"
         )

@@ -30,6 +30,13 @@ predicate it claims to guard. Every fixture below that exercises an on-disk chec
 `FAIL:`-line count where that matters. Every test/rule pairing here was verified directly: disable
 the predicate in a scratch copy of the script, confirm the corresponding test then fails, restore
 the script, confirm the suite passes again.
+
+Every distinct `FAIL:`-producing site and the one usage-error exit code has an isolated fixture
+below — walk the script's own `raise TypeError`/`violations.append`/`return 2` sites to check this
+claim against the source rather than against this sentence, which is exactly the kind of hand-kept
+enumeration that goes stale. The one deliberate exception is `test_rejects_malformed_hooks_value`'s
+three parameters: they exercise a single branch (`"hooks"` not a dict) with three differently-typed
+payloads to prove the check is type-generic, not three distinct predicates.
 """
 from __future__ import annotations
 
@@ -135,6 +142,68 @@ def test_rejects_non_dispatcher_command(tmp_path):
     assert result.returncode == 1, result.stdout + result.stderr
     assert "rule 2" in result.stdout, result.stdout
     assert "is not invoked through a cross-platform dispatcher" in result.stdout, result.stdout
+    assert result.stdout.count("FAIL:") == 1, result.stdout
+
+
+@pytest.mark.parametrize(
+    "command",
+    ["", "   ", ";", "&"],
+    ids=["empty", "whitespace-only", "semicolon-only", "ampersand-only"],
+)
+def test_rejects_command_with_no_invokable_segment(tmp_path, command):
+    """A command that tokenizes to no segment at all — empty, whitespace-only, or made only of
+    a control operator — invokes nothing. The loop over segments would never run for any of
+    these, so the entry (already counted toward "no command hooks found") would be certified
+    without a single rule ever evaluating it — the same failure mode the module docstring
+    describes for a whole file, one level down, inside a single entry.
+
+    Isolated: no dispatcher or target file is created, and none is needed — the violation fires
+    before any on-disk check runs.
+    """
+    hooks_dir = _hooks_dir(tmp_path)
+    hooks_json_path = _write_hooks_json(hooks_dir, command)
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "nothing to invoke" in result.stdout, result.stdout
+    assert result.stdout.count("FAIL:") == 1, result.stdout
+
+
+def test_rejects_missing_command_key(tmp_path):
+    """An entry with no "command" key at all must be rejected the same way an empty one is.
+    `entry.get("command", "")` makes a missing key indistinguishable from an empty string by
+    construction, so this proves the fix covers the key's absence, not just its presence with an
+    empty value.
+    """
+    hooks_dir = _hooks_dir(tmp_path)
+    hooks_json_path = hooks_dir / "hooks.json"
+    hooks_json_path.write_text(
+        json.dumps(
+            {"hooks": {"SessionStart": [{"hooks": [{"type": "command", "shell": "bash"}]}]}}
+        )
+    )
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "nothing to invoke" in result.stdout, result.stdout
+
+
+def test_rejects_command_that_is_only_an_assignment(tmp_path):
+    """A command consisting solely of a shell variable assignment ("IADC=1") sets an
+    environment variable and invokes nothing — a different code path from an empty command:
+    `tokenize()` returns one real token, so `split_segments()` does not see an empty segment
+    list. `check_invocation()` itself must recognize that stripping the leading assignment
+    leaves nothing to check and treat that as a violation, not silently return none.
+    """
+    hooks_dir = _hooks_dir(tmp_path)
+    hooks_json_path = _write_hooks_json(hooks_dir, "IADC=1")
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "rule 2" in result.stdout, result.stdout
     assert result.stdout.count("FAIL:") == 1, result.stdout
 
 
@@ -352,3 +421,92 @@ def test_rejects_unparseable_json(tmp_path):
 
     assert result.returncode == 1, result.stdout + result.stderr
     assert "could not parse" in result.stdout, result.stdout
+
+
+# --- The remaining structural TypeError sites, and the usage-error exit code --------------
+#
+# check_command_entry's fixtures above cover every FAIL: this script can name on a *value*
+# it recognizes. These four cover the structural shapes one level up — an event, a group, a
+# group's "hooks", or an entry that is present but is not the type the walk over hooks.json
+# assumes — the same class of defect as `test_rejects_malformed_hooks_value` above, one level
+# deeper into the tree each time. None of the four can be deleted without collapsing the walk
+# into an uncaught AttributeError instead of a named FAIL:, which is why each gets its own
+# isolated fixture rather than being left to the reader to infer from the script.
+
+
+def test_rejects_event_value_not_a_list(tmp_path):
+    """An event's value (e.g. "SessionStart") must be an array of hook groups; anything else
+    must fail loudly with a named reason, not an uncaught traceback."""
+    hooks_json_path = tmp_path / "hooks.json"
+    hooks_json_path.write_text(json.dumps({"hooks": {"SessionStart": "not-an-array"}}))
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "malformed hooks.json structure" in result.stdout, result.stdout
+    assert '"SessionStart" is str, not an array' in result.stdout, result.stdout
+
+
+def test_rejects_group_not_an_object(tmp_path):
+    """A hook group — one entry in an event's array — that isn't itself an object must fail
+    loudly, not raise when the checker calls .get("hooks", []) on it.
+
+    Isolated from the entry-level version below by index: this fixture's violation is at
+    SessionStart[0], the entry-level one is at SessionStart[0].hooks[0].
+    """
+    hooks_json_path = tmp_path / "hooks.json"
+    hooks_json_path.write_text(json.dumps({"hooks": {"SessionStart": ["not-an-object"]}}))
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "malformed hooks.json structure" in result.stdout, result.stdout
+    assert "SessionStart[0] is str, not an object" in result.stdout, result.stdout
+
+
+def test_rejects_group_hooks_not_a_list(tmp_path):
+    """A group's "hooks" value that isn't an array must fail loudly, not raise when the checker
+    tries to enumerate it."""
+    hooks_json_path = tmp_path / "hooks.json"
+    hooks_json_path.write_text(
+        json.dumps({"hooks": {"SessionStart": [{"hooks": "not-an-array"}]}})
+    )
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "malformed hooks.json structure" in result.stdout, result.stdout
+    assert "SessionStart[0].hooks is str, not an array" in result.stdout, result.stdout
+
+
+def test_rejects_entry_not_an_object(tmp_path):
+    """A hook entry inside a group's "hooks" array that isn't itself an object must fail
+    loudly, not raise when the checker calls .get("type") on it.
+
+    Isolated from the group-level version above by index: this fixture's violation is at
+    SessionStart[0].hooks[0], the group-level one is at SessionStart[0].
+    """
+    hooks_json_path = tmp_path / "hooks.json"
+    hooks_json_path.write_text(
+        json.dumps({"hooks": {"SessionStart": [{"hooks": ["not-an-object"]}]}})
+    )
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "malformed hooks.json structure" in result.stdout, result.stdout
+    assert "SessionStart[0].hooks[0] is str, not an object" in result.stdout, result.stdout
+
+
+def test_rejects_wrong_argument_count():
+    """Called with the wrong number of arguments, the script must exit 2 — a usage error,
+    distinct from exit 1 (a violation was found) — so a caller checking specifically for a
+    certified violation doesn't conflate the two."""
+    result = subprocess.run(
+        [sys.executable, str(CHECK_SCRIPT)],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2, result.stdout + result.stderr
+    assert "usage:" in result.stderr, result.stderr
