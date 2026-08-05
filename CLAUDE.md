@@ -109,9 +109,12 @@ That has one consequence in the skills' prose: the graph skill is now addressed
 **`/iadc-graph:iadc-graph`** — the skill `iadc-graph` inside the plugin `iadc-graph`. The doubled
 name looks like a typo and is not.
 
-The single mirror now lives in `IADC-Marketplace`, still taken at the sha that built the
-**deployed** graph image, still never from IADC-Core `HEAD` — the skill may lag the deployed
-server, never lead it. Procedure and current sha:
+The single mirror now lives in `IADC-Graph-Plugin`, its own client-facing repo, and refreshing it
+is not a step in this plugin's release any more. The rule this repo's ADR 0011 established is
+unchanged and still release-blocking — the skill may lag the deployed server, never lead it — but
+*which sha* a refresh takes belongs to the runbook, not to this file: it is normally the sha that
+built the **deployed** graph image, and `IADC-Core` HEAD when the runbook's own check establishes
+the deployed server has not moved. Procedure and current sha:
 [IADC-Marketplace/docs/mirrored-iadc-graph-skill.md](https://github.com/teamignyte/IADC-Marketplace/blob/main/docs/mirrored-iadc-graph-skill.md).
 The rule and its rationale are unchanged; only the location and the copy-count are
 ([docs/adr/0011](docs/adr/0011-iadc-graph-skill-byte-identical-at-deployed-sha.md), superseded by

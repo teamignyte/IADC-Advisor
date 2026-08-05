@@ -139,8 +139,8 @@ longer carries its own copy of the `iadc-graph` skill.
   then reinstall. Installing from the old URL will stop resolving.
 - **`iadc-graph` is now a separate plugin, installed automatically** as a dependency of this one.
   You do not install it yourself, and there is no longer a copy inside this plugin to fall out of
-  step with the deployed server. The single mirror lives in the catalog, still taken at the sha
-  that built the deployed graph image.
+  step with the deployed server. One mirror serves the whole family, and keeping it in step is no
+  longer a step in this plugin's release.
 - **The graph skill is now addressed `/iadc-graph:iadc-graph`** — the skill `iadc-graph` inside the
   plugin `iadc-graph`. The doubled name is correct, not a typo. Every reference in this plugin's
   skills was updated.

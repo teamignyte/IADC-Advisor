@@ -247,7 +247,7 @@ Two assertions: the posture heading appears exactly once in `SKILL.md`, and each
 `appian`, `context7`, `office`, `orient`, `pressure-test`, `setup` has a `SKILL.md` that mentions
 "Project configuration". The six are named explicitly rather than derived by globbing
 `skills/*/SKILL.md` — `iadc-graph` is excluded because **it is not vendored here**: there is no
-`iadc-advisor/skills/iadc-graph/` directory any more, since it ships from `IADC-Marketplace` as a
+`iadc-advisor/skills/iadc-graph/` directory any more, since it ships from `IADC-Graph-Plugin` as a
 separate plugin dependency (§ "The `iadc-graph` skill is no longer vendored here" in the workshop
 `CLAUDE.md`). That is the whole reason — the mirror's own content is beside the point, since this
 check never reaches it either way, and it is a file this repo does not own
