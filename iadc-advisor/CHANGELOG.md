@@ -4,8 +4,14 @@ Versioning, inferred from this history and now written down rather than left imp
 that changes what the plugin does or how/when it acts — a new gate, a new capability, a hook
 firing on different sources than before — is a **minor** bump. A release that only corrects or
 rewords the immediately preceding minor's own logic, with no further behavior change, is a
-**patch** (1.3.1, 1.4.1 below are both this: explicit fix-rounds on the minor just before them,
-each saying so and each ending in "no action needed").
+**patch** (1.3.1, 1.4.1 below are both this: corrections to the minor just before them, each
+saying so and each ending in "no action needed").
+
+## 1.6.1 — 2026-08-04
+
+Wording only, in the versioning paragraph just above: simplified how a patch release is
+described relative to the minor before it — no change to what counts as a patch versus a minor.
+No action needed for an existing install.
 
 ## 1.6.0 — 2026-08-04
 

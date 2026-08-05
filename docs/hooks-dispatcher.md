@@ -104,9 +104,14 @@ because only the dispatcher's own filename is what Claude Code's command string 
    unrecognized command `shift\r` and, since that failed command is never trapped, leaving the
    original argument un-shifted and passed a second time into a corrupted, `\r`-suffixed exec
    path. `git mv`/`cp` preserve the executable bit; a `*.cmd text eol=lf` line in the new repo's
-   own `.gitattributes` (this repo's root carries the same line, plus one keyed to the hook
-   script's own path) is what protects the line endings on both platforms and survives a `git
-   subtree`-style copy.
+   own `.gitattributes` protects `run-hook.cmd` at any depth and survives a `git subtree`-style
+   copy. The hook script itself needs a second, separate line, because it's extensionless and so
+   can't be matched by a glob: `<name> text eol=lf` — but a gitattributes pattern containing a
+   slash is anchored to the `.gitattributes` file's own directory, not matched at any depth, so
+   if the new plugin's `hooks/` sits below the repo root (as this repo's does), the pattern needs
+   the **full path from the adopting repo's root** to the hook file, e.g. this repo's own
+   `iadc-advisor/hooks/session-start text eol=lf` — not the shorter `hooks/session-start`, which
+   matches nothing when the plugin isn't at the repo root.
 2. Name your hook script extensionless (`hooks/<name>`, not `hooks/<name>.sh`). Its own execute
    bit does not matter — `run-hook.cmd`'s Unix half invokes it as `bash "<path>"`, an explicit
    interpreter call that only needs read permission — but CRLF still breaks it, differently: a

@@ -1,6 +1,6 @@
 {
   "name": "iadc-advisor",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Advisory Appian architect: pressure-test tickets against the live app, produce build specs, answer how-does-our-app-work \u2014 advise and plan, never build.",
   "author": {
     "name": "Ignyte Group"
