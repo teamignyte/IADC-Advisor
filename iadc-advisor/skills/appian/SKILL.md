@@ -37,13 +37,13 @@ MCP tool schemas describe **parameters** (what fields exist), but not **domain r
 ## Configuration
 
 **Appian version:** read the **`Appian version`** line from the ambient
-**Project configuration** (injected at session start from `docs/agents/project.md`;
-written by `/setup`). Never hardcoded here — this file is shared across projects.
+**Project configuration** (injected at session start from `docs/agents/advisor.md`;
+written by `/iadc-advisor:setup`). Never hardcoded here — this file is shared across projects.
 
 **Supported Versions (as of 2026-06-30):**
 26.6, 26.5 (redirects to 26.6), 26.3, 25.4, 25.3, 25.2, 25.1, 24.4
 
-Set **the Appian version** via `/setup` (or edit `docs/agents/project.md`). This affects:
+Set **the Appian version** via `/iadc-advisor:setup` (or edit `docs/agents/advisor.md`). This affects:
 - Documentation URL lookups
 - Function availability checks
 - Version-specific guidance
@@ -245,7 +245,7 @@ Use the Resource Reference Map above to identify which reference file matches yo
 - **Building any interface** → Load `references/appian-workflow-patterns.md` (MANDATORY - provides interface type decision criteria) AND `references/interfaces.md` AND `references/sail.md`
 - Building interfaces (editable with Save button / Forms) → Load `references/appian-workflow-patterns.md` AND `references/interfaces.md` AND `references/sail.md` AND `references/write-records-patterns.md`
 - Building interfaces (read-only / Summary Views) → Load `references/appian-workflow-patterns.md` AND `references/interfaces.md` AND `references/sail.md`
-- Creating process models → Load `references/process-models.md`; for per-node-type specifics it doesn't cover, look the node up in the Appian documentation (`/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search** below) — never guess a node's configuration
+- Creating process models → Load `references/process-models.md`; for per-node-type specifics it doesn't cover, look the node up in the Appian documentation (`/iadc-advisor:context7`, then version-exact `docs.appian.com` via **Appian Documentation Search** below) — never guess a node's configuration
 
 ---
 
@@ -750,4 +750,4 @@ Judge this by the **token, not the wording: angle brackets present ⇒ unfilled*
 sit inside them — placeholder text may itself contain something that reads like a version number,
 which is *not* an answer. Then:
 1. Default to version 26.6 (latest)
-2. Suggest to user: "Using Appian 26.6 docs. To use a different version, set the `Appian version` line in docs/agents/project.md or re-run /setup."
+2. Suggest to user: "Using Appian 26.6 docs. To use a different version, set the `Appian version` line in docs/agents/advisor.md or re-run /iadc-advisor:setup."

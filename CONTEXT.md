@@ -30,15 +30,28 @@ This repo, where the plugin is developed. Its root is the maintainer's dev
 environment — auto-discovered by Claude Code — and is never shipped.
 
 **Per-project state**:
-Everything `/setup` materializes into a client app repo: the gitignored `.mcp.json`,
-the `docs/agents/*.md` configuration (including `project.md` and the gitignored
-per-person `project.local.md`), and the `outputs/` workspace. The plugin ships the
-intelligence; the app repo holds the per-project state.
+A family **convention**, not a term this plugin defines — see
+`docs/agents/per-project-state.md` in the umbrella (family
+[ADR 0009](https://github.com/teamignyte/IADC/blob/main/docs/adr/0009-umbrella-owns-per-project-state-convention.md)).
+
+**`.mcp.json`**:
+The gitignored MCP server configuration at the client app repo's root. Holds literal
+credential values, never `${VAR}` — the Windows Desktop app does not expand it. See
+`docs/adr/0004`.
+
+**`outputs/`**:
+The workspace `/setup` creates at the client app repo's root for generated planning
+artifacts — the domain glossary, decision records/ADRs, and build specs the advisory
+skills produce. Git-ignored where `/setup`'s ignore rules were accepted; in that case
+`outputs/README.md` is the only file tracked inside it. See `docs/adr/0005`.
 
 **Session hook**:
 The plugin's SessionStart hook — the replacement for the shipped `CLAUDE.md` (plugins
-cannot load one). Injects the operating posture plus `project.md`/`project.local.md`
-into every session in an app repo where the plugin is enabled.
+cannot load one). Injects the operating posture plus `advisor.md`/`advisor.local.md`
+on `startup`, `clear`, and `compact` in an app repo where the plugin is enabled — deliberately
+**not** on `resume`/`fork`, whose transcript already carries whatever the preceding `startup`/
+`clear`/`compact` injected (see `docs/adr/0012`). Not "every session": a long-lived session that
+is only ever resumed, never cleared or compacted, gets this exactly once.
 
 **Dev docs**:
 Design docs about *building the plugin* — this `CONTEXT.md` and `docs/adr/`. They sit

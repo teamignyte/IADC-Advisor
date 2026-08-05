@@ -12,7 +12,7 @@ memory. You never send, upload, edit, move, or delete anything.
 Access is through the **Microsoft 365 Claude connector** (OAuth), not `.mcp.json`
 — there are no tokens or env vars to configure here. If the connector isn't
 connected, tell the user to enable it in their client's connector settings
-(`/setup` covers this) and fall back to what they can paste in or point you at.
+(`/iadc-advisor:setup` covers this) and fall back to what they can paste in or point you at.
 
 ## What this is for
 
@@ -23,15 +23,15 @@ connected, tell the user to enable it in their client's connector settings
   Outlook exchange where a decision or constraint was recorded, and bring it
   into the conversation — cited.
 
-The ticket-first flow consumes this: `/pressure-test` grounds every question against
-these docs (searching SharePoint by the ticket key), and `/interrogate-with-docs`
+The ticket-first flow consumes this: `/iadc-advisor:pressure-test` grounds every question against
+these docs (searching SharePoint by the ticket key), and `/iadc-advisor:interrogate-with-docs`
 pulls requirements before sharpening a plan.
 
 ## Configuration
 
 The advisor searches a **pinned source-of-truth folder** first, rather than scanning the
 whole tenant. Read the **`Office source of truth`** entry from the ambient
-**Project configuration** (from `docs/agents/project.md`, written by `/setup`), after
+**Project configuration** (from `docs/agents/advisor.md`, written by `/iadc-advisor:setup`), after
 applying any **Personal overrides**: one **row per prospect**, each carrying that
 prospect's site + pinned folder, with the **`Active prospect`** line naming which row is
 live. Tracking several prospects in this one repo? Add a row per prospect and switch by
@@ -46,7 +46,7 @@ wins**, and only reach for the child `Row:` / `Active prospect:` lines once bran
    nothing is configured yet. Judge this by the **token, not the wording: angle brackets
    present ⇒ unfilled**, whatever words sit inside them — placeholder text may itself mention
    `none`, which is *not* an answer. Ask the user for the site/folder (or search the tenant),
-   read from there, and offer to record it via `/setup`. **Do not consult the `Row:` or
+   read from there, and offer to record it via `/iadc-advisor:setup`. **Do not consult the `Row:` or
    `Active prospect:` lines here** — the parent already decided this branch.
 2. **Parent is a bare `none` ⇒ deliberate.** Only when the parent value is the bare word `none`,
    with no angle brackets around it, does this project have **no M365 source documents**. Match it
@@ -64,7 +64,7 @@ wins**, and only reach for the child `Row:` / `Active prospect:` lines once bran
    - If the **`Active prospect`** line — or the **site** or **folder** on the row it names — is
      missing, empty, or an **unfilled angle-bracket placeholder** (`<prospect name>`,
      `<SharePoint site>`, `<pinned folder>`), the rows aren't filled in yet: ask the user for the
-     site/folder (or search the tenant), read from there, and offer to record it via `/setup`.
+     site/folder (or search the tenant), read from there, and offer to record it via `/iadc-advisor:setup`.
    - Otherwise the pinned folder **is** configured — search it as described next.
 
 **How to search — whenever a branch above sends you searching.** Prefer `sharepoint_search` with a

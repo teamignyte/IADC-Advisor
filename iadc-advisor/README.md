@@ -15,21 +15,20 @@ The architect **advises and plans**; your developers build. It reads and reasons
 - **Interrogate a plan** relentlessly, one question at a time, until the thinking is sharp — capturing the resulting glossary and decisions as `CONTEXT.md` and ADRs.
 - **Turn a conversation into a spec**, then split the spec into tracer-bullet tickets with proper blocking edges, published to your tracker.
 - **Chart the way through a huge, foggy effort** as a shared map of decision tickets, resolved one at a time.
-- **Answer "how does our app work"** — with `/orient`, a single cited briefing that composes the dependency graph, the live environment, the Jira board, and your domain docs into the shape of the app, its data model, the decisions behind it, and what's in flight. Ideal for onboarding a new developer or catching up on an unfamiliar area. (Or go straight to the raw graph — what calls this, what breaks if I change it, how these objects relate.)
+- **Answer "how does our app work"** — with `/iadc-advisor:orient`, a single cited briefing that composes the dependency graph, the live environment, the Jira board, and your domain docs into the shape of the app, its data model, the decisions behind it, and what's in flight. Ideal for onboarding a new developer or catching up on an unfamiliar area. (Or go straight to the raw graph — what calls this, what breaks if I change it, how these objects relate.)
 - **Answer "how does Appian work"** with semantic search over the Appian documentation, confirmed against the official docs at your environment's version.
 - **Inspect your Appian environment** directly (read-only) to ground advice in the real configuration.
-- **Read your requirements and design documents** from SharePoint / OneDrive, and pull context from Teams and Outlook — through the Microsoft 365 connector, so an answer rests on what the spec actually says and cites the document it came from. `/setup` can pin the project's source-of-truth folder so searches start there instead of the whole tenant. (Read-only: it finds, reads, and cites — it never sends, uploads, or edits.)
+- **Read your requirements and design documents** from SharePoint / OneDrive, and pull context from Teams and Outlook — through the Microsoft 365 connector, so an answer rests on what the spec actually says and cites the document it came from. `/iadc-advisor:setup` can pin the project's source-of-truth folder so searches start there instead of the whole tenant. (Read-only: it finds, reads, and cites — it never sends, uploads, or edits.)
 - **Read your Jira board for context** — what's planned, in flight, decided, blocked, or already tracked — so the architect's planning and answers are grounded in the work your team is actually tracking. (Jira stays human-first; the architect reads, and writes only light comments on request.)
 - **Research a question** against primary sources in the background, leaving a cited Markdown file in the repo.
 
 ## Before you start
 
-`/setup` (step 4 below) asks for these and can't finish without them, so have them to hand:
+`/iadc-advisor:setup` (step 4 below) asks for these and can't finish without them, so have them to hand:
 
-- **The `iadc` graph** — its URL, and its `appian-api-key`.
 - **The Appian MCP server** — a path to the **`uv`** executable on this machine, and a path to
   the **extracted LCP MCP server bundle** (you'll be given the zip; unpack it somewhere stable
-  first — `/setup` needs the folder, not the archive).
+  first — `/iadc-advisor:setup` needs the folder, not the archive).
 - **Your Appian environment** — the tenant URL (e.g. `https://<your-tenant>.appiancloud.com`)
   and **your own Appian username and password**. They're personal, and they stay in a
   gitignored file (see Configuration & secrets).
@@ -37,8 +36,11 @@ The architect **advises and plans**; your developers build. It reads and reasons
   **Microsoft 365**; **Slack** too if architectural gaps should be escalated there. These
   connect via OAuth in your client's settings, so there's nothing to put on disk.
 
-The Appian documentation search needs no key. `/setup` can look up your application's UUID for
+The Appian documentation search needs no key. `/iadc-advisor:setup` can look up your application's UUID for
 you once the Appian server is connected.
+
+Separately, have **the `iadc` graph's URL and `appian-api-key`** to hand too — `/iadc-advisor:setup`
+doesn't ask for them. `/iadc-graph:setup` does (step 5 below), any time before or after this one.
 
 ## Getting started
 
@@ -70,12 +72,18 @@ why.)
    to trust the folder — accept, and it installs the repo's declared plugin in the
    background, with nothing else to configure. (Decline the trust prompt and the plugin is
    silently skipped.)
-4. **Run `/setup`** in that repo. It generates the gitignored `.mcp.json` (graph, Appian,
+4. **Run `/iadc-advisor:setup`** in that repo. It generates the gitignored `.mcp.json` (Appian,
    docs — literal values, no secrets tracked), writes the project configuration
-   (`docs/agents/project.md` — Appian version, application UUID, audience, escalation),
+   (`docs/agents/advisor.md` — Appian version, application UUID, audience, escalation),
    points the Jira/Microsoft 365 connectors, lays out the tracker + domain docs and the
-   `outputs/` workspace — then verifies everything connects.
-5. **Ask `/which-skill`** any time you're not sure which flow fits.
+   `outputs/` workspace — then verifies everything connects. It points you at `/iadc-graph:setup`
+   for the graph connection (step 5) instead of asking for it itself.
+5. **Run `/iadc-graph:setup`** to wire the `iadc` graph — its URL and `appian-api-key`. A separate
+   command, from the `iadc-graph` plugin this one depends on (installed automatically in step 2).
+   Fine to run before step 4, during, or well after — nothing here waits on it. It never silently
+   overwrites a working entry: if this repo's `.mcp.json` already has one — an older install, or
+   your own clone from a previous run — it's kept as-is unless you choose to replace it.
+6. **Ask `/iadc-advisor:which-skill`** any time you're not sure which flow fits.
 
 Updates: from that repo, `claude plugin update iadc-advisor@ignyte --scope project`, then
 start a fresh session — the update only takes effect on restart. (Both parts matter:
@@ -85,17 +93,17 @@ out on a project-scope install.) See `CHANGELOG.md` for what changed.
 ## The main flow
 
 ```
-your ticket  →  /pressure-test  →  /to-spec  →  build spec  →  (you build)
+your ticket  →  /iadc-advisor:pressure-test  →  /iadc-advisor:to-spec  →  build spec  →  (you build)
 ```
 
-You have a ticket (or a described task). **`/pressure-test`** orients you in the app — what the change touches, its blast radius, the objects involved, the project's own docs — then runs a one-question-at-a-time Socratic dialectic that *asks but doesn't answer*, so you sharpen the approach yourself. When it's confirmed, **`/to-spec`** turns the conversation into a developer-ready **build spec** (the context plus an ordered list of Appian build steps), shown for your review and written only on your approval. It advises; you build.
+You have a ticket (or a described task). **`/iadc-advisor:pressure-test`** orients you in the app — what the change touches, its blast radius, the objects involved, the project's own docs — then runs a one-question-at-a-time Socratic dialectic that *asks but doesn't answer*, so you sharpen the approach yourself. When it's confirmed, **`/iadc-advisor:to-spec`** turns the conversation into a developer-ready **build spec** (the context plus an ordered list of Appian build steps), shown for your review and written only on your approval. It advises; you build.
 
-**No ticket yet — shaping net-new work?** Use the greenfield flow: `/interrogate-with-docs → /to-tickets`, then hand the tickets to your team (who each start them with `/pressure-test`). For an effort too big to hold in one session, start with `/wayfinder`; when its map clears it merges into `/to-tickets`.
+**No ticket yet — shaping net-new work?** Use the greenfield flow: `/iadc-advisor:interrogate-with-docs → /iadc-advisor:to-tickets`, then hand the tickets to your team (who each start them with `/iadc-advisor:pressure-test`). For an effort too big to hold in one session, start with `/iadc-advisor:wayfinder`; when its map clears it merges into `/iadc-advisor:to-tickets`.
 
 ## Configuration & secrets
 
-Nothing secret is ever committed: `/setup` writes real credentials only to the gitignored
+Nothing secret is ever committed: `/iadc-advisor:setup` writes real credentials only to the gitignored
 `.mcp.json`, and your personal role override lives in the gitignored
-`docs/agents/project.local.md`. Jira and Microsoft 365 connect as Claude connectors — no
-tokens on disk. The committed `docs/agents/project.md` holds only team-shared,
+`docs/agents/advisor.local.md`. Jira and Microsoft 365 connect as Claude connectors — no
+tokens on disk. The committed `docs/agents/advisor.md` holds only team-shared,
 non-secret values.

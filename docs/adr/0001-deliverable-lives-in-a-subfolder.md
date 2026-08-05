@@ -50,3 +50,15 @@ package".
   directory no longer tests anything: install the plugin from this repo as a **local-path
   marketplace** into a scratch client repo (a sibling of this repo, never inside it), and run
   it there. See `CLAUDE.md` → "Working here".
+
+> **Amended by IV-373.** The bullet above calls `.mcp.json`, `docs/agents/*.md`, `.gitignore`
+> entries, and `outputs/` "the per-project state the client does hold" — that predates the family
+> convention and is no longer the term's current meaning. The umbrella's
+> `docs/agents/per-project-state.md` governs exactly two files per plugin, not the four items
+> above (family
+> [ADR 0009](https://github.com/teamignyte/IADC/blob/main/docs/adr/0009-umbrella-owns-per-project-state-convention.md)).
+> `.mcp.json` is excluded because its credentials follow a separate rule, owned by family
+> [ADR 0010](https://github.com/teamignyte/IADC/blob/main/docs/adr/0010-graph-plugin-owns-graph-configuration.md)
+> and not restated here: within it, `/setup` still writes only the `appian` and `context7`
+> entries — `/iadc-graph:setup` writes `iadc`. What `/setup` writes into the app repo is
+> unchanged; only which of it the term "per-project state" names is corrected.

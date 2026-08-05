@@ -34,7 +34,7 @@ Buttons trigger actions in SAIL interfaces. Buttons must always be placed inside
 | `style` | `"OUTLINE"`, `"GHOST"`, `"LINK"`, `"SOLID"` | **Only these 4!** |
 | `color` | `"ACCENT"`, `"SECONDARY"`, `"NEGATIVE"`, hex codes (#RRGGBB) | For prominence/semantic meaning |
 | `size` | `"SMALL"`, `"STANDARD"`, `"LARGE"` | |
-| `icon` | Valid icon alias | MUST verify in the Appian documentation: `/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search** — never guess |
+| `icon` | Valid icon alias | MUST verify in the Appian documentation: `/iadc-advisor:context7`, then version-exact `docs.appian.com` via **Appian Documentation Search** — never guess |
 | `saveInto` | Variable/expression | Action to perform |
 | `submit` | Boolean | Submit form on click |
 | `loadingIndicator` | Boolean | Shows spinner during processing |
@@ -206,7 +206,7 @@ Before finalizing button code:
 - [ ] Button `style` is one of: `"OUTLINE"`, `"GHOST"`, `"LINK"`, `"SOLID"`
 - [ ] Button is in a container: `a!buttonArrayLayout` for inline buttons, `a!buttonLayout` for form submission buttons
 - [ ] If using custom color, it's `"ACCENT"` or valid 6-character hex code
-- [ ] If using icon, it's a valid icon alias verified in the Appian documentation (`/context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**) - never guessed
+- [ ] If using icon, it's a valid icon alias verified in the Appian documentation (`/iadc-advisor:context7`, then version-exact `docs.appian.com` via **Appian Documentation Search**) - never guessed
 - [ ] `marginBelow: "NONE"` set on buttonArrayLayout when inside other components
 - [ ] Size is one of: `"SMALL"`, `"STANDARD"`, `"LARGE"` (if specified)
 

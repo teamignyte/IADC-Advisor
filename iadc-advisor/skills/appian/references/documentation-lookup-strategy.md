@@ -91,7 +91,7 @@ When you need information beyond the loaded skill references, use this three-tie
 **Workflow:**
 
 **Step 1:** Read the **`Appian version`** line from the ambient **Project configuration**
-(injected at session start from `docs/agents/project.md`). Never hardcode it here — this file is
+(injected at session start from `docs/agents/advisor.md`). Never hardcode it here — this file is
 shared across projects. Substitute it into `VERSION=` in **every** bash block below, separately:
 the Bash tool starts a fresh shell per call, so a variable set in one block is unset in the next.
 

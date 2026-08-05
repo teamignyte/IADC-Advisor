@@ -33,7 +33,7 @@ client-facing distribution repo, which lists this plugin alongside `iadc-tester`
   (`claude plugin marketplace add <path-to-IADC-Marketplace>` — a local path while you are
   iterating, the git URL to test what a client gets), then from `../iadc-dogfood` run
   `claude plugin install iadc-advisor@ignyte --scope project`, open Claude there, and run
-  `/setup`. The session hook, namespaced skills, and per-project state behave exactly as they
+  `/iadc-advisor:setup`. The session hook, namespaced skills, and per-project state behave exactly as they
   will for the client — including `iadc-graph` arriving as a dependency, which is the part a
   local edit here can no longer fake. After editing the plugin, refresh **from
   `../iadc-dogfood`** (project scope is keyed to the working directory) with
@@ -71,6 +71,13 @@ rename a skill, update **`which-skill`** (the router). Never put a per-project v
 state is written by `/setup` into the client repo. Record hard-to-reverse decisions as ADRs
 in `docs/adr/`.
 
+**Shell commands written into skill prose are ratcheted.** `tests/skill_command_baseline.py`
+records a count per skill file and the suite fails when one moves either way — up means write a
+script instead, down means lower the baseline in the same commit. That file documents the
+counting method, what it deliberately misses, and how to update it. **This repo authors the
+guard; `IADC-Tester` carries a mirror of `tests/test_skill_command_ratchet.py`, so a fix belongs
+here first and travels there in the same change.** Nothing mechanical binds the two copies.
+
 **Never declare `skills` or `hooks` in `iadc-advisor/.claude-plugin/plugin.json`.** Both are
 auto-discovered from `skills/` and `hooks/hooks.json`; declaring them as well registers the same
 paths twice and the plugin **installs successfully but loads nothing** — `✘ failed to load —
@@ -102,9 +109,12 @@ That has one consequence in the skills' prose: the graph skill is now addressed
 **`/iadc-graph:iadc-graph`** — the skill `iadc-graph` inside the plugin `iadc-graph`. The doubled
 name looks like a typo and is not.
 
-The single mirror now lives in `IADC-Marketplace`, still taken at the sha that built the
-**deployed** graph image, still never from IADC-Core `HEAD` — the skill may lag the deployed
-server, never lead it. Procedure and current sha:
+The single mirror now lives in `IADC-Graph-Plugin`, its own client-facing repo, and refreshing it
+is not a step in this plugin's release any more. The rule this repo's ADR 0011 established is
+unchanged and still release-blocking — the skill may lag the deployed server, never lead it — but
+*which sha* a refresh takes belongs to the runbook, not to this file: it is normally the sha that
+built the **deployed** graph image, and `IADC-Core` HEAD when the runbook's own check establishes
+the deployed server has not moved. Procedure and current sha:
 [IADC-Marketplace/docs/mirrored-iadc-graph-skill.md](https://github.com/teamignyte/IADC-Marketplace/blob/main/docs/mirrored-iadc-graph-skill.md).
 The rule and its rationale are unchanged; only the location and the copy-count are
 ([docs/adr/0011](docs/adr/0011-iadc-graph-skill-byte-identical-at-deployed-sha.md), superseded by

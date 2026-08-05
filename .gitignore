@@ -11,3 +11,11 @@ iadc-advisor/.mcp.json
 # OS / editor cruft
 .DS_Store
 Thumbs.db
+
+# Project-local git worktrees (see family CLAUDE.md, Working across repos)
+.worktrees/
+
+# Python test tooling (IV-402)
+__pycache__/
+*.pyc
+.pytest_cache/

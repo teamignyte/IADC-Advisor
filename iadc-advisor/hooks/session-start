@@ -31,14 +31,14 @@ safe_project_file() {
 
 cat "$plugin_root/hooks/posture.md"
 
-if safe_project_file "$project_dir/docs/agents/project.md"; then
-  printf '\n## Project configuration (from docs/agents/project.md — written by /setup)\n\n'
-  cat "$project_dir/docs/agents/project.md"
+if safe_project_file "$project_dir/docs/agents/advisor.md"; then
+  printf '\n## Project configuration (from docs/agents/advisor.md — written by /iadc-advisor:setup)\n\n'
+  cat "$project_dir/docs/agents/advisor.md"
 else
-  printf '\n## Project configuration\n\nNot configured yet — run /setup to wire the MCP servers and project values.\n'
+  printf '\n## Project configuration\n\nNot configured yet — run /iadc-advisor:setup to wire the MCP servers and project values.\n'
 fi
 
-if safe_project_file "$project_dir/docs/agents/project.local.md"; then
-  printf '\n## Personal overrides (from docs/agents/project.local.md — gitignored; these values OVERRIDE the project configuration above)\n\n'
-  cat "$project_dir/docs/agents/project.local.md"
+if safe_project_file "$project_dir/docs/agents/advisor.local.md"; then
+  printf '\n## Personal overrides (from docs/agents/advisor.local.md — gitignored; these values OVERRIDE the project configuration above)\n\n'
+  cat "$project_dir/docs/agents/advisor.local.md"
 fi

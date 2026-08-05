@@ -1,14 +1,6 @@
 {
-  "_comment": "TEMPLATE — /setup asset. /setup writes the real .mcp.json (gitignored) into the app repo with LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json. Every _comment key is a note to /setup and is dropped from the file it writes.",
+  "_comment": "TEMPLATE — /iadc-advisor:setup asset. /iadc-advisor:setup writes the real .mcp.json (gitignored) into the app repo with LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json. Every _comment key is a note to /iadc-advisor:setup and is dropped from the file it writes. No `iadc` entry here: /iadc-graph:setup owns that block and carries its own template (family ADR 0010) — merge into whatever it already wrote, don't recreate it from this file.",
   "mcpServers": {
-    "iadc": {
-      "_comment": "The graph MCP is served by the standalone Graph service on port 8001, over cleartext http — a separate service from the review API on 8000, which does NOT serve /mcp. The api-key is the Graph service's own key, not the review service's. The scheme becomes https once the endpoint is TLS-terminated; until then http is correct and https fails the handshake.",
-      "type": "http",
-      "url": "http://<your-graph-host>:8001/mcp/",
-      "headers": {
-        "appian-api-key": "<your-iadc-graph-api-key>"
-      }
-    },
     "appian": {
       "type": "stdio",
       "command": "<path-to-uv-executable>",

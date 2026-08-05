@@ -20,6 +20,13 @@ as the shipped `CLAUDE.md` once made the Audience ambient.
 Rule going forward: **a `SKILL.md` may carry knowledge, never configuration.** If a value
 differs between two client apps, it belongs in `docs/agents/`, written by `/setup`.
 
+> **Amended by IV-361.** `docs/agents/project.md` / `project.local.md` are renamed to
+> `docs/agents/advisor.md` / `advisor.local.md` — a generic name reads as family-wide
+> configuration once a second plugin (the Tester) ships its own alongside it (family
+> [ADR 0009](https://github.com/teamignyte/IADC/blob/main/docs/adr/0009-umbrella-owns-per-project-state-convention.md)).
+> The mechanism this ADR establishes — files in the app repo, injected ambiently by the
+> SessionStart hook, read by skills from context — is unchanged; only the two filenames are.
+
 ## Considered options
 
 - **Skills read config files on demand (no ambient injection).** Rejected: every skill

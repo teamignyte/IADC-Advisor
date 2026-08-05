@@ -2,14 +2,16 @@
 
 > **Superseded by the family's
 > [ADR 0003](https://github.com/teamignyte/IADC/blob/main/docs/adr/0003-shared-skills-ship-as-pinned-marketplace-plugins.md).**
-> This plugin no longer vendors the skill at all. `iadc-graph` ships as its own plugin in the
-> `IADC-Marketplace` catalog, and `iadc-advisor` declares it as a dependency, so it installs
+> This plugin no longer vendors the skill at all. `iadc-graph` ships as its own plugin, listed in
+> the `ignyte` catalog, and `iadc-advisor` declares it as a dependency, so it installs
 > automatically and there is nothing here to keep in sync.
 >
-> **Both rules below survive verbatim** — they were right, and the new arrangement enforces them
-> rather than replacing them: the copy is taken at the sha that built the **deployed** graph image,
-> and *the skill may lag the deployed server, never lead it*. What changed is the count and the
-> location: **one** mirror for the whole family, in `IADC-Marketplace`, instead of one per consumer.
+> **Rule 2's ordering half survives verbatim** — it was right, and the new arrangement enforces it
+> rather than replacing it: *the skill may lag the deployed server, never lead it*. Rule 2's
+> sha-selection half survives in substance but no longer as an absolute; `IADC-Core`'s
+> `docs/marketplace-mirror-refresh.md` now owns it and admits a checked `HEAD` refresh. What
+> changed besides is the count and the location: **one** mirror for the whole family, in
+> `IADC-Graph-Plugin`, instead of one per consumer.
 > That is what this ADR's third rejected option ("a shared plugin or sub-repo as the single home")
 > ruled out — correctly at the time, since moving the *canonical* file would have killed the drift
 > guard. The new arrangement keeps canonical authorship in IADC-Core and moves only the copy, which
