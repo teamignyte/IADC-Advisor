@@ -187,9 +187,10 @@ and comments carry too but a refresher reading this doc shouldn't have to go fin
 
 Before IV-396: 8 lettered checks, 10 assertions (A1, A2, B, C, D, E, F1, F2, G, CRLF). After: 7
 checks, 9 assertions — B and G merge into one citation-resolution check derived from the tree
-itself, described under B/G below, which is why the count drops by one without dropping any
-coverage. No check was deleted outright: every remaining letter still has a fixture in the test
-module that violates it and is asserted to turn the check red.
+itself, described under B/G below. No check was deleted outright: every remaining letter still
+has a fixture in the test module that violates it and is asserted to turn the check red. The
+merge is a net gain — it resolves two citation shapes neither old check recognized — but it is
+not coverage-neutral: see B/G's own paragraph for what it gained and what narrowed.
 
 **A. No literal Appian version as configuration, anywhere.** Two assertions: no hardcoded
 `**Appian Version:** N` declaration, and no hardcoded `VERSION="2N…"` bash variable, anywhere
@@ -197,21 +198,42 @@ under the vendored tree.
 
 **B/G. No citation to a file that does not exist.** Checks B and G are unified into one: every
 `.md` citation found anywhere in the vendored tree must resolve to a real file, resolved relative
-to the citing file's own directory, relative to the tree root, or — for a bare filename — by
-basename anywhere else in the tree. B used to be a six-string blocklist
-(`rich-text-icon-aliases`, `node-types.md`, `display-conversion-`, `/ui-guidelines/`,
-`/conversion-guidelines/`, `/my-docs/`) that could only catch a citation already known bad; G
-generalized past Patch C's specific `guidelines/` prefix (which "Design Guidelines" prose and
-"logic-guidelines" compounds would have false-fired on) to every `*.md` citation actually
-resolving to a real file, but only recognized a citation written with a literal `references/` or
-`guidelines/` prefix. Neither caught a citation written relative to the citing file's own
-directory, or as a bare filename with no prefix at all — which is exactly the shape of two live
-defects IV-396 measured: `references/sail-verification-checkpoint.md:180` cites
+to the citing file's own directory, relative to the tree root, or — for a bare filename with no
+directory component at all — by basename anywhere else in the tree. A prefixed-but-wrong
+citation (e.g. a `references/…` path pointing at a file that only exists under
+`references/patterns/`) does not get the basename fallback; only a bare filename does. B used to
+be a six-string blocklist (`rich-text-icon-aliases`, `node-types.md`, `display-conversion-`,
+`/ui-guidelines/`, `/conversion-guidelines/`, `/my-docs/`) that could only catch a citation
+already known bad; G generalized past Patch C's specific `guidelines/` prefix (which "Design
+Guidelines" prose and "logic-guidelines" compounds would have false-fired on) to every `*.md`
+citation actually resolving to a real file, but only recognized a citation written with a literal
+`references/` or `guidelines/` prefix. Neither caught a citation written relative to the citing
+file's own directory, or as a bare filename with no prefix at all — which is exactly the shape of
+two live defects IV-396 measured: `references/sail-verification-checkpoint.md:180` cites
 `components/picker-field-users-instructions.md`, and
 `references/interface-generation-checklist.md:127` cites `icon-aliases.md`; neither file exists
-anywhere in the tree. Repairing those two is Patch B's job, not this check's — see §5. The test
+anywhere in the tree. Repairing those two is Patch B's job, not this check's — see §1. The test
 module tracks each individually so a citation reintroduced or newly broken anywhere else in the
 tree still fails the suite.
+
+Two things narrowed in the merge, both deliberate, not oversights. **Scope:** old B ran
+`grep` over the whole plugin (`iadc-advisor/`); this check runs over the vendored appian tree
+only (`iadc-advisor/skills/appian/`, same root G already used) — measured: widening it to the
+whole plugin flags over a hundred strings in the plugin's *own* skills (`domain-modeling`,
+`setup`, and others cite template placeholders like `outputs/CONTEXT.md` or `decisions.md` in
+their own prose, names that are meant to describe a future file a session will create, not
+resolve today). The invariant "every `.md` token is a real citation into this tree" is true of
+the vendored appian content specifically; it is not true of this repo's own skill docs, so the
+check stays scoped to where the invariant holds. **Token shape:** the citation regex only
+recognizes a token ending in `.md`. A bare mention of one of B's old blocklisted trees with no
+filename after it (`the /my-docs/ folder`) is not caught; the same string followed by an actual
+filename (`/my-docs/notes.md`) is, structurally, the same as any other unresolvable citation.
+Widening the token match to other extensions is not free either — the appian skill's own prose
+legitimately names remote paths like `functions.json` and `VERSION.json` (Appian's hosted API
+docs, resolved over the network by the skill's own workflow, never a local file), and a token
+match wide enough to catch a local `.json` citation catches those too. Both narrowings are
+recorded here rather than closed with a second blocklist, which would need the same maintenance
+the six-string one did.
 
 **C./D. The posture block survived, and the six config-readers still read the ambient block.**
 Two assertions: the posture heading appears exactly once in `SKILL.md`, and each of
@@ -273,7 +295,7 @@ continuation from the same false-positive fate. None of the three is worth rever
 over — the appian tree doesn't currently contain what any of them would misfire on.
 
 Observable trigger: re-run check E's pattern with `\b` substituted for the trailing class
-`([^:[:alnum:]/-]|$)`, over the same tree (`iadc-advisor/skills/appian/`). Today the two outputs
+`(?:[^:A-Za-z0-9/-]|$)`, over the same tree (`iadc-advisor/skills/appian/`). Today the two outputs
 are byte-identical (both empty). The day they diverge, one of these exclusions has started doing
 real work — or blocking a real false-fire — in this tree, and this note needs a fresh scope check.
 

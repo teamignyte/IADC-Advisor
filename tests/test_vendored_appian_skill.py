@@ -21,7 +21,11 @@ B was a six-string blocklist of citations known bad at one point in time, and co
 new one; G only recognized a citation written with a literal "references/" or "guidelines/"
 prefix, missing a citation written relative to the citing file's own directory (e.g.
 "components/foo.md" from within references/) or as a bare filename. A check derived from the
-tree itself closes both gaps at once, and does not need the maintenance a blocklist needs.
+tree itself closes both of those resolution gaps, and does not need the maintenance a blocklist
+needs -- but it is scoped to the vendored appian tree (narrower than old B's whole-plugin scan)
+and only recognizes a ".md"-suffixed token (narrower than old B's blocklist, which also matched a
+bare directory-prefix mention with no filename). docs/vendored-appian-skill.md's B/G section
+records both narrowings and why they are deliberate rather than restored with a second blocklist.
 """
 from __future__ import annotations
 
@@ -102,17 +106,22 @@ def test_a2_catches_reintroduced_version_bash_variable(tmp_path):
 # `docs/agents/advisor.md`, injected at session start (Patch A); no `docs/` directory exists
 # here to resolve it against.
 #
-# The basename fallback is deliberately permissive: it does not verify a bare citation names
-# the *specific* file its author intended, only that some file with that name exists
-# somewhere in the tree. That is the same tradeoff the old check G's prefix-based scan made
-# implicitly, kept explicit here rather than removed, since tightening it would need knowing
-# each bare citation's intended directory — information the citation itself doesn't carry.
+# The basename fallback applies only to a bare filename with no directory component at all (no
+# "/" anywhere in the token). A prefixed-but-wrong citation, e.g. "references/card_lists.md"
+# when the real file lives at "references/patterns/card_lists.md", must still resolve for
+# real — the "/" guard keeps a wrong prefix from being waved through just because some file
+# with the trailing basename exists somewhere else in the tree, matching what old check G's
+# prefix-based scan actually required. Only a bare filename with no prefix at all gets the
+# permissive basename search, and it stays deliberately permissive there: it does not verify a
+# bare citation names the *specific* file its author intended, only that some file with that
+# name exists somewhere in the tree. Tightening it further would need knowing each bare
+# citation's intended directory, information the citation itself doesn't carry.
 
 CITATION_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]*\.md")
 
 # Documented, measured exceptions (IV-396): these two citations exist in the real vendored
 # tree today and do not resolve. Repairing them is Patch B's job (docs/vendored-appian-skill.md
-# §5), not this check's — a check that repaired content itself would not be a guard. Excluded
+# §1), not this check's — a check that repaired content itself would not be a guard. Excluded
 # by exact (citing file, cited token) pair, so any *other* dangling citation anywhere else in
 # the tree still fails test_bg_citations_resolve_to_real_files below. The two xfail tests
 # beneath it track these individually: either turns XPASS (caught by strict=True) the day its
@@ -136,7 +145,7 @@ def _find_dangling_citations(root: Path) -> list[tuple[Path, str]]:
                 continue
             if (root / token).resolve().is_file():
                 continue
-            if token.rsplit("/", 1)[-1] in by_basename:
+            if "/" not in token and token in by_basename:
                 continue
             dangling.add((f, token))
     return sorted(dangling, key=lambda pair: (str(pair[0]), pair[1]))
@@ -178,12 +187,47 @@ def test_bg_resolves_relative_to_citing_directory(tmp_path):
     assert dangling == [], f"a directory-relative citation that does resolve was flagged: {dangling}"
 
 
+def test_bg_resolves_relative_to_tree_root(tmp_path):
+    # Exercises the tree-root branch on its own: a citation written as a full in-tree path
+    # from a file whose own directory does not contain it. The token carries a "/", so the
+    # basename fallback is out of the running by construction (it only applies to a bare
+    # filename) -- if this resolves at all, the tree-root branch is what did it.
+    (tmp_path / "assets").mkdir()
+    (tmp_path / "assets" / "logo-instructions.md").write_text("x\n", encoding="utf-8")
+    (tmp_path / "references").mkdir()
+    (tmp_path / "references" / "b.md").write_text(
+        "a root-relative citation: assets/logo-instructions.md\n", encoding="utf-8"
+    )
+    dangling = _find_dangling_citations(tmp_path)
+    assert dangling == [], f"a root-relative citation that does resolve was flagged: {dangling}"
+
+
+def test_bg_basename_fallback_does_not_rescue_a_wrong_prefix(tmp_path):
+    # This is Patch C's exact shape (IV-396): a citation with the right basename but the wrong
+    # directory prefix must not resolve just because some file with that basename exists
+    # somewhere else in the tree. The basename fallback is for a bare filename only (no "/" in
+    # the token at all) -- a prefixed token has to resolve for real, the same way old check G
+    # required. Measured: without the "/" guard, this fixture's dangling citation silently
+    # resolves, because a file named "tabs.md" happens to exist under a different directory.
+    (tmp_path / "references" / "patterns").mkdir(parents=True)
+    (tmp_path / "references" / "patterns" / "tabs.md").write_text("x\n", encoding="utf-8")
+    (tmp_path / "references" / "layouts").mkdir(parents=True)
+    (tmp_path / "references" / "layouts" / "b.md").write_text(
+        "wrong prefix: guidelines/patterns/tabs.md\n", encoding="utf-8"
+    )
+    dangling = _find_dangling_citations(tmp_path)
+    assert dangling, (
+        "basename fallback wrongly resolved a prefixed citation with the wrong directory "
+        "just because a file with that basename exists elsewhere in the tree"
+    )
+
+
 @pytest.mark.xfail(
     strict=True,
     reason=(
         "IV-396: interface-generation-checklist.md cites icon-aliases.md, and no such file "
         "exists anywhere in the vendored tree. Repairing it is Patch B's job "
-        "(docs/vendored-appian-skill.md §5); this test starts passing (XPASS) the day it is "
+        "(docs/vendored-appian-skill.md §1); this test starts passing (XPASS) the day it is "
         "fixed, which is the signal to delete this test and its KNOWN_DANGLING_CITATIONS entry."
     ),
 )
@@ -199,7 +243,7 @@ def test_known_defect_icon_aliases_citation_should_resolve():
     reason=(
         "IV-396: sail-verification-checkpoint.md cites components/picker-field-users-"
         "instructions.md, and no such file exists anywhere in the vendored tree. Repairing "
-        "it is Patch B's job (docs/vendored-appian-skill.md §5); this test starts passing "
+        "it is Patch B's job (docs/vendored-appian-skill.md §1); this test starts passing "
         "(XPASS) the day it is fixed, which is the signal to delete this test and its "
         "KNOWN_DANGLING_CITATIONS entry."
     ),
@@ -236,16 +280,21 @@ POSTURE_HEADING = "## Posture: read-only / advisory"
 CONFIG_READER_SKILLS = ("appian", "context7", "office", "orient", "pressure-test", "setup")
 
 
+def _posture_heading_count(skill_md: Path) -> int:
+    return skill_md.read_text(encoding="utf-8").splitlines().count(POSTURE_HEADING)
+
+
 def test_c_posture_heading_survives_exactly_once():
-    skill_md = APPIAN_ROOT / "SKILL.md"
-    count = skill_md.read_text(encoding="utf-8").splitlines().count(POSTURE_HEADING)
+    count = _posture_heading_count(APPIAN_ROOT / "SKILL.md")
     assert count == 1, f"expected exactly one {POSTURE_HEADING!r} heading in SKILL.md, found {count}"
 
 
 def test_c_catches_a_dropped_posture_heading(tmp_path):
-    (tmp_path / "SKILL.md").write_text("# Some other heading\n", encoding="utf-8")
-    count = (tmp_path / "SKILL.md").read_text(encoding="utf-8").splitlines().count(POSTURE_HEADING)
-    assert count == 0, "expected the fixture to be missing the posture heading"
+    skill_md = tmp_path / "SKILL.md"
+    skill_md.write_text("# Some other heading\n", encoding="utf-8")
+    assert _posture_heading_count(skill_md) == 0, (
+        "check C failed to catch a dropped posture heading"
+    )
 
 
 def _config_reader_report(skills_root: Path, names) -> tuple[list[str], list[str]]:
