@@ -38,9 +38,10 @@ the script, confirm the suite passes again.
 
 Every way this script can refuse a hooks.json has an isolated fixture below. Refusal is the
 property to check that claim against — an input the script answers with anything other than its
-one `PASS:` line and exit 0 — and not any particular spelling of it: refusals reach stdout by four
-different routes (a violation collected into the list, a structural `TypeError` the top-level
-handler prints, a direct `print` + `return 1` in `main`, and the usage `return 2`), so a walk that
+one `PASS:` line and exit 0 — and not any particular spelling of it. Refusal takes four routes,
+and they do not even share a stream: three print a reason to stdout and return 1 (a violation
+collected into the list, a structural `TypeError` the top-level handler prints, and a direct
+`print` + `return 1` in `main`), while the usage error prints to stderr and returns 2. A walk that
 enumerates spellings silently omits whichever route it did not think to name. Walk the script for
 the property rather than trusting this sentence, which is exactly the kind of hand-kept enumeration
 that goes stale. The one deliberate exception is `test_rejects_malformed_hooks_value`'s three
@@ -118,16 +119,18 @@ def test_check_portable_invocation_passes_on_shipped_hooks_json(script_name):
 
 def test_accepts_a_dollar_sign_path_that_resolves(tmp_path):
     """A `$` in a path is not itself the defect — `${CLAUDE_PLUGIN_ROOT}` is how this repo's own
-    convention writes every hook path, and it substitutes to a real directory. This is the upper
-    bound on the unresolvable-path rejections below: they must fire on a token that still names a
-    variable *after* substitution, never on the presence of a metacharacter.
+    convention writes the dispatcher path, and it substitutes to a real directory. This is the
+    upper bound on the unresolvable-path rejections below: they must fire on a token that still
+    names a variable *after* substitution, never on the presence of a metacharacter.
+
+    The command is the shipped convention's own shape — the `$` on the dispatcher token, a bare
+    relative name as the script argument — so what it certifies is a command that really runs.
+    `test_rejects_absolute_target_path` covers the argument that looks like this one but cannot.
     """
     hooks_dir = _hooks_dir(tmp_path)
     (hooks_dir / "dispatch.cmd").write_text("echo dispatcher\n")
     (hooks_dir / "script").write_text("#!/bin/bash\n")
-    hooks_json_path = _write_hooks_json(
-        hooks_dir, f'{DISPATCHER_CMD} "${{CLAUDE_PLUGIN_ROOT}}/hooks/script"'
-    )
+    hooks_json_path = _write_hooks_json(hooks_dir, f"{DISPATCHER_CMD} script")
 
     result = _run_check(hooks_json_path)
 
@@ -261,7 +264,7 @@ def test_rejects_dispatcher_missing_from_disk(tmp_path):
 
 @pytest.mark.parametrize(
     "dispatcher_token",
-    ['"$UNRESOLVED/dispatch.cmd"', '"*.cmd"', '"dispatch?.cmd"'],
+    ["$UNRESOLVED/dispatch.cmd", "*.cmd", "dispatch?.cmd"],
     ids=["unresolved-variable", "star-glob", "question-glob"],
 )
 def test_rejects_unresolvable_dispatcher_path(tmp_path, dispatcher_token):
@@ -274,17 +277,23 @@ def test_rejects_unresolvable_dispatcher_path(tmp_path, dispatcher_token):
     Isolated: a real `dispatch.cmd` and a real `script` both exist in `hooks/`, so a checker that
     resolved these tokens some other way would find files rather than a second violation. The one
     violation can only be the unresolvable dispatcher itself.
+
+    The assertion quotes the parametrized token inside the message, because the sibling
+    *target*-unresolvable violation says "the dispatcher's own directory" and so satisfies a bare
+    search for the word "dispatcher" — an assertion that passes on the neighbouring branch is not
+    evidence about this one.
     """
     hooks_dir = _hooks_dir(tmp_path)
     (hooks_dir / "dispatch.cmd").write_text("echo dispatcher\n")
     (hooks_dir / "script").write_text("#!/bin/bash\n")
-    hooks_json_path = _write_hooks_json(hooks_dir, f"{dispatcher_token} script")
+    hooks_json_path = _write_hooks_json(hooks_dir, f'"{dispatcher_token}" script')
 
     result = _run_check(hooks_json_path)
 
     assert result.returncode == 1, result.stdout + result.stderr
-    assert "dispatcher" in result.stdout, result.stdout
-    assert "cannot be resolved to a path on disk" in result.stdout, result.stdout
+    assert (
+        f"dispatcher {dispatcher_token!r} cannot be resolved to a path on disk" in result.stdout
+    ), result.stdout
     assert result.stdout.count("FAIL:") == 1, result.stdout
 
 
@@ -373,6 +382,34 @@ def test_rejects_unresolvable_target_path(tmp_path, target_token):
     assert result.returncode == 1, result.stdout + result.stderr
     assert "invoked script" in result.stdout, result.stdout
     assert "cannot be resolved to a path on disk" in result.stdout, result.stdout
+    assert result.stdout.count("FAIL:") == 1, result.stdout
+
+
+def test_rejects_absolute_target_path(tmp_path):
+    """A script argument that is already absolute cannot run, however cleanly it resolves. The
+    dispatcher joins whatever it is handed onto its own directory unconditionally
+    (`exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}"`), so an absolute argument becomes
+    `<hooks-dir>//absolute/path` and the invocation exits 127 — measured against the real
+    `run-hook.cmd`, not inferred from reading it.
+
+    Looking such a token up as written finds the real file, because `os.path.join` discards its
+    base for an absolute second component. So an existence check alone certifies a path the
+    dispatcher never reaches, and the absoluteness has to be judged before the lookup.
+
+    Isolated: the dispatcher and the target both exist on disk and the target is extensionless,
+    so the one violation can only be the argument's absoluteness.
+    """
+    hooks_dir = _hooks_dir(tmp_path)
+    (hooks_dir / "dispatch.cmd").write_text("echo dispatcher\n")
+    (hooks_dir / "script").write_text("#!/bin/bash\n")
+    hooks_json_path = _write_hooks_json(
+        hooks_dir, f'{DISPATCHER_CMD} "${{CLAUDE_PLUGIN_ROOT}}/hooks/script"'
+    )
+
+    result = _run_check(hooks_json_path)
+
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "is an absolute path after" in result.stdout, result.stdout
     assert result.stdout.count("FAIL:") == 1, result.stdout
 
 

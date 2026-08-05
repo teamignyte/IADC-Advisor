@@ -37,7 +37,17 @@ then the script argument resolved against the *dispatcher's* directory, matching
 `run-hook.cmd`'s own `SCRIPT_DIR="$(dirname "$0")"`), not against hooks.json's directory —
 those two directories only coincide because this repo's convention keeps them together.
 
-Those on-disk checks are unconditional. A token that still names a shell variable or a glob
+That join is unconditional at runtime — `exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}"` on Unix,
+`"%HOOK_DIR%%~1"` on Windows — so a script argument that is already absolute becomes
+`<dispatcher-dir>//absolute/path`, which cannot exist, and the invocation exits 127. An absolute
+script argument is therefore a rule 1 violation in its own right, decided before the file is
+looked for: `os.path.join` discards its base for an absolute second component, so looking the
+token up as written would confirm a file the dispatcher never reaches. The dispatcher token
+itself is the opposite case — it is what the shell execs directly, so an absolute path there is
+the convention, not a fault.
+
+Where an on-disk check cannot run, its reason is recorded as a violation instead; nothing
+reaches a pass by having the check skipped. A token that still names a shell variable or a glob
 after `${CLAUDE_PLUGIN_ROOT}` is substituted points at no filesystem path this check can name:
 it runs no shell, so it can neither confirm nor deny that anything is there. That is a
 violation in its own right, worded as such. Skipping the check instead would report the one
@@ -186,6 +196,17 @@ def plugin_root(hooks_json_path):
     return os.path.dirname(os.path.dirname(os.path.abspath(hooks_json_path)))
 
 
+def substitute_plugin_root(token, hooks_json_path):
+    """Expand `${CLAUDE_PLUGIN_ROOT}` in a command token, leaving the rest of it untouched.
+
+    Kept separate from the resolution below because two different questions are asked of the
+    substituted string: what absolute path it finally names, and whether it was *already*
+    absolute before any base directory was joined onto it. Only the first survives
+    `os.path.join`, which silently discards its base when the second component is absolute.
+    """
+    return token.replace("${CLAUDE_PLUGIN_ROOT}", plugin_root(hooks_json_path))
+
+
 def resolve_plugin_path(token, hooks_json_path, base_dir=None):
     """Resolve a command token to an absolute filesystem path.
 
@@ -199,7 +220,7 @@ def resolve_plugin_path(token, hooks_json_path, base_dir=None):
     quietly does not happen.
     """
     root = plugin_root(hooks_json_path)
-    resolved = token.replace("${CLAUDE_PLUGIN_ROOT}", root)
+    resolved = substitute_plugin_root(token, hooks_json_path)
     remaining = sorted({c for c in resolved if c in UNRESOLVED_MARKERS})
     if remaining:
         raise UnresolvablePath(
@@ -302,18 +323,24 @@ def check_invocation(tokens, hooks_json_path, where, command):
         # the segment already has a violation naming a worse problem. Either the first token is
         # a bare interpreter (rule 2 — where its argument lives on disk decides nothing), or the
         # dispatcher token could not be resolved, and the dispatcher's own directory is exactly
-        # what the script argument resolves against. Stated as an assertion rather than left to
-        # the comment, so that a later edit which reaches here with nothing on the list crashes
-        # loudly instead of printing PASS on an entry no rule was ever applied to.
-        assert violations, (
-            f"{where}: skipped the target's on-disk check without having named a reason"
-        )
+        # what the script argument resolves against. Both of those routes append their violation
+        # before reaching here, so the list below is never empty in practice; a later edit that
+        # arrives with nothing on it would be certifying an entry no rule was applied to, which
+        # is recorded as a violation of its own rather than allowed to print PASS. Deliberately
+        # not an `assert`: `python3 -O` strips assertions, turning the loudest failure available
+        # here back into the silent pass this check exists to remove.
+        if not violations:
+            violations.append(
+                f"{where}: internal error — the target's on-disk check was skipped without any "
+                f"reason having been named: {command!r}"
+            )
     else:
         # Verify the target actually exists, resolved against the *dispatcher's* own directory
         # (matching run-hook.cmd's own `SCRIPT_DIR="$(dirname "$0")"` at runtime) rather than
         # hooks.json's directory — those coincide here only because this repo keeps hooks.json
         # and its scripts together. A renamed on-disk file with hooks.json left unchanged is
-        # invisible to every check above and is the blind spot this assertion exists to close.
+        # invisible to every check above and is the blind spot this lookup exists to close. An
+        # argument that is already absolute never gets that join, so it is refused first.
         try:
             candidate = resolve_plugin_path(target, hooks_json_path, base_dir=dispatcher_dir)
         except UnresolvablePath as e:
@@ -324,7 +351,17 @@ def check_invocation(tokens, hooks_json_path, where, command):
                 f"the dispatcher's own directory is what it resolves against): {command!r}"
             )
         else:
-            if not os.path.isfile(candidate):
+            substituted = substitute_plugin_root(target, hooks_json_path)
+            if os.path.isabs(substituted):
+                violations.append(
+                    f"{where}: invoked script {target!r} is an absolute path after "
+                    f"${{CLAUDE_PLUGIN_ROOT}} substitution — the dispatcher joins its argument "
+                    f"onto its own directory unconditionally, so it would exec "
+                    f"{dispatcher_dir}/{substituted}, which cannot exist (rule 1: hand the "
+                    f"dispatcher a name relative to its own directory — usually just the "
+                    f"filename — or the real invocation exits 127): {command!r}"
+                )
+            elif not os.path.isfile(candidate):
                 violations.append(
                     f"{where}: invoked script {target!r} does not exist at {candidate} — "
                     f"hooks.json names a target that is not on disk (rule 1 blind spot: a "

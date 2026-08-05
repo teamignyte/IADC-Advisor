@@ -134,6 +134,14 @@ because only the dispatcher's own filename is what Claude Code's command string 
    rather than passed — the check refuses to certify a path it cannot resolve, on the grounds that
    "could not look" and "looked and found it" must not share an exit code.
 
+   Keep the script argument a **bare name relative to the dispatcher's own directory**, as in the
+   example above, rather than a `${CLAUDE_PLUGIN_ROOT}`-rooted path of its own. The dispatcher
+   joins whatever it is handed onto that directory unconditionally, so an absolute argument
+   becomes `<hooks-dir>//absolute/path` and the hook exits **127** — verified by running the real
+   dispatcher both ways. The portability check reports an absolute script argument as a rule 1
+   violation for that reason. The dispatcher path is the opposite case: it is what the shell execs
+   directly, so `${CLAUDE_PLUGIN_ROOT}`-rooted is exactly right there.
+
    The Unix and Windows halves are **not equivalent** in one respect: the Unix `exec bash ...
    "$@"` line forwards an unlimited number of arguments with quoting preserved, while the batch
    half hardcodes `%2 %3 %4 %5 %6 %7 %8 %9` — a cap of 8 forwarded arguments, silently truncated
