@@ -11,3 +11,6 @@ iadc-advisor/.mcp.json
 # OS / editor cruft
 .DS_Store
 Thumbs.db
+
+# Project-local git worktrees (see family CLAUDE.md, Working across repos)
+.worktrees/
