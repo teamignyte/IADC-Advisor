@@ -316,21 +316,23 @@ cache that can hold more than one installed version side by side** (step 1) — 
 path can land on a stale version and silently pass a file that's missing exactly what the
 version actually running just added, which is this exact failure with extra steps. The copy
 already open in this step is the only one guaranteed current. A field-label bullet is a line
-starting `- **Label:**` (any indent) in the template's data section — not a label merely
+starting `- **Label:**` (any indent) in the template's data lines — not a label merely
 mentioned in its prose: the *How to fill these in* paragraph names `` `- **Row:**` `` as an
 example of the duplication syntax, which doesn't make it a second `Row` field. Every such bullet
 the template carries should have a matching bullet in `docs/agents/advisor.md`'s **own data
-section** too — not just any matching line anywhere in the file: `advisor.md` keeps that same
+lines** too — not just any matching line anywhere in the file: `advisor.md` keeps that same
 *How to fill these in* paragraph (below, this step says so), so it can carry the same literal
 `` `- **Row:**` `` mention, which doesn't count there any more than it does in the template. A
-label with **no** matching line at all — not a placeholder, no line, nothing to show the user — is
-unset exactly like a standing placeholder: ask for it now, the same way, using the template's
-guidance for that field, and add the line where the template positions it relative to its
-neighbors. **Except** a nested field whose parent already holds the value that deletes it by
-design: `Office source of truth` holding the deliberate `none` answer — matched the same way
-`/iadc-advisor:office` matches it, **case-insensitively** (`none` / `None` / `NONE`), a bare
-`N/A` included — deletes `Row` and `Active prospect` below it, so their absence there is
-correct, not a gap — don't ask.
+label with **no matching bullet in `docs/agents/advisor.md`'s own data lines** — not a
+placeholder, no line, nothing to show the user — is unset exactly like a standing placeholder:
+ask for it now, the same way, using the template's guidance for that field, and add the line
+where the template positions it relative to its neighbors. **Except** a nested field whose parent
+already holds, **on its own data line**, the value that deletes it by design: `Office source of
+truth` holding the deliberate `none` answer there — not the word appearing anywhere else in the
+file, such as this same *How to fill these in* paragraph, which names `none` as that very answer —
+matched the same way `/iadc-advisor:office` matches it, **case-insensitively** (`none` / `None` /
+`NONE`), a bare `N/A` included — deletes `Row` and `Active prospect` below it, so their absence
+there is correct, not a gap — don't ask.
 
 **Keep the template's field labels verbatim** — `Audience`, `Appian version`,
 `Application` (+ `Nicknames`, `UUID`), `Escalation` (+ `Project lead`),
@@ -529,9 +531,9 @@ This is the payoff — confirm the configuration actually works, don't just writ
    all** — re-apply step 4's field-label comparison, the same way, to
    **`docs/agents/advisor.md`** specifically (not `advisor.local.md`, named two sentences below:
    it's partial **by design** — step 4 says so — and would diff as several gaps for a reason
-   that has nothing to do with this one). A template label with no matching line in
-   `docs/agents/advisor.md` at all is a gap — report it and go back and ask, the same as a
-   standing placeholder, not success. Where `Row` is present, also confirm `Active prospect`
+   that has nothing to do with this one). A template label with no matching bullet in
+   `docs/agents/advisor.md`'s own data lines is a gap — report it and go back and ask, the same as
+   a standing placeholder, not success. Where `Row` is present, also confirm `Active prospect`
    names one of its entries exactly; naming one that doesn't exist as a `Row` — stale from
    before `Row` existed, or from a rename — is the same gap, not a pass just because neither
    field is individually a placeholder. If `advisor.local.md` was written or renamed from
