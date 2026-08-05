@@ -27,7 +27,7 @@ unlisted extension is not evidence of safety.
 
 A hooks.json with no `type: command` entry anywhere (wrong file, emptied hooks, every entry
 missing or non-command) is its own failure: a checker that certifies a file it never actually
-validated is the "check that cannot fail" this whole epic exists to remove.
+validated would be a check that cannot fail, which is worse than no check at all.
 
 Usage: check-portable-invocation.py <path-to-hooks.json>
 

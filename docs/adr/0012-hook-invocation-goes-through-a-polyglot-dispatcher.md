@@ -95,8 +95,8 @@ project directory: their stdout is byte-identical.
 - **Write a bespoke dispatcher instead of adopting the reference's polyglot trick.** Rejected:
   the trick (a shared file that is simultaneously a valid no-op-prefixed bash script and a valid
   cmd.exe batch file) is the hard-won, already-tested part; re-deriving it risks a subtly wrong
-  variant no one has run on real Windows, which is precisely the failure mode this ticket exists
-  to close.
+  variant no one has run on real Windows — exactly the silent-failure-on-Windows outcome this
+  decision exists to avoid.
 - **Make the no-bash-found branch in `run-hook.cmd` fail loudly instead of `exit /b 0`
   silently.** This ADR's own opening names silent posture loss as the defect being fixed, and the
   reference's no-bash-found branch is silent by the same shape — considered and kept as-is
