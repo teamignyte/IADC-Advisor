@@ -1,14 +1,20 @@
 : << 'CMDBLOCK'
 @echo off
-REM Cross-platform dispatcher for iadc-advisor's hook scripts.
+REM Cross-platform dispatcher for a Claude Code plugin's hook scripts. Has no
+REM iadc-advisor-specific content — safe to copy verbatim into another
+REM plugin's hooks/ directory (see docs/hooks-dispatcher.md in this repo).
+REM
+REM Adapted from the superpowers plugin's reference dispatcher (MIT License,
+REM Copyright (c) 2025 Jesse Vincent). See the LICENSE file alongside this one.
 REM
 REM This file is a polyglot: cmd.exe and bash each read only the half meant
 REM for them and ignore the other.
 REM
 REM   - On Unix, Claude Code's shell (bash) reads this whole file as a bash
 REM     script. The block you are reading now is the operand of a no-op
-REM     heredoc ("bash -c" below), so bash skips straight past it to the
-REM     real Unix body after the CMDBLOCK marker.
+REM     heredoc fed to the ":" builtin at the top of this file (line 1), so
+REM     bash skips straight past it to the real Unix body after the
+REM     CMDBLOCK marker.
 REM   - On Windows, "hooks.json" declares "shell": "bash" so Claude Code
 REM     launches Git Bash to run the command line. Git Bash executing a
 REM     ".cmd" path hands it to Windows' own file-type association, which

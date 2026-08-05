@@ -1,6 +1,13 @@
 # Changelog — iadc-advisor
 
-## 1.5.1 — 2026-08-04
+Versioning, inferred from this history and now written down rather than left implicit: a release
+that changes what the plugin does or how/when it acts — a new gate, a new capability, a hook
+firing on different sources than before — is a **minor** bump. A release that only corrects or
+rewords the immediately preceding minor's own logic, with no further behavior change, is a
+**patch** (1.3.1, 1.4.1 below are both this: explicit fix-rounds on the minor just before them,
+each saying so and each ending in "no action needed").
+
+## 1.6.0 — 2026-08-04
 
 **Windows portability fix — the SessionStart hook.** `hooks/hooks.json` ran the plugin's only
 shipped executable as `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"`, with no `shell` key.
@@ -12,17 +19,28 @@ Windows launcher auto-prepends `bash` to any command containing `.sh`, colliding
 that already starts with `bash`.
 
 The hook script is now extensionless (`hooks/session-start`, moved with `git mv`), invoked
-through a new polyglot dispatcher (`hooks/run-hook.cmd`) instead of a bare `bash` prefix, and
-`hooks.json` declares `"shell": "bash"`. `hooks.json` also now declares
+through a new polyglot dispatcher (`hooks/run-hook.cmd`, adapted from the `superpowers` plugin's
+reference implementation, MIT-licensed — see `iadc-advisor/hooks/LICENSE`) instead of a bare
+`bash` prefix, and `hooks.json` declares `"shell": "bash"`. `hooks.json` also now declares
 `"matcher": "startup|clear|compact"` — previously undeclared, so the hook fired on every
 `SessionStart` source including `resume`/`fork`, duplicating the injected posture and project
 configuration into context on every resumed session; see
-`docs/adr/0012-hook-invocation-goes-through-a-polyglot-dispatcher.md` for the reasoning.
+`docs/adr/0012-hook-invocation-goes-through-a-polyglot-dispatcher.md` for the reasoning. This is a
+**minor** release, not a patch: the matcher changes when the hook fires, a behavior change in its
+own right and not a side-effect of the portability fix it shipped alongside.
 
-No change to what the hook injects — verified by diffing its stdout before and after against
-the same fixture project. **Action for an existing install:** none required; this only changes
-how the hook is invoked, and macOS/Linux clients saw no behavior change other than the narrower
-matcher.
+No change to what the hook injects — verified by diffing its stdout before and after against the
+same fixture project. **Action for an existing install:** none required; this only changes how
+and how often the hook is invoked. macOS/Linux clients see no behavior change other than the
+narrower matcher (no more duplicate posture/config injection on `resume`/`fork`).
+
+**Windows behavior is carried, not independently verified here.** No Windows host or `claude`
+binary that can run a real session is available in this environment. That the `.cmd`-via-Git-Bash
+file-type association behaves as documented, that `"shell": "bash"` produces an actionable
+install error when Git Bash is absent, and that the pre-fix command actually fails to parse under
+PowerShell and CMD as described above, are all carried from the reference implementation's own
+tested behavior and documentation (`docs/hooks-dispatcher.md`), not run and observed on this
+machine. Only the Unix code path and the static structure of `hooks.json` were.
 
 ## 1.5.0 — 2026-08-04
 

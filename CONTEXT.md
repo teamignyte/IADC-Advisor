@@ -48,7 +48,10 @@ skills produce. Git-ignored where `/setup`'s ignore rules were accepted; in that
 **Session hook**:
 The plugin's SessionStart hook — the replacement for the shipped `CLAUDE.md` (plugins
 cannot load one). Injects the operating posture plus `advisor.md`/`advisor.local.md`
-into every session in an app repo where the plugin is enabled.
+on `startup`, `clear`, and `compact` in an app repo where the plugin is enabled — deliberately
+**not** on `resume`/`fork`, whose transcript already carries whatever the preceding `startup`/
+`clear`/`compact` injected (see `docs/adr/0012`). Not "every session": a long-lived session that
+is only ever resumed, never cleared or compacted, gets this exactly once.
 
 **Dev docs**:
 Design docs about *building the plugin* — this `CONTEXT.md` and `docs/adr/`. They sit

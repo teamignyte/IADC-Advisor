@@ -33,6 +33,13 @@ Three things fix it together — one alone doesn't:
 3. **Invoke through a dispatcher file, not a bare interpreter prefix.** This is `run-hook.cmd`,
    described below.
 
+**`"shell": "bash"` has a version floor.** The reference implementation documents this key as
+supported since Claude Code **2.1.81**; an older CLI silently ignores it rather than erroring, so
+the Windows fix degrades to extensionless-filename-plus-dispatcher only — no Git-Bash routing —
+on a client running an older CLI. No floor is currently declared or enforced anywhere in this
+repo (`plugin.json` states none), so treat the Git-Bash routing above as conditional on a modern
+CLI, not unconditional, until this repo has a place to declare a minimum Claude Code version.
+
 ## `run-hook.cmd`: one file, two readers
 
 `run-hook.cmd` is a **polyglot**: the same bytes are a valid bash script and a valid Windows
@@ -54,9 +61,9 @@ exec bash "${SCRIPT_DIR}/${SCRIPT_NAME}" "$@"
 - **On Unix**, `bash` reads the whole file top to bottom. `: << 'CMDBLOCK'` is bash's no-op
   builtin (`:`) fed a heredoc; bash consumes everything up to the `CMDBLOCK` terminator as the
   heredoc's operand and discards it, so the entire `@echo off` section is invisible to it. Bash
-  then executes the three lines after the marker: resolve the dispatcher's own directory, take
-  the first argument as the script name, and `exec` the named script from that directory with
-  any remaining arguments.
+  then executes the four lines after the marker: resolve the dispatcher's own directory, take
+  the first argument as the script name, `shift` it off, and `exec` the named script from that
+  directory with any remaining arguments.
 - **On Windows**, `hooks.json` declares `"shell": "bash"`, so Claude Code launches Git Bash to
   run the command line. Git Bash executing a path ending in `.cmd` hands it to Windows' own
   file-type association rather than interpreting it itself — that association runs it through
@@ -79,9 +86,32 @@ because only the dispatcher's own filename is what Claude Code's command string 
 
 ## Adopting this in a second plugin
 
-1. Copy `iadc-advisor/hooks/run-hook.cmd` verbatim into the new plugin's `hooks/` directory —
-   it has no `iadc-advisor`-specific content.
-2. Name your hook script extensionless (`hooks/<name>`, not `hooks/<name>.sh`).
+1. Copy `iadc-advisor/hooks/run-hook.cmd` **and** `iadc-advisor/hooks/LICENSE` verbatim into the
+   new plugin's `hooks/` directory. The `.cmd` file has no `iadc-advisor`-specific content; the
+   `LICENSE` carries the MIT attribution for it (adapted from the `superpowers` plugin's
+   reference dispatcher, Copyright (c) 2025 Jesse Vincent) and must travel with it into whatever
+   ships to a client — see "License" below.
+
+   **Two silent, zero-stdout preconditions on `run-hook.cmd` itself**, verified directly (not
+   carried): it is the file Claude Code's shell names and execs on the command line, so unlike
+   the hook script it invokes, its own **executable bit** and **line endings** matter. Mode `644`
+   (not executable): `bash: .../run-hook.cmd: Permission denied`, exit **126**. CRLF line
+   endings: exit **127**. The heredoc terminator match on `CMDBLOCK` is *not* what breaks (`bash
+   -n` parses a CRLF copy cleanly, and `bash -x` shows the parser finding the marker and moving
+   into the Unix body regardless) — the actual damage is per-line: a blank line becomes a lone
+   `\r` token that bash tries to run as a command (`line N: $'\r': command not found`), and a
+   trailing `\r` glues onto the last word of the lines around it, turning `shift` into the
+   unrecognized command `shift\r` and, since that failed command is never trapped, leaving the
+   original argument un-shifted and passed a second time into a corrupted, `\r`-suffixed exec
+   path. `git mv`/`cp` preserve the executable bit; a `*.cmd text eol=lf` line in the new repo's
+   own `.gitattributes` (this repo's root carries the same line, plus one keyed to the hook
+   script's own path) is what protects the line endings on both platforms and survives a `git
+   subtree`-style copy.
+2. Name your hook script extensionless (`hooks/<name>`, not `hooks/<name>.sh`). Its own execute
+   bit does not matter — `run-hook.cmd`'s Unix half invokes it as `bash "<path>"`, an explicit
+   interpreter call that only needs read permission — but CRLF still breaks it, differently: a
+   `set -eu` (or any option-parsing line) ending in `\r` is `set -eu$'\r'`, an invalid option,
+   verified to exit **2** with the shell's own usage message on stderr, not a silent failure.
 3. Point `hooks.json`'s command at the dispatcher, passing the script name as an argument, and
    declare `"shell": "bash"`:
 
@@ -92,15 +122,32 @@ because only the dispatcher's own filename is what Claude Code's command string 
      "shell": "bash"
    }
    ```
+
+   The Unix and Windows halves are **not equivalent** in one respect: the Unix `exec bash ...
+   "$@"` line forwards an unlimited number of arguments with quoting preserved, while the batch
+   half hardcodes `%2 %3 %4 %5 %6 %7 %8 %9` — a cap of 8 forwarded arguments, silently truncated
+   beyond that, with no re-quoting. Fine for a hook invoked with a handful of static args; do not
+   assume it scales past that on Windows.
 4. Decide the `matcher` on its own merits for that hook — see this repo's
    [ADR 0012](adr/0012-hook-invocation-goes-through-a-polyglot-dispatcher.md) for the reasoning
    this plugin applied (`startup|clear|compact`, excluding `resume`/`fork` to avoid duplicate
    context injection); a hook with different content or purpose may reasonably choose
    differently.
-5. Adapt `tests/hooks/check-portable-invocation.py` (copy, don't share the file across repos —
-   the family placement rule is one authored copy per repo whose test suite guards it) to run
-   against the new plugin's `hooks.json`, and confirm it fails on the pre-fix invocation string
-   before trusting it to guard the fixed one.
+5. Copy `tests/hooks/check-portable-invocation.py` (copy, don't share the file across repos — the
+   family placement rule is one authored copy per repo whose test suite guards it) and point it
+   at the new plugin's `hooks.json`. It already takes that path as its one argument and needs no
+   adaptation beyond that — confirm it fails on the pre-fix invocation string before trusting it
+   to guard the fixed one.
+
+## License
+
+`run-hook.cmd` is adapted from the `superpowers` plugin's reference dispatcher, byte-identical on
+every executable line, and MIT-licensed (Copyright (c) 2025 Jesse Vincent). `iadc-advisor/hooks/`
+carries the attribution two ways: a `LICENSE` file alongside `run-hook.cmd`, and a header comment
+in the file itself pointing at it — both ship to a client (only `iadc-advisor/` ships; see this
+repo's `CLAUDE.md`), which is the point, since `docs/` does not. Carry both when adopting this
+into a second plugin, the same way `iadc-advisor/skills/appian/LICENSE` is carried for that
+vendored skill.
 
 ## What is and isn't verified from this repo
 

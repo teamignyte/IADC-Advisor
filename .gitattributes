@@ -7,5 +7,13 @@
 * text=auto eol=lf
 
 # The SessionStart hook must be LF: CRLF breaks a shebang script on Linux and in
-# Git-for-Windows bash.
+# Git-for-Windows bash. hooks/session-start is extensionless (ADR 0012) so *.sh no longer
+# matches it — named explicitly so the rule survives that rename. *.sh is kept for any future
+# shell script that does carry the extension.
 *.sh text eol=lf
+hooks/session-start text eol=lf
+
+# run-hook.cmd is a polyglot (docs/hooks-dispatcher.md): the same bytes are read by bash and by
+# cmd.exe. A CRLF copy dies with `line N: $'\r': command not found`, exit 127, zero output — the
+# bash half chokes on a carriage return cmd.exe would silently tolerate.
+*.cmd text eol=lf
