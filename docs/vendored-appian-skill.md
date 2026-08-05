@@ -171,6 +171,13 @@ git -C /tmp/appian-upstream rev-parse HEAD          # record this SHA
 4. **Run the checks in §4.**
 5. **Update this file** — the SHA, the date, the counts, and any patch that changed scope
    or became unnecessary.
+6. **Re-derive the command-count baseline.** `iadc-advisor/skills/appian/SKILL.md` carries an
+   entry in [`tests/skill_command_baseline.py`](../tests/skill_command_baseline.py), and a
+   refresh that adds or removes a shell command in it will fail the ratchet. Run
+   `python3 tests/test_skill_command_ratchet.py` and write the new number into the refresh
+   commit. **Do not edit the vendored tree to satisfy that guard** — its advice to invoke a
+   script instead is addressed to prose we author, and this tree is upstream's. The number
+   moving here records what upstream did; it is not a defect to fix locally.
 
 Do this on its own branch and review it alone. This refresh touched 26 files; mixed into
 feature work it is unreviewable.

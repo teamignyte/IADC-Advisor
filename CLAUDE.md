@@ -71,6 +71,13 @@ rename a skill, update **`which-skill`** (the router). Never put a per-project v
 state is written by `/setup` into the client repo. Record hard-to-reverse decisions as ADRs
 in `docs/adr/`.
 
+**Shell commands written into skill prose are ratcheted.** `tests/skill_command_baseline.py`
+records a count per skill file and the suite fails when one moves either way — up means write a
+script instead, down means lower the baseline in the same commit. That file documents the
+counting method, what it deliberately misses, and how to update it. **This repo authors the
+guard; `IADC-Tester` carries a mirror of `tests/test_skill_command_ratchet.py`, so a fix belongs
+here first and travels there in the same change.** Nothing mechanical binds the two copies.
+
 **Never declare `skills` or `hooks` in `iadc-advisor/.claude-plugin/plugin.json`.** Both are
 auto-discovered from `skills/` and `hooks/hooks.json`; declaring them as well registers the same
 paths twice and the plugin **installs successfully but loads nothing** — `✘ failed to load —
