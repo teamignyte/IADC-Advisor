@@ -1,5 +1,29 @@
 # Changelog — iadc-advisor
 
+## 1.5.1 — 2026-08-04
+
+**Windows portability fix — the SessionStart hook.** `hooks/hooks.json` ran the plugin's only
+shipped executable as `bash "${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh"`, with no `shell` key.
+This hook is the plugin's replacement for a shipped `CLAUDE.md` (plugins cannot load one), so a
+Windows client whose shell can't parse that command silently received no operating posture at
+all: PowerShell reads the leading quoted path as a string expression and errors on the next
+bareword; CMD strips the outer quotes once the path contains a metacharacter; and Claude Code's
+Windows launcher auto-prepends `bash` to any command containing `.sh`, colliding with a command
+that already starts with `bash`.
+
+The hook script is now extensionless (`hooks/session-start`, moved with `git mv`), invoked
+through a new polyglot dispatcher (`hooks/run-hook.cmd`) instead of a bare `bash` prefix, and
+`hooks.json` declares `"shell": "bash"`. `hooks.json` also now declares
+`"matcher": "startup|clear|compact"` — previously undeclared, so the hook fired on every
+`SessionStart` source including `resume`/`fork`, duplicating the injected posture and project
+configuration into context on every resumed session; see
+`docs/adr/0012-hook-invocation-goes-through-a-polyglot-dispatcher.md` for the reasoning.
+
+No change to what the hook injects — verified by diffing its stdout before and after against
+the same fixture project. **Action for an existing install:** none required; this only changes
+how the hook is invoked, and macOS/Linux clients saw no behavior change other than the narrower
+matcher.
+
 ## 1.5.0 — 2026-08-04
 
 **HIGH severity fix.** `/iadc-advisor:setup`'s credential-write gate could be bypassed by a
