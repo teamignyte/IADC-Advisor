@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+# Narrower than the family reference workflow (IADC-Graph-Plugin's ci.yml), which declares no
+# permissions block and no persist-credentials override: this repo's default GITHUB_TOKEN scope
+# is write (IV-402), so both lines are deliberate least-privilege, not drift to be synced away.
 permissions:
   contents: read
 
