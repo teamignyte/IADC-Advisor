@@ -197,15 +197,10 @@ grep -rln "Project configuration" \
 # E. Namespaced addresses only — no bare reference to any Advisor skill, or to iadc-graph,
 #    survives in the vendored tree (Patch A, B; IV-362 amended both to require this). Every
 #    skill name including appian itself, plus iadc-graph (no longer a local directory to
-#    list). The trailing class — not \b — excludes a following ':' on purpose: \b matches at
-#    a colon too, which made this fire identically on bare /iadc-graph and on the correct,
-#    required /iadc-graph:iadc-graph (the one reference CLAUDE.md warns looks like a typo and
-#    isn't), with byte-identical -o output either way. ':' is the exclusion doing that real
-#    work. The same class also excludes '-' and '/', which narrows E below plain \b with zero
-#    current instances either way: a hyphenated compound (/orient-style) or a path-like
-#    continuation (/orient/…) no longer fires, and ':' additionally drops a legitimate prose
-#    colon (/orient: the router) that old E caught. Not worth widening for either — both stay
-#    latent unless a future reference actually needs them.
+#    list). The trailing class — not \b — excludes a following ':', '-', and '/': \b matches
+#    at a colon too, so without this a required /iadc-graph:iadc-graph would false-fire
+#    identically to a bare /iadc-graph. See "Check E" below for what this protects against,
+#    why none of it is live in this tree yet, and how to tell if that changes.
 grep -rnoE "(^|[^:[:alnum:]/])/($(ls iadc-advisor/skills | paste -sd'|')|iadc-graph)([^:[:alnum:]/-]|$)" \
   iadc-advisor/skills/appian/
 
@@ -264,6 +259,27 @@ works", not "`getObjectDependents` is live" — §1's own paraphrase above is al
 quote of it. The posture-heading count above is the part of Patch D that *is* safe to assert this
 way; the carve-outs still need the line-by-line read on every refresh that the rest of this
 section exists to make unnecessary.
+
+**Check E — the trailing class is insurance, not a current repair.** `iadc-graph` occurs zero
+times under `iadc-advisor/skills/appian/`, so none of the three exclusions in the trailing class —
+`:`, `-`, `/` — is catching anything at check E's actual scope today. All 25 places a plain `\b`
+would additionally match `/iadc-graph` sit in files check E never reads: `hooks/posture.md` (1),
+`README.md` (3), `CHANGELOG.md` (4), and six non-vendored skills' `SKILL.md` files — `orient` (2),
+`pressure-test` (2), `setup` (5), `to-diagram` (1), `to-spec` (3), `which-skill` (4). No hyphenated
+(`/orient-style`) or path-continuation (`/orient/…`) false positive exists in the appian tree
+either.
+
+Each exclusion is forward-looking. `:` protects the correct, required `/iadc-graph:iadc-graph`
+citation (the one reference CLAUDE.md warns looks like a typo and isn't) from being flagged as
+bare, and also lets a legitimate prose colon (`/orient: the router`) pass that plain `\b` would
+have caught as a false positive. `-` and `/` protect a hyphenated compound or a path-like
+continuation from the same false-positive fate. None of the three is worth reverting to plain `\b`
+over — the appian tree doesn't currently contain what any of them would misfire on.
+
+Observable trigger: re-run check E's command with `\b` substituted for the trailing class
+`([^:[:alnum:]/-]|$)`, over the same tree (`iadc-advisor/skills/appian/`). Today the two outputs
+are byte-identical (both empty). The day they diverge, one of these exclusions has started doing
+real work — or blocking a real false-fire — in this tree, and this note needs a fresh scope check.
 
 Then the real gate — a plugin that validates can still be broken:
 
