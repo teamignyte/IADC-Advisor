@@ -179,71 +179,57 @@ feature work it is unreviewable.
 
 ## 4. Verification — run all of these
 
-Line-by-line review misses silent reverts. These encode §1 as assertions.
+Line-by-line review misses silent reverts. §1 is encoded as assertions in
+[`tests/test_vendored_appian_skill.py`](../tests/test_vendored_appian_skill.py) (IV-396) — run
+them with `python3 -m pytest tests -v`. The commands used to live here as prose a maintainer ran
+by hand; what follows is what each check protects and why, which the test file's own docstrings
+and comments carry too but a refresher reading this doc shouldn't have to go find them to get.
 
-```bash
-# A. No literal Appian version as configuration, anywhere.
-grep -rn "Appian Version:\*\* *[0-9]" iadc-advisor/skills/appian/
-grep -rn 'VERSION="2[0-9]' iadc-advisor/skills/appian/
+Before IV-396: 8 lettered checks, 10 assertions (A1, A2, B, C, D, E, F1, F2, G, CRLF). After: 7
+checks, 9 assertions — B and G merge into one citation-resolution check derived from the tree
+itself, described under B/G below, which is why the count drops by one without dropping any
+coverage. No check was deleted outright: every remaining letter still has a fixture in the test
+module that violates it and is asserted to turn the check red.
 
-# B. No citation to a file that does not exist.
-grep -rn "rich-text-icon-aliases\|node-types\.md\|display-conversion-\|/ui-guidelines/\|/conversion-guidelines/\|/my-docs/" iadc-advisor/
+**A. No literal Appian version as configuration, anywhere.** Two assertions: no hardcoded
+`**Appian Version:** N` declaration, and no hardcoded `VERSION="2N…"` bash variable, anywhere
+under the vendored tree.
 
-# C./D. The posture block survived, and the six config-readers still read the ambient block.
-grep -c '^## Posture: read-only / advisory' iadc-advisor/skills/appian/SKILL.md   # expect 1
-grep -rln "Project configuration" \
-  iadc-advisor/skills/{appian,context7,office,orient,pressure-test,setup}/SKILL.md | wc -l   # expect 6
+**B/G. No citation to a file that does not exist.** Checks B and G are unified into one: every
+`.md` citation found anywhere in the vendored tree must resolve to a real file, resolved relative
+to the citing file's own directory, relative to the tree root, or — for a bare filename — by
+basename anywhere else in the tree. B used to be a six-string blocklist
+(`rich-text-icon-aliases`, `node-types.md`, `display-conversion-`, `/ui-guidelines/`,
+`/conversion-guidelines/`, `/my-docs/`) that could only catch a citation already known bad; G
+generalized past Patch C's specific `guidelines/` prefix (which "Design Guidelines" prose and
+"logic-guidelines" compounds would have false-fired on) to every `*.md` citation actually
+resolving to a real file, but only recognized a citation written with a literal `references/` or
+`guidelines/` prefix. Neither caught a citation written relative to the citing file's own
+directory, or as a bare filename with no prefix at all — which is exactly the shape of two live
+defects IV-396 measured: `references/sail-verification-checkpoint.md:180` cites
+`components/picker-field-users-instructions.md`, and
+`references/interface-generation-checklist.md:127` cites `icon-aliases.md`; neither file exists
+anywhere in the tree. Repairing those two is Patch B's job, not this check's — see §5. The test
+module tracks each individually so a citation reintroduced or newly broken anywhere else in the
+tree still fails the suite.
 
-# E. Namespaced addresses only — no bare reference to any Advisor skill, or to iadc-graph,
-#    survives in the vendored tree (Patch A, B; IV-362 amended both to require this). Every
-#    skill name including appian itself, plus iadc-graph (no longer a local directory to
-#    list). The trailing class — not \b — excludes a following ':', '-', and '/': \b matches
-#    at a colon too, so without this a required /iadc-graph:iadc-graph would false-fire
-#    identically to a bare /iadc-graph. See "Check E" below for what this protects against,
-#    why none of it is live in this tree yet, and how to tell if that changes.
-grep -rnoE "(^|[^:[:alnum:]/])/($(ls iadc-advisor/skills | paste -sd'|')|iadc-graph)([^:[:alnum:]/-]|$)" \
-  iadc-advisor/skills/appian/
-
-# F. Per-project state is advisor.md, never the old project.md name (Patch A; IV-361).
-#    Word-bounded so it doesn't fire on subproject.md/myproject.md. Paired with a positive
-#    count so a refresher picking a third wrong name (or dropping the mention) can't pass
-#    just by avoiding the literal string "project.md".
-grep -rn '\bproject\.md\b\|\bproject\.local\.md\b' iadc-advisor/skills/appian/   # must return nothing
-grep -rl 'advisor\.md' iadc-advisor/skills/appian/ | wc -l                      # expect 3
-
-# G. No dangling references/ or guidelines/ citation anywhere in the tree — generalizes past
-#    Patch C's specific guidelines/ prefix (which "Design Guidelines" prose and
-#    "logic-guidelines" compounds would have false-fired on) to every *.md citation actually
-#    resolving to a real file.
-grep -rhoE "(references|guidelines)/[A-Za-z0-9._/-]+\.md" iadc-advisor/skills/appian/ | sort -u | \
-  while read -r p; do [ -e "iadc-advisor/skills/appian/$p" ] || echo "dangling: $p"; done
-
-# Hygiene: LF only (CRLF makes every future diff unreadable).
-git ls-files iadc-advisor/skills/appian | while read -r f; do
-  file "$f" | grep -q CRLF && echo "CRLF: $f"
-done
-```
-
-**A, B, E, G and the CRLF check must return nothing. F's first line must return nothing too; its
-second line prints `3`. The posture check must print 1, the config-readers check 6.**
-
-The config-readers glob names each of the six skills explicitly rather than globbing
-`skills/*/SKILL.md` — `iadc-graph` was dropped because **it is not vendored here**: there is no
-`iadc-advisor/skills/iadc-graph/` directory to glob any more, since it ships from
-`IADC-Marketplace` as a separate plugin dependency (§ "The `iadc-graph` skill is no longer
-vendored here" in the workshop `CLAUDE.md`). That is the whole reason — the mirror's own content
-is beside the point, since this glob never reaches it either way, and it is a file this repo does
-not own (`IADC-Marketplace/docs/mirrored-iadc-graph-skill.md` owns its refresh schedule and its
-own checks; do not assert a fact about its current content here — it drifts on its own timeline,
-not this doc's). `setup` was added because it both writes and reads back `advisor.md`'s
-values. A stale literal name in that list fails **on stderr, not in the count** — `ugrep`/`grep`
-warns `No such file or directory` there, and `wc -l` still returns a number from stdout alone.
-That warning already reaches the terminal with no extra flag; **never run this as
-`… 2>&1 | wc -l`** to "make it visible" — that folds the warning text itself into the piped
-stream, so every stale name adds a line to the count instead of removing a real hit. One stale
-name turns the true 5 back into the expected 6; two stale names (with `setup` also missing) turns
-4 real hits + 2 folded warnings into 6 again — a doubly-broken glob silently matching the same
-expectation. Read stderr as its own line, never merge it into what `wc -l` counts.
+**C./D. The posture block survived, and the six config-readers still read the ambient block.**
+Two assertions: the posture heading appears exactly once in `SKILL.md`, and each of
+`appian`, `context7`, `office`, `orient`, `pressure-test`, `setup` has a `SKILL.md` that mentions
+"Project configuration". The six are named explicitly rather than derived by globbing
+`skills/*/SKILL.md` — `iadc-graph` is excluded because **it is not vendored here**: there is no
+`iadc-advisor/skills/iadc-graph/` directory any more, since it ships from `IADC-Marketplace` as a
+separate plugin dependency (§ "The `iadc-graph` skill is no longer vendored here" in the workshop
+`CLAUDE.md`). That is the whole reason — the mirror's own content is beside the point, since this
+check never reaches it either way, and it is a file this repo does not own
+(`IADC-Marketplace/docs/mirrored-iadc-graph-skill.md` owns its refresh schedule and its own
+checks; do not assert a fact about its current content here — it drifts on its own timeline, not
+this doc's). `setup` was added because it both writes and reads back `advisor.md`'s values. The
+old grep-based version of this check failed **on stderr, not in the count**: a stale literal name
+in the list made `grep` warn `No such file or directory` while `wc -l` still returned a number
+computed from stdout alone, so one stale name silently turned the true 5 back into the expected
+6. The test module removes that failure mode structurally by asserting on each of the six names
+individually — a missing or renamed skill is reported by name, not folded into a count.
 
 **Deliberately left unasserted:** Patch D's two carve-outs (`getObjectDependents` is live;
 accessibility audits are in scope) have no check of their own — not because a keyword grep is
@@ -259,6 +245,14 @@ works", not "`getObjectDependents` is live" — §1's own paraphrase above is al
 quote of it. The posture-heading count above is the part of Patch D that *is* safe to assert this
 way; the carve-outs still need the line-by-line read on every refresh that the rest of this
 section exists to make unnecessary.
+
+**E. Namespaced addresses only** — no bare reference to any Advisor skill, or to iadc-graph,
+survives in the vendored tree (Patch A, B; IV-362 amended both to require this). Every skill name
+including `appian` itself, plus `iadc-graph` (no longer a local directory to list). The trailing
+class — not `\b` — excludes a following `:`, `-`, and `/`: `\b` matches at a colon too, so without
+this a required `/iadc-graph:iadc-graph` would false-fire identically to a bare `/iadc-graph`. See
+below for what this protects against, why none of it is live in this tree yet, and how to tell if
+that changes.
 
 **Check E — the trailing class is insurance, not a current repair.** `iadc-graph` occurs zero
 times under `iadc-advisor/skills/appian/`, so none of the three exclusions in the trailing class —
@@ -276,10 +270,25 @@ have caught as a false positive. `-` and `/` protect a hyphenated compound or a 
 continuation from the same false-positive fate. None of the three is worth reverting to plain `\b`
 over — the appian tree doesn't currently contain what any of them would misfire on.
 
-Observable trigger: re-run check E's command with `\b` substituted for the trailing class
+Observable trigger: re-run check E's pattern with `\b` substituted for the trailing class
 `([^:[:alnum:]/-]|$)`, over the same tree (`iadc-advisor/skills/appian/`). Today the two outputs
 are byte-identical (both empty). The day they diverge, one of these exclusions has started doing
 real work — or blocking a real false-fire — in this tree, and this note needs a fresh scope check.
+
+**F. Per-project state is `advisor.md`, never the old `project.md` name** (Patch A; IV-361). F1 is
+word-bounded so it doesn't fire on `subproject.md`/`myproject.md`. F2 is paired with a positive
+count so a refresher picking a third wrong name (or dropping the mention) can't pass just by
+avoiding the literal string `project.md` — but F2's word boundary has to exclude `-` as well as
+alphanumerics (IV-396): a plain `\b` still matches inside `iadc-advisor.md`, since a regex word
+boundary treats `-` as a non-word character exactly like a space — the same `\b`-matches-at-a-
+colon property noted for check E above, here on a hyphen instead of a colon. Measured directly:
+baseline count 3, wipe the one real hit → 2, then add an unrelated `…/docs/iadc-advisor.md…`
+mention → a plain `\b` bounces the count back to 3, restored by an occurrence other than the one
+it targets, while the hyphen-excluding form correctly stays at 2.
+
+**Hygiene: LF only** — CRLF makes every future diff unreadable. Scoped to every file `git` tracks
+under the vendored prefix, not just `*.md`, so `LICENSE` and `registry/components-registry.json`
+are covered too.
 
 Then the real gate — a plugin that validates can still be broken:
 
