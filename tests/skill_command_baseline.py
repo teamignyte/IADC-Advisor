@@ -11,7 +11,10 @@ The counter, in test_skill_command_ratchet.py, works in four steps:
 
 1. Collect every code span. Three kinds, matching the three ways markdown carries code: one span
    per non-blank line of a fenced block, one per non-blank line of an indented code block, and
-   one per backtick-delimited inline span in the prose around them.
+   one per backtick-delimited inline span in the prose around them. Backslash-continued lines are
+   the one exception to line-per-line: they are folded back into the single command they spell,
+   so the argument line of a wrapped invocation is not a second command headed by its first
+   argument.
 2. Strip a leading "$ " or "> " prompt, then split on &&, ||, | and ; outside quotes, so a
    pipeline counts once per stage and appending one is not free.
 3. Keep a segment only if it has two or more whitespace-separated tokens -- a lone word in
@@ -40,14 +43,20 @@ A slash-command skill invocation (`/iadc-advisor:reconcile <TICKET-KEY>`) is cla
 It is not a shell command, and delegating to a skill is the move family ADR 0011 asks for rather
 than the one it discourages -- counting it would put a cost on the right answer.
 
-WHAT IS OUT OF SCOPE, ALL OF IT DELIBERATE
-------------------------------------------
-Four boundaries. Each is a place command prose could be put without moving a number, and each is
-named here rather than left to be discovered:
+WHAT IS NOT COUNTED
+-------------------
+The rule above is the durable statement, and this section is worked examples of it rather than a
+closed set. Every segment the extractor produces is counted on sight (a ./ path), handed to
+LEXICON, or not recognised as an invocation at all; and whatever the extractor never produces is
+never seen. A place the method does not reach follows from that rule, so check a new one against
+the rule rather than against this list.
 
-- **Subdirectories.** references/ under skills/appian/ and skills/to-diagram/ holds bundled
-  reference material -- Appian SAIL samples and mermaid diagram syntax -- whose code blocks are
-  not shell commands and would swamp the signal by roughly six hundred segments.
+- **Subdirectories.** Only markdown a skill directory holds *directly* is read. references/ under
+  skills/appian/ and skills/to-diagram/ holds bundled reference material -- Appian SAIL samples
+  and mermaid diagram syntax, not shell -- and volume is the second reason: those files carry an
+  order of magnitude more invocation-shaped segments than the whole counted set does. (72 files,
+  1,324 segments against a counted total of 120, measured 2026-08-05 with this counter. Only the
+  order of magnitude is durable; the pair behind it is a snapshot.)
 - **Files that are not .md.** A skill directory also holds licences, JSON templates and scripts.
   Those are data and code, not prose a model reads as instructions, so they are not counted --
   but a .txt full of commands beside a SKILL.md would not be seen either.
@@ -55,10 +64,25 @@ named here rather than left to be discovered:
   sentence with no backticks around it has never been counted, at any indentation. This includes
   a line indented under a list item, which CommonMark renders as continuation text rather than as
   a code block; only a line indented four columns past its list item's own content column is code.
+- **Two code forms the extractor does not read.** A tab-indented code block and a blockquoted
+  code block are both code to CommonMark and prose to this counter: indentation is measured in
+  spaces, and a `>`-led line has no leading spaces to measure and is not recognised as a fence.
+  Neither shape occurs in this tree today -- zero tab-led lines and zero blockquoted code lines
+  across the counted files -- so nothing is being missed yet, and both are latent.
+- **Continuations and multi-line inline spans, which fold several lines into one command.** A
+  backslash-continued line is part of the command above it rather than a command of its own,
+  which is how a shell reads it too, so a fenced block written entirely as continuations counts
+  once. Separators survive the fold: the working form of three chained commands, a trailing
+  backslash plus `&&`, still counts three -- only the form a shell would itself run as a single
+  command counts as one. A multi-line inline span is likewise one span however many commands it
+  spells.
 - **Head shapes outside the four above.** A head led by punctuation (`#`, `--flag`, `<x>`) or a
-  plain capitalised word with no separator in it (`Test site URL`) is not read as an invocation at
-  all. Neither form appears as a real command anywhere in this tree today, and admitting them
-  would pull in several dozen table cells and output-template lines that are not commands.
+  plain capitalised word with no separator in it (`Test site URL`) is not read as an invocation.
+  No such head is itself a command name here -- but a segment led by one can still carry a
+  command, and three do: the `case`-branch fallbacks in skills/appian/SKILL.md read
+  `"") echo "..." >&2`, and that echo goes uncounted behind the `"")`. Admitting these shapes
+  would pull in 279 segments under 99 distinct heads -- output-template lines, mermaid statements,
+  box-drawing characters, placeholders and flag fragments. The trade is deliberate; it is not free.
 
 WHAT THE NUMBER MEANS, AND WHAT IT DOES NOT
 -------------------------------------------
