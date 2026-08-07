@@ -1,6 +1,9 @@
 # Domain Docs
 
-How the engineering skills should consume this repo's domain documentation when exploring the codebase.
+How the engineering skills should consume this repo's domain documentation when exploring the
+codebase. This is the repo-local specialization of the umbrella's `docs/agents/domain.md` — the
+family-wide rules (one term one owner, two-tier ADR precedence) live there and are not restated
+here.
 
 ## Before exploring, read these
 

@@ -27,38 +27,22 @@ client-facing distribution repo, which lists this plugin alongside `iadc-tester`
 ## Working here
 
 - **Develop the plugin** by editing files under `iadc-advisor/`.
-- **Dogfood / test as a client sees it** in a scratch client repo — create one if you
-  don't have it (`mkdir ../iadc-dogfood && git -C ../iadc-dogfood init`), a sibling of
-  this repo, outside it. Add the **family catalog** as a marketplace
-  (`claude plugin marketplace add <path-to-IADC-Marketplace>` — a local path while you are
-  iterating, the git URL to test what a client gets), then from `../iadc-dogfood` run
-  `claude plugin install iadc-advisor@ignyte --scope project`, open Claude there, and run
-  `/iadc-advisor:setup`. The session hook, namespaced skills, and per-project state behave exactly as they
-  will for the client — including `iadc-graph` arriving as a dependency, which is the part a
-  local edit here can no longer fake. After editing the plugin, refresh **from
-  `../iadc-dogfood`** (project scope is keyed to the working directory) with
-  `claude plugin marketplace update ignyte && claude plugin update iadc-advisor@ignyte --scope project`
-  and start a fresh session.
-  > The catalog fetches this plugin from **`teamignyte/IADC-Advisor`**, not from your working
-  > tree, so an uncommitted edit will not appear in the dogfood repo. Push first, then refresh.
+- **Dogfood / test as a client sees it** in a scratch client repo — the loop (marketplace add,
+  install, refresh-after-edit, and its push-first gotcha) is the runbook
+  [docs/dogfooding.md](docs/dogfooding.md).
 - **Never install or enable `iadc-advisor` in this repo itself** — its SessionStart
   hook would inject the advisory-architect posture ("you do not write code") into every
   maintainer session. Dogfood only in the scratch repo. (Since the restructure, the
-  product's skills no longer auto-load anywhere in this repo — expected.)
+  product's skills no longer auto-load anywhere in this repo — expected. Third-party and
+  family plugins are also disabled in dev sessions at user level — umbrella ADR 0013 — so
+  enabling it *per-project here* is the one path left to that mistake.)
 - **The advisory posture holds even in the workshop:** this repo produces docs,
   decisions, and configuration — it does not build client Appian objects.
 
 ## Pushing
 
-Authentication is a **per-device SSH key**, configured at the machine level rather than in this
-repo, so a fresh clone inherits it: an `~/.ssh/config` host alias carrying the work key, plus a
-global URL rewrite that routes `teamignyte` URLs through it. Remotes stay canonical HTTPS and are
-routed over SSH transparently, so a plain `git push` works with no flags.
-
-**There is no PAT and no credential store** — they were retired and the tokens revoked. So a failed
-push is always machine configuration, never an expired credential: check the key, the host alias,
-and that `github.com` is in `known_hosts`. Rationale and setup are in the family's
-[ADR 0007](https://github.com/teamignyte/IADC/blob/main/docs/adr/0007-per-device-ssh-keys-key-by-org-identity-by-directory.md).
+Per-device SSH key at machine level (family ADR 0007); the umbrella `ship` skill carries the
+setup and the failed-push diagnosis. There is no PAT and no credential store.
 
 ## Extending the plugin
 
