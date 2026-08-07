@@ -114,9 +114,10 @@ tracking is a family concern, so the CLI, its convention docs and the triage voc
 the umbrella (family
 [ADR 0004](https://github.com/teamignyte/IADC/blob/main/docs/adr/0004-family-work-tracked-in-jira-iv.md)).
 
-Implementation *plans* still live here as files: `docs/superpowers/plans/` (committed) and
-task-by-task progress in `.superpowers/sdd/` (gitignored working notes). Those are plans, not
-tickets.
+`docs/superpowers/plans/` is historical — plans now live at `~/.claude/plans/<slug>.md`, never
+committed to a repo (the umbrella's `dev-cycle` skill). Per-task working artifacts replace the
+former `.superpowers/sdd/` with `.scratch/<feature>/`, that skill's convention. Those are plans,
+not tickets.
 
 ### Domain docs
 

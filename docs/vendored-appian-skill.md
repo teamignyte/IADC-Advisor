@@ -328,7 +328,7 @@ claude plugin validate iadc-advisor     # necessary, NOT sufficient
 ```
 
 Install into a scratch repo and confirm `claude plugin list` reports **`✔ enabled`**. See
-the dogfooding recipe in the workshop `CLAUDE.md`.
+the dogfooding recipe in `docs/dogfooding.md`.
 
 ---
 
