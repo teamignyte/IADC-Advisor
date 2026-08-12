@@ -330,7 +330,7 @@ This group has dependencies:
   - [ChildGroup1]
   - [ChildGroup2]
   - [...]
-- [N] direct members
+- [N] direct members (not automatically checked — no graph counterpart; needs a build tool)
 - May be referenced in GROUP constants (will become invalid references — manual verification
   needed; not automatically checked, same as security expressions below)
 - May be used in security expressions (manual verification needed)
@@ -354,7 +354,7 @@ To confirm, type: DELETE [GroupName]
 You are about to DELETE group "[GroupName]".
 
 This group has:
-- [N] direct members
+- [N] direct members (not automatically checked — no graph counterpart; needs a build tool)
 - May be referenced in GROUP constants (will become invalid references — manual verification
   needed; not automatically checked, same as security expressions below)
 - May be used in security expressions (manual verification needed)

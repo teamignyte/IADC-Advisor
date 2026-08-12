@@ -567,7 +567,7 @@ These show what users see after you complete internal checks. Do NOT show "Step 
 **Your internal process (NOT shown to user):**
 ```
 1. Receive request: "Delete PMS Status record type"
-2. Verify: find_nodes(session_id, query="PMS Status", kind="recordType") → exists, resolve node id
+2. Verify: find_nodes(session_id, query="PMS Status", kind="artifact", object_type="recordType") → exists, resolve node id
 3. Extract: name, type, app context
 4. Identify: Delete record type → Expression + Structural
 5. Check expression deps: reachable(node_id, direction="in") → 47 dependents
@@ -627,7 +627,7 @@ What would you like to do? (1/2/3)
 **Your internal process (NOT shown to user):**
 ```
 1. Receive request: "Delete constant CM_CASE_CONST"
-2. Verify: find_nodes(session_id, query="CM_CASE_CONST", kind="constant") → exists, resolve node id
+2. Verify: find_nodes(session_id, query="CM_CASE_CONST", kind="artifact", object_type="constant") → exists, resolve node id
 3. Extract: name (CM_CASE_CONST), type (RECORD_TYPE), value (uuid)
 4. Identify: Delete constant → Expression deps
 5. Check expression deps: reachable(node_id, direction="in") → 2 dependents (1 application, 1 rule)
@@ -721,7 +721,7 @@ Structural dependencies (from Step 6 structural checks):
 [If any views:] ❌ N record views: [list names]
 [If any actions:] ❌ N record actions: [list names]
 [If any data:] ❌ N existing data records
-[If zero structural dependencies:] ✅ No relationships, views, actions, or data records
+[If zero relationships, views, and actions found:] ✅ No relationships, views, or actions found (checked automatically) — row data not automatically checked (no graph counterpart; needs a build tool)
 
 Database impact:
 ⚠️ The database table [TABLE_NAME] will be PRESERVED
