@@ -26,11 +26,11 @@ carries an Appian username, password, or tenant URL any more.
 
 **The Application UUID is now always a per-project value the user provides** — the pattern
 Tester ADR 0001 already established ("the application UUID, recorded in config" rather than
-looked up per run). `/setup` tells the user where to find it if they don't have it to hand
-(Appian Designer's address bar and General properties panel), and finishes without it if they
-still don't, the same deliberately-unconfigured path `/setup` already used for a
-placeholder-valued `.mcp.json` — now generalized to the ordinary case rather than an exceptional
-one.
+looked up per run). `/setup` asks the user for it and says why there is no lookup — this plugin
+holds no live connection to the client's Appian tenant to resolve it from — and finishes without
+it if the user still doesn't have it to hand, the same deliberately-unconfigured path `/setup`
+already used for a placeholder-valued `.mcp.json` — now generalized to the ordinary case rather
+than an exceptional one.
 
 **This closes [ADR 0003](0003-store-application-identity-in-graph-skill.md)'s own live-lookup
 exception.** That ADR — already superseded by ADR 0010 and marked historical — recorded the UUID
@@ -82,11 +82,12 @@ defect, not diligence."
   graph, some don't.** `record_model` gives a record type's relationships/views/actions in one
   call, and "contained objects of this application" is free (the graph *is* the seeded
   application — no separate per-application call is needed). But the graph tracks design objects,
-  not runtime state: whether a record type holds any rows, a group's hierarchy or membership, and
-  a record type's title expression have no graph representation at all. Those three still need a
-  full-access build tool — unchanged from before this drop, but now stated plainly in
-  `confirmation-patterns.md` rather than left routed through a tool (`listRecordData`,
-  `listGroups`, `listGroupMembers`, `getRecordType(...).titleExpression`) that no longer exists.
+  not runtime state: whether a record type holds any rows, a group's hierarchy, membership, or
+  constant references, and a record type's title expression have no graph representation at all.
+  Those four still need a full-access build tool — unchanged from before this drop, but now
+  stated plainly in `confirmation-patterns.md` rather than left routed through a tool
+  (`listRecordData`, `listGroups`, `listGroupMembers`, `listConstants`,
+  `getRecordType(...).titleExpression`) that no longer exists.
 - **Blast-radius answers are now as-of-seed, not live.** The graph is a point-in-time snapshot;
   `report_changes` refreshes it but explicitly does not re-materialize a record type's own
   structural children. The old tool read the live tenant on every call.

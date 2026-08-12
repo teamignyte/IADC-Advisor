@@ -320,22 +320,25 @@ miss a plain `recordType!` reference):
      `get_in_edges` on the boundary node it points at (see `confirmation-patterns.md`'s Step 5
      fallback) — this confirms a suspicion, it does not discover one you don't already have
 
-**Step 2: Check structural dependencies:**
+**Step 2: Check structural dependencies:** no Appian MCP any more (IV-442) —
+`record_model(session_id, record_type_id)` returns relationships, views, and actions in one call
+(see `confirmation-patterns.md`'s Step 6 "For Record Types").
 
-1. **Check relationships** via `listRecordTypeRelationships(uuid)`
+1. **Check relationships** via `record_model`'s `relationships` array
    - Count MANY_TO_ONE relationships (this RT depends on others)
    - Count ONE_TO_MANY relationships (other RTs depend on this one)
    - Each relationship that references this RT will break
 
-2. **Check views** via `listRecordTypeViews(uuid)`
+2. **Check views** via `record_model`'s `views` array
    - Each view will be deleted along with the record type
    - Views may be referenced in sites or interfaces
 
-3. **Check actions** via `listRecordTypeActions(uuid)`
+3. **Check actions** via `record_model`'s `actions` array
    - Each action will be deleted
    - Actions may be referenced in interfaces or process models
 
-4. **Check data** via `listRecordData(uuid, limit=1)`
+4. **Check data** — **no graph counterpart**. The graph tracks design objects, not row data;
+   whether the record type holds rows needs a build tool.
    - If any records exist, data will become inaccessible
    - Database table is PRESERVED (see confirmation-patterns.md for details)
 
@@ -389,18 +392,23 @@ To confirm HIGH RISK operation, type: DELETE [Name]
 
 Field deletion is **HIGH risk** and requires Yes/No confirmation if the field is in use.
 
-**Dependency checks:**
+**Dependency checks:** no Appian MCP any more (IV-442) — none of a field's structural checks
+below have a graph counterpart (see `confirmation-patterns.md`'s Step 6 "For Fields" for why).
 
-1. **Check relationships** via `listRecordTypeRelationships(uuid)`
+1. **Check relationships** — **no graph counterpart**. `record_model`'s `relationships` array
+   carries no `source` key and its `target` is the target record type, never a field; no relation
+   in the graph connects a `recordRelationship` to a `recordField`. Needs a build tool.
    - Is this field used as `sourceRecordTypeFieldUuid`? (FK field in MANY_TO_ONE)
    - Is this field used as `targetRecordTypeFieldUuid`? (PK field in relationship)
    - If yes, relationship must be deleted first
 
-2. **Check title expression** via `getRecordType(uuid)`
+2. **Check title expression** — **no graph counterpart**. `record_model` does not carry a record
+   type's title expression. Needs a build tool.
    - Does `titleExpression` reference this field's UUID?
    - If yes, title expression will break
 
-3. **Check views** via `listRecordTypeViews(uuid)`
+3. **Check views** — **no graph counterpart**. `record_model`'s `views` array is a compact record
+   with no field list, so it cannot say whether a given field is displayed. Needs a build tool.
    - Review each view's displayed fields
    - If field is displayed, view will show empty column
 

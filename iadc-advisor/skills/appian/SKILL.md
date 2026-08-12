@@ -23,9 +23,10 @@ That means the **create, update, delete, validate and verify** workflows in this
   under-reports for this purpose; `get_edge` gives the exact SAIL occurrence(s) — field, line,
   column — behind any one edge you need to drill into. When someone asks "what breaks if we
   remove this?", that check plus the structural review around it (Step 6 in
-  `confirmation-patterns.md` — relationships/views/actions are graph-backed via `record_model`;
-  row data, group hierarchy/membership, and a record type's title expression still need a build
-  tool) is exactly the right answer — run it. **Scope boundary:** the graph is one
+  `confirmation-patterns.md` — a record type's relationships/views/actions are graph-backed via
+  `record_model`; row data, a group's hierarchy/membership/constant references, a field's
+  relationship/view membership, and a record type's title expression still need a build tool) is
+  exactly the right answer — run it. **Scope boundary:** the graph is one
   seeded application, so this only sees dependents *inside* that application; an object in
   another application that references this one is invisible to `reachable` **silently** — no
   error, no truncation flag, just a smaller set. Confirming a *suspected* cross-application

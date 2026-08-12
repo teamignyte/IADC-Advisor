@@ -308,22 +308,29 @@ run against the `iadc` graph; the rest have no graph equivalent and need a full-
 - Data: **no graph counterpart** — the graph tracks design objects, not row data. Whether the
   record type holds rows needs a build tool.
 
-**For Groups** — **no graph counterpart for either check.** Group hierarchy and membership are
-runtime security data, not design-object references the graph tracks. Both need a build tool.
+**For Groups** — **no graph counterpart for any of the three checks.** Group hierarchy,
+membership, and constant references are runtime security data, not design-object references the
+graph tracks. All three need a build tool.
 - Hierarchy: which group is this one's parent
 - Members: who belongs to this group
+- Constants: which `GROUP`-typed constants hold this group's UUID as their value
 
 **For Applications:**
 - Contained objects: the graph is seeded from exactly one application (see Step 5's
-  Application-scope boundary), so every node already in the session's graph *is* this
-  application's contained-object set — `list_nodes(session_id)` enumerates it (default
-  `limit=200`; check `truncated` and raise the limit for a large application), or `find_nodes`
-  to search by name; no separate per-application call is needed.
+  Application-scope boundary), so `list_nodes(session_id)` (default `limit=200`; check
+  `truncated` and raise the limit for a large application) or `find_nodes` (to search by name)
+  enumerates it — but the result is a **superset**, not an exact match: it also returns every
+  `recordField`/`recordView`/`recordAction`/`recordRelationship` sub-node, every
+  `appian_builtin`, and the three boundary kinds (`external`/`dangling`/`unknown`). Filter by
+  `kind`/`object_type` to the design-object kinds you actually want; no separate per-application
+  call is needed either way.
 
 **For Fields (record type fields):**
-- Relationships: `record_model`'s `relationships` array — check whether the field's node id
-  appears as a relationship's source or target
-- Views: `record_model`'s `views` array — check whether the field is displayed in one
+- Relationships: **no graph counterpart** — `record_model`'s `relationships` array carries no
+  `source` key and its `target` is the target record type, never a field; no relation in the
+  graph connects a `recordRelationship` to a `recordField`. Needs a build tool.
+- Views: **no graph counterpart** — `record_model`'s `views` array is a compact record with no
+  field list, so it cannot say whether a given field is displayed. Needs a build tool.
 - Title expression: **no graph counterpart** — `record_model` does not carry a record type's
   title expression. Needs a build tool.
 - Note: this step's structural checks are separate from Step 5's expression check. Field-level
@@ -338,7 +345,7 @@ Present the final result using templates below. This is what the USER sees.
 
 **Do NOT show to user:**
 - Step numbers ("Step 5:", "Step 6:")
-- Tool calls ("✓ reachable(node, direction='in') →", "Calling getRecordType...")
+- Tool calls ("✓ reachable(node, direction='in') →", "Calling record_model...")
 - Processing details ("Deduplicating...", "Checking...")
 
 **DO show to user:**
@@ -560,12 +567,12 @@ These show what users see after you complete internal checks. Do NOT show "Step 
 **Your internal process (NOT shown to user):**
 ```
 1. Receive request: "Delete PMS Status record type"
-2. Verify: getRecordType(uuid) → exists
+2. Verify: find_nodes(session_id, query="PMS Status", kind="recordType") → exists, resolve node id
 3. Extract: name, type, app context
 4. Identify: Delete record type → Expression + Structural
 5. Check expression deps: reachable(node_id, direction="in") → 47 dependents
 6. Deduplicate → 5 unique interfaces, 2 unique rules, 1 unique PM
-7. Check structural: getRecordType(uuid) → 2 relationships, listRecordTypeViews → 1 view, listRecordData → 4 records
+7. Check structural: record_model(session_id, record_type_id) → 2 relationships, 1 view; row data has no graph counterpart (needs a build tool)
 8. Present using Record Type Delete Special Case template
 ```
 
@@ -620,7 +627,7 @@ What would you like to do? (1/2/3)
 **Your internal process (NOT shown to user):**
 ```
 1. Receive request: "Delete constant CM_CASE_CONST"
-2. Verify: getConstant(uuid) → exists
+2. Verify: find_nodes(session_id, query="CM_CASE_CONST", kind="constant") → exists, resolve node id
 3. Extract: name (CM_CASE_CONST), type (RECORD_TYPE), value (uuid)
 4. Identify: Delete constant → Expression deps
 5. Check expression deps: reachable(node_id, direction="in") → 2 dependents (1 application, 1 rule)
@@ -1077,7 +1084,7 @@ Impact:
 ### Cross-References
 
 For object-specific dependency checks, see:
-- Applications: `references/applications.md` (listApplicationObjects)
+- Applications: `references/applications.md` (contained objects via `list_nodes`/`find_nodes`)
 - Record Types: `references/record-types.md` (fields, relationships, views, actions)
 - Process Models: `references/process-models.md` (nodes, start forms)
 

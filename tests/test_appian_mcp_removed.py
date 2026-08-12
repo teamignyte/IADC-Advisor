@@ -123,3 +123,20 @@ def test_catches_a_bare_module_path_with_no_env_var_present():
         f"real scan over SHIPPED_ROOT failed to catch a bare lcp_mcp_server module path in "
         f"{target}: {hits}"
     )
+
+
+def test_catches_a_reintroduced_lcp_env_var_under_skills():
+    # Neither control above touches `skills/` at all -- both targets (README.md,
+    # hooks/posture.md) sit outside it. The module's own docstring (`:9-15`) names
+    # `iadc-advisor/skills/setup/mcp-template.json` as *the actual write site* the whole-tree
+    # scope exists for, and no control exercised that subtree: narrowing `_tracked_files` to
+    # drop every path containing `/skills/` left all three prior tests green (probe pasted in
+    # the fix report), because none of them ever reads a file under it. This control closes that
+    # axis the same way the other two closed theirs -- inject into a real tracked file inside
+    # `skills/`, drive the real scan, assert it's caught.
+    target = SHIPPED_ROOT / "skills" / "setup" / "mcp-template.json"
+    hits, lineno = _inject_and_scan(target, '"LCP_URL": "https://example.appiancloud.com"')
+    assert (target, lineno, "LCP_URL") in hits, (
+        f"real scan over SHIPPED_ROOT failed to catch a reintroduced LCP_URL token under "
+        f"skills/ in {target}: {hits}"
+    )

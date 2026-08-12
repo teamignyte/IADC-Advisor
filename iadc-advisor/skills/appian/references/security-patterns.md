@@ -305,7 +305,8 @@ Before deleting a group, check for these dependencies:
    - Common pattern: `PREFIX_ADMIN_GROUP`, `PREFIX_MANAGERS_GROUP`
    - Warn user: "If this group is referenced in constants, those constants will break. Manual verification needed."
 
-2. **Child groups** via `listGroups()` filter by `parentGroupName`
+2. **Child groups** — **no graph counterpart** (no Appian MCP any more, IV-442). Group hierarchy
+   is runtime security data, not a design-object reference the graph tracks. Needs a build tool.
    - If this group is a parent, deleting it orphans child groups
    - Child groups lose hierarchy structure
    - Child groups lose inherited permissions
@@ -313,7 +314,8 @@ Before deleting a group, check for these dependencies:
 3. **Security expressions** (cannot detect automatically)
    - Warn user: "This group may be used in security expressions on record types, interfaces, or process models. Manual verification needed via Appian Designer."
 
-4. **Direct members** via `listGroupMembers(groupName)`
+4. **Direct members** — **no graph counterpart**. Group membership is runtime security data, not
+   a design-object reference the graph tracks. Needs a build tool.
    - Count how many users are direct members
    - Members will lose permissions granted by this group
 
@@ -329,13 +331,15 @@ This group has dependencies:
   - [ChildGroup2]
   - [...]
 - [N] direct members
-- May be referenced in GROUP constants (will become invalid references)
+- May be referenced in GROUP constants (will become invalid references — manual verification
+  needed; not automatically checked, same as security expressions below)
 - May be used in security expressions (manual verification needed)
 
 Impact:
 - Child groups lose hierarchy structure and inherited permissions
 - Direct members lose permissions granted by this group
-- GROUP constants referencing this group will contain invalid group names
+- GROUP constants referencing this group may contain invalid group names (not automatically
+  verified — see Dependency Checks above)
 - Security expressions using this group will break
 
 Recommendation: Delete or reassign child groups first, or delete entire hierarchy top-down.
@@ -351,7 +355,8 @@ You are about to DELETE group "[GroupName]".
 
 This group has:
 - [N] direct members
-- May be referenced in GROUP constants (will become invalid references)
+- May be referenced in GROUP constants (will become invalid references — manual verification
+  needed; not automatically checked, same as security expressions below)
 - May be used in security expressions (manual verification needed)
 
 Continue? (yes/no)

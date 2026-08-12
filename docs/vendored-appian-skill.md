@@ -149,13 +149,19 @@ audit) still exist as carve-outs; what backs each one changed:
   The graph is scoped to one seeded application; a cross-application dependent is invisible to
   it, silently — stated in each of the three files above.
 - **Structural checks (Step 6)** — `confirmation-patterns.md`'s structural-check block
-  (relationships/views/actions, for both a record type and one of its fields) now calls
-  `record_model` in place of `getRecordType`/`listRecordTypeViews`/`listRecordTypeActions`; a
-  record type's contained-application check calls `list_nodes`/`find_nodes` in place of
-  `listApplicationObjects` (the graph *is* the seeded application, so enumerating it is free).
-  Row data, group hierarchy/membership, and a record type's title expression have no graph
-  representation at all — stated as needing a build tool rather than left routed through a
-  removed tool; the loss is recorded in [ADR
+  (relationships/views/actions, **for a record type**) now calls `record_model` in place of
+  `getRecordType`/`listRecordTypeViews`/`listRecordTypeActions`; a record type's
+  contained-application check calls `list_nodes`/`find_nodes` in place of
+  `listApplicationObjects` (the graph *is* the seeded application, so enumerating it is free,
+  though the result is a superset needing a `kind`/`object_type` filter). A **field's**
+  relationship and view checks are not repointed to anything — `record_model`'s `relationships`
+  array carries no `source` key and its `views` array carries no field list, so neither can
+  identify a field endpoint; both are stated as needing a build tool, the same treatment the
+  block already gave a field's title expression. Row data; a group's hierarchy, membership, and
+  constant references; and a record type's title expression have no graph representation at all
+  either — stated as needing a build tool rather than left routed through a tool
+  (`listRecordData`, `listGroups`, `listGroupMembers`, `listConstants`,
+  `getRecordType(...).titleExpression`) that no longer exists. The loss is recorded in [ADR
   0013](adr/0013-drop-appian-mcp-route-through-graph.md)'s Consequences.
 - **Accessibility audits** — `references/accessibility-audit.md` reads the interface's SAIL
   with `find_nodes` + `get_sail` instead of `getInterface`/`listInterfaces`. There was never a
@@ -164,9 +170,11 @@ audit) still exist as carve-outs; what backs each one changed:
 
 | File | Patch |
 |---|---|
-| `SKILL.md` | Posture note's two carve-outs, the "Tool Surface" section, the Deletion Operations Workflow's Step-5 references, the frontmatter `description` |
-| `references/confirmation-patterns.md` | "Tool Capabilities", Universal Workflow 1 Step 5, Step 6 (structural checks), "Known Limitations", and every presentation-template mention of the removed tool's name |
-| `references/record-types.md` | Record Type Deletion Step 1 |
+| `SKILL.md` | Posture note's two carve-outs, the "Tool Surface" section, the Deletion Operations Workflow's Step-5 references, the frontmatter `description`, the structural-check loss enumeration |
+| `references/confirmation-patterns.md` | "Tool Capabilities", Universal Workflow 1 Step 5, Step 6 (structural checks), "Known Limitations", the Example 1/2 worked processes, and every presentation-template mention of the removed tool's name |
+| `references/record-types.md` | Record Type Deletion Steps 1–2, Field Deletion |
+| `references/security-patterns.md` | Group Deletion Dependency Checks |
+| `references/applications.md` | Application Deletion Dependency Checks |
 | `references/accessibility-audit.md` | "How It Works", "Full Interface Audit", "Quick Checks" |
 
 **One capability gain, not just parity:** the old tool documented that it could not see
