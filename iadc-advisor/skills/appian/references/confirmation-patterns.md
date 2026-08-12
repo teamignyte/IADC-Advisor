@@ -720,7 +720,6 @@ Structural dependencies (from Step 6 structural checks):
 [If any relationships:] ❌ N relationships to other record types: [list names]
 [If any views:] ❌ N record views: [list names]
 [If any actions:] ❌ N record actions: [list names]
-[If any data:] ❌ N existing data records
 [If zero relationships, views, and actions found:] ✅ No relationships, views, or actions found (checked automatically) — row data not automatically checked (no graph counterpart; needs a build tool)
 
 Database impact:
@@ -749,7 +748,7 @@ Type 'DELETE [Name]' to confirm HIGH RISK operation.
 - Do NOT add "Manual verification required" text
 - Do NOT list object types the graph didn't return
 - If the graph found 0 expression dependencies, say "✅ No design objects reference this record type"
-- Still show structural dependencies (relationships/views/actions/data) - these come from Step 6
+- Still show structural dependencies (relationships/views/actions) - these come from Step 6
 
 **Why this matters:**
 - User expectations: clarifies that data is preserved
