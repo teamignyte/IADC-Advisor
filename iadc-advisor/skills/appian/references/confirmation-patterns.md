@@ -115,8 +115,6 @@ Apply this workflow before ANY DELETE operation:
 1. **Structural dependencies:**
    - Record type relationships (MANY_TO_ONE, ONE_TO_MANY)
    - Record type views, actions, user filters
-   - Record data existence
-   - Group hierarchy and members
    - Application contained objects
 
 2. **Expression-based dependencies:**
@@ -252,8 +250,8 @@ runs against the graph, in the session already seeded for this application.
 2. Deduplicate and group:
    - Nodes are already deduplicated by `id` in the result
    - Group by `object_type` (`rule`, `interface`, `decision`, `constant`, `outboundIntegration`,
-     `recordType`, `processModel`, `site`, `portal`, `webApi`, `application`, ... — the graph's
-     own vocabulary, not a fixed enum)
+     `recordType`, `processModel`, `site`, `portal`, ... — the graph's own vocabulary, not a
+     fixed enum)
 
 3. Present:
    - If < 10 unique objects per type: show all
@@ -630,9 +628,8 @@ What would you like to do? (1/2/3)
 2. Verify: find_nodes(session_id, query="CM_CASE_CONST", kind="artifact", object_type="constant") → exists, resolve node id
 3. Extract: name (CM_CASE_CONST), type (RECORD_TYPE), value (uuid)
 4. Identify: Delete constant → Expression deps
-5. Check expression deps: reachable(node_id, direction="in") → 2 dependents (1 application, 1 rule)
-6. Deduplicate → filter out APPLICATION → 1 unique rule
-7. Present using Constant Delete Special Case template
+5. Check expression deps: reachable(node_id, direction="in") → 1 dependent (1 rule)
+6. Present using Constant Delete Special Case template
 ```
 
 **What user sees:**
@@ -720,11 +717,11 @@ Structural dependencies (from Step 6 structural checks):
 [If any relationships:] ❌ N relationships to other record types: [list names]
 [If any views:] ❌ N record views: [list names]
 [If any actions:] ❌ N record actions: [list names]
-[If zero relationships, views, and actions found:] ✅ No relationships, views, or actions found (checked automatically) — row data not automatically checked (no graph counterpart; needs a build tool)
+[If zero relationships, views, and actions found:] ✅ No relationships, views, or actions found (checked automatically)
+⚠️ Row data not checked (no graph counterpart; needs a build tool)
 
 Database impact:
 ⚠️ The database table [TABLE_NAME] will be PRESERVED
-[If data exists:] ⚠️ N data records remain in database but will no longer be accessible via Appian
 ⚠️ To drop the table, manual database administration is required
 
 Impact:
@@ -734,7 +731,6 @@ Impact:
 [If process models found:] - N process models will have broken nodes/variables
 [If relationships found:] - N relationships will break
 [If views found:] - N views will fail to load
-[If data found:] - N records become inaccessible (table preserved)
 
 Options:
 1. Cancel (recommended - remove dependencies first)

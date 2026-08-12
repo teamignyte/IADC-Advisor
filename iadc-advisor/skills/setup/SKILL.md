@@ -213,11 +213,12 @@ in order, the tracked check **first**, before you write anything:
     nothing unless they want a key), and that any they do want have to go wherever they told
     you their team keeps secrets — outside this repo. Skip only the rest of this step's
     `.mcp.json` write-up (the merge bullet and the server-value bullet below); **still walk the
-    `iadc` bullet and the connector bullets** — Jira, Office, Slack — with the user, since
-    none of them write a credential into this file: `iadc` only points at
-    `/iadc-graph:setup`. Office's deliberate `none` still gets recorded in step 4. Then move on
-    to step 4. Step 9 will report `.mcp.json` as deliberately unconfigured; that is the
-    correct outcome, not a failure to paper over.
+    `iadc` bullet, the `appian` bullet, and the connector bullets** — Jira, Office, Slack — with
+    the user, since none of them write a credential into this file: `iadc` only points at
+    `/iadc-graph:setup`, and `appian`'s offer only removes a credential, never writes one.
+    Office's deliberate `none` still gets recorded in step 4. Then move on to step 4. Step 9
+    will report `.mcp.json` as deliberately unconfigured; that is the correct outcome, not a
+    failure to paper over.
 - **`.mcp.json` already exists** (and the check above cleared) → **merge, never overwrite**:
   add or update only the `context7` entry; preserve every other server the team has
   configured — `iadc` included, since `/iadc-graph:setup` owns that entry and does its own

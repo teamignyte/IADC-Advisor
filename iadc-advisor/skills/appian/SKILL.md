@@ -133,7 +133,7 @@ After loading confirmation-patterns.md, follow all 10 steps IN ORDER:
 - **Steps 1-3:** Receive request, verify object, extract details
 - **Step 4:** Identify operation type (determines which dependency checks apply)
 - **Step 5:** Check expression dependencies via the `iadc` graph (`reachable`/`get_in_edges`) ← MANDATORY
-- **Step 6:** Perform structural checks (relationships, views, data, hierarchy)
+- **Step 6:** Perform structural checks (relationships, views)
 - **Step 7:** Present dependencies to user (use templates — NOT your own format)
 - **Step 8:** Offer resolution strategies
 - **Step 9:** Get user confirmation ← MANDATORY, NEVER SKIP THIS

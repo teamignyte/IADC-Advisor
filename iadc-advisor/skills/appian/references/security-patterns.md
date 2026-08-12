@@ -283,7 +283,7 @@ This section covers group-specific patterns for when to ask users for confirmati
 
 **When to use:** Before deleting a group.
 
-**Risk level:** CRITICAL if group has dependencies, HIGH otherwise
+**Risk level:** CRITICAL
 
 **Cross-reference:** `confirmation-patterns.md` → Universal Workflow 1 (Delete Confirmation)
 
@@ -319,17 +319,13 @@ Before deleting a group, check for these dependencies:
    - Count how many users are direct members
    - Members will lose permissions granted by this group
 
-**Present to user based on findings:**
+**Present to user:**
 
-**If child groups exist (CRITICAL risk):**
 ```
 You are about to DELETE group "[GroupName]".
 
 This group has dependencies:
-- [N] child groups (will become orphaned)
-  - [ChildGroup1]
-  - [ChildGroup2]
-  - [...]
+- [N] child groups (will become orphaned) (not automatically checked — no graph counterpart; needs a build tool)
 - [N] direct members (not automatically checked — no graph counterpart; needs a build tool)
 - May be referenced in GROUP constants (will become invalid references — manual verification
   needed; not automatically checked, same as security expressions below)
@@ -347,19 +343,6 @@ Recommendation: Delete or reassign child groups first, or delete entire hierarch
 This action CANNOT be undone.
 
 To confirm, type: DELETE [GroupName]
-```
-
-**If no children (HIGH risk):**
-```
-You are about to DELETE group "[GroupName]".
-
-This group has:
-- [N] direct members (not automatically checked — no graph counterpart; needs a build tool)
-- May be referenced in GROUP constants (will become invalid references — manual verification
-  needed; not automatically checked, same as security expressions below)
-- May be used in security expressions (manual verification needed)
-
-Continue? (yes/no)
 ```
 
 ### Group Rename
