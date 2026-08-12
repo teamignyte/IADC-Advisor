@@ -313,6 +313,12 @@ miss a plain `recordType!` reference):
    - Deduplicate by node id and group by `object_type`
    - Present top 10 per type (or all if < 10); drill into any one with `get_edge` for the exact
      SAIL line(s)
+   - **Application-scope boundary:** this only sees dependents *inside* the seeded application. A
+     record type in a *different* application that references this one is invisible here —
+     silently: no error, no truncation flag, just a smaller set than reality. A suspected
+     cross-application dependent needs seeding that other application too and reading
+     `get_in_edges` on the boundary node it points at (see `confirmation-patterns.md`'s Step 5
+     fallback) — this confirms a suspicion, it does not discover one you don't already have
 
 **Step 2: Check structural dependencies:**
 

@@ -78,6 +78,15 @@ defect, not diligence."
 - **One clean capability gain: field-level dependencies.** `getObjectDependents` documented that
   it could not see `recordType!RT.fields.fieldName` references; the graph's `uses_record_field`
   relation does.
+- **The record-type deletion workflow's structural checks (Step 6) split: some repoint to the
+  graph, some don't.** `record_model` gives a record type's relationships/views/actions in one
+  call, and "contained objects of this application" is free (the graph *is* the seeded
+  application — no separate per-application call is needed). But the graph tracks design objects,
+  not runtime state: whether a record type holds any rows, a group's hierarchy or membership, and
+  a record type's title expression have no graph representation at all. Those three still need a
+  full-access build tool — unchanged from before this drop, but now stated plainly in
+  `confirmation-patterns.md` rather than left routed through a tool (`listRecordData`,
+  `listGroups`, `listGroupMembers`, `getRecordType(...).titleExpression`) that no longer exists.
 - **Blast-radius answers are now as-of-seed, not live.** The graph is a point-in-time snapshot;
   `report_changes` refreshes it but explicitly does not re-materialize a record type's own
   structural children. The old tool read the live tenant on every call.

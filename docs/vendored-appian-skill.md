@@ -148,6 +148,15 @@ audit) still exist as carve-outs; what backs each one changed:
   `calls`-relation edges and would silently drop `references`/`uses_record_field`/`secured_by`.
   The graph is scoped to one seeded application; a cross-application dependent is invisible to
   it, silently — stated in each of the three files above.
+- **Structural checks (Step 6)** — `confirmation-patterns.md`'s structural-check block
+  (relationships/views/actions, for both a record type and one of its fields) now calls
+  `record_model` in place of `getRecordType`/`listRecordTypeViews`/`listRecordTypeActions`; a
+  record type's contained-application check calls `list_nodes`/`find_nodes` in place of
+  `listApplicationObjects` (the graph *is* the seeded application, so enumerating it is free).
+  Row data, group hierarchy/membership, and a record type's title expression have no graph
+  representation at all — stated as needing a build tool rather than left routed through a
+  removed tool; the loss is recorded in [ADR
+  0013](adr/0013-drop-appian-mcp-route-through-graph.md)'s Consequences.
 - **Accessibility audits** — `references/accessibility-audit.md` reads the interface's SAIL
   with `find_nodes` + `get_sail` instead of `getInterface`/`listInterfaces`. There was never a
   `testInterface` to render a component tree with, Appian MCP or not, so the render-step
@@ -156,7 +165,7 @@ audit) still exist as carve-outs; what backs each one changed:
 | File | Patch |
 |---|---|
 | `SKILL.md` | Posture note's two carve-outs, the "Tool Surface" section, the Deletion Operations Workflow's Step-5 references, the frontmatter `description` |
-| `references/confirmation-patterns.md` | "Tool Capabilities", Universal Workflow 1 Step 5, "Known Limitations", and every presentation-template mention of the removed tool's name |
+| `references/confirmation-patterns.md` | "Tool Capabilities", Universal Workflow 1 Step 5, Step 6 (structural checks), "Known Limitations", and every presentation-template mention of the removed tool's name |
 | `references/record-types.md` | Record Type Deletion Step 1 |
 | `references/accessibility-audit.md` | "How It Works", "Full Interface Audit", "Quick Checks" |
 

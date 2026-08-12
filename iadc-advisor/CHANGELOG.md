@@ -23,9 +23,8 @@ surface is the one `iadc` graph entry.
   (`recordType!RT.fields.fieldName`) are visible via `uses_record_field`, which the old tool
   documented it could not see.
 - **The Application UUID is now always a value the user provides**, recorded as per-project
-  state — the graph is seeded *from* that UUID, so it can never resolve it live. `/setup` tells
-  the user where to find it in Appian Designer if they don't have it to hand, and still finishes
-  without it if they don't.
+  state — the graph is seeded *from* that UUID, so it can never resolve it live. `/setup` asks
+  for it and still finishes without it if the user doesn't have it to hand.
 - **`/setup`, on re-run, detects a stale `appian` entry left by an older install and offers to
   remove it** — explicit consent, never a silent edit of a file that may hold other servers the
   team owns.

@@ -39,8 +39,8 @@ follows to build it. It is the handoff artifact — it replaces splitting work i
    line: `READY` → produce the final build-ready spec; still `BLOCKED — N open escalation(s)` → a
    **provisional** spec only (see the readiness gate in Posture). Then pull the plan together from the
    Pressure-test thread, `decisions.md`, and the glossary (`outputs/CONTEXT.md`). Reuse the grounding
-   Pressure-test already did (record model, dependency order, blast radius); re-check the live app
-   (`/iadc-advisor:appian`, `/iadc-graph:iadc-graph`) only where a build step needs a fact you don't have. Use the glossary's
+   Pressure-test already did (record model, dependency order, blast radius); re-check against the
+   graph and domain guidance (`/iadc-advisor:appian`, `/iadc-graph:iadc-graph`) only where a build step needs a fact you don't have. Use the glossary's
    vocabulary; respect existing ADRs.
 2. **Name every object — split NEW vs. MODIFY — in dependency order.** This is the heart of the
    spec: don't describe the work abstractly ("update the interface"), say **exactly which Appian

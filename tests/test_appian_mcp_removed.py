@@ -68,25 +68,58 @@ def test_no_lcp_appian_mcp_config_anywhere_in_shipped_tree():
     )
 
 
-def test_catches_a_single_reintroduced_lcp_token(tmp_path):
-    # Discriminating control: the check must actually fail on exactly one reintroduced
-    # instance, not just on an empty/never-matching pattern.
-    (tmp_path / "mcp-template.json").write_text(
-        '{"mcpServers": {"appian": {"env": {"LCP_URL": "https://x"}}}}\n', encoding="utf-8"
+def _inject_and_scan(target: Path, injected_content: str) -> tuple[list[tuple[Path, int, str]], int]:
+    """Temporarily append `injected_content` to a real tracked file already inside
+    `SHIPPED_ROOT`, drive the guard's actual entry point (`_find_forbidden_hits(SHIPPED_ROOT)`)
+    over it, then revert unconditionally.
+
+    The property under test is "the scan reaches every tracked file in the shipped tree" -- not
+    "the regex matches this string". Calling `_find_forbidden_hits(SHIPPED_ROOT)` for real,
+    against a real tracked file, means this is sensitive to a regression in either half of the
+    guard: if `_tracked_files` stops walking the tree, the injected line is never read; if
+    `SHIPPED_ROOT` is narrowed to a subset that excludes `target`, the same thing happens. A
+    control built by reimplementing the scan loop over a synthetic `tmp_path`, or by calling
+    `FORBIDDEN_RE.search` directly, is blind to both regressions -- which is exactly what let the
+    two controls this replaces stay green while stubbed to `return []` and while `SHIPPED_ROOT`
+    was collapsed to `skills/appian/`.
+    """
+    original = target.read_text(encoding="utf-8")
+    mutated = original.rstrip("\n") + "\n" + injected_content.rstrip("\n") + "\n"
+    injected_lineno = len(mutated.splitlines())
+    target.write_text(mutated, encoding="utf-8")
+    # Did-it-apply: confirm the write landed before trusting anything the scan reports.
+    assert target.read_text(encoding="utf-8") == mutated, f"injection into {target} did not apply"
+    try:
+        hits = _find_forbidden_hits(SHIPPED_ROOT)
+    finally:
+        target.write_text(original, encoding="utf-8")
+        assert target.read_text(encoding="utf-8") == original, (
+            f"revert of {target} did not restore the original content"
+        )
+    return hits, injected_lineno
+
+
+def test_catches_a_reintroduced_lcp_env_var_outside_the_vendored_appian_tree():
+    # README.md sits outside `skills/` entirely -- the exact site
+    # test_vendored_appian_skill.py's APPIAN_ROOT-scoped suite cannot see, and one of the two
+    # real write sites this module's own docstring names as the reason a whole-tree scan exists.
+    target = SHIPPED_ROOT / "README.md"
+    hits, lineno = _inject_and_scan(target, "Set `LCP_URL` to your Appian tenant's address.")
+    assert (target, lineno, "LCP_URL") in hits, (
+        f"real scan over SHIPPED_ROOT failed to catch a reintroduced LCP_URL token in {target}: "
+        f"{hits}"
     )
-    hits = []
-    for f in tmp_path.rglob("*"):
-        if f.is_file():
-            for lineno, line in enumerate(f.read_text(encoding="utf-8").splitlines(), start=1):
-                m = FORBIDDEN_RE.search(line)
-                if m:
-                    hits.append((f, lineno, m.group(0)))
-    assert hits, "check failed to catch a single reintroduced LCP_URL token"
 
 
-def test_catches_the_bare_module_path_without_any_env_var():
-    # A reintroduced `command`/`args` block naming the module but no env vars (e.g. someone
-    # restores the stdio launch line but not the env block yet) must still be caught -- the
-    # module path alone is enough to know the appian MCP server is back.
-    text = 'python -m lcp_mcp_server\n'
-    assert FORBIDDEN_RE.search(text), "check failed to catch a bare lcp_mcp_server module path"
+def test_catches_a_bare_module_path_with_no_env_var_present():
+    # Distinct fact from the control above: a reintroduced `command`/`args` block naming the
+    # module but no env vars yet (someone restores the stdio launch line first) must still be
+    # caught -- the module path alone is enough to know the appian MCP server is back. Same
+    # real-scan mechanism, a different one of the module's two named write sites
+    # (hooks/posture.md), so this control is independently sensitive to both regressions too.
+    target = SHIPPED_ROOT / "hooks" / "posture.md"
+    hits, lineno = _inject_and_scan(target, "python -m lcp_mcp_server")
+    assert (target, lineno, "lcp_mcp_server") in hits, (
+        f"real scan over SHIPPED_ROOT failed to catch a bare lcp_mcp_server module path in "
+        f"{target}: {hits}"
+    )

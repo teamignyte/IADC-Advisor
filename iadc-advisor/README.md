@@ -27,9 +27,7 @@ The architect **advises and plans**; your developers build. It reads and reasons
 
 - **Your Appian application's identity** — its full name, the team's shorthand for it (if any),
   and its **UUID**. This plugin holds no live connection to your Appian tenant, so
-  `/iadc-advisor:setup` can't look the UUID up for you — find it in **Appian Designer**: open
-  the application, and the UUID is visible in the browser's address bar and on the
-  application's General properties panel.
+  `/iadc-advisor:setup` can't look the UUID up for you — have it to hand.
   - Don't have it yet? `/iadc-advisor:setup` still finishes without it — it records what you owe
     and asks again next time.
 - **Your Appian version** (e.g. `26.6`), for version-exact documentation lookups.

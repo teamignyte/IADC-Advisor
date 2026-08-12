@@ -19,7 +19,10 @@ nickname resolves to a UUID in a single lookup with no cross-file join.
 ## Consequences
 
 - Seeding the graph needs no live Appian-MCP call. The Appian MCP is used only to inspect
-  object internals, and — optionally, once — to resolve the UUID at setup time.
+  object internals, and — optionally, once — to resolve the UUID at setup time. **This carve-out
+  is closed by [ADR 0013](0013-drop-appian-mcp-route-through-graph.md):** IV-442 drops the
+  `appian` MCP entirely, so there is no tool left for the "optionally, once" live resolution to
+  use. The UUID is now always a value the user provides.
 - The identity is per-project config: placeholders in the template, filled by `/setup` in
   the adopter's copy (the same pattern as the Appian version in `appian/SKILL.md`).
 - Nicknames live here, not in `CONTEXT.md`, so the nickname→UUID mapping stays in one

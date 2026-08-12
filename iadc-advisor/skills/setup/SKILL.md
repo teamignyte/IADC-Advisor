@@ -364,11 +364,11 @@ never delete a line unless the template says to.
 - **`Application`** — the Appian application the `iadc` graph is seeded from: its **full
   name** on `Application`, the team's shorthand on **`Nicknames`**, and the **`UUID`**.
   **Take the UUID from the user** (IV-442) — this plugin holds no live connection to the
-  client's Appian tenant, so there is no lookup to fall back on. If they don't have it to
-  hand, tell them where to find it: open the application in **Appian Designer** — the UUID is
-  visible in the browser's address bar and on the application's General properties panel.
-  Recorded here, seeding reads the UUID from the configuration and never needs a live Appian
-  connection. `Nicknames` is genuinely optional and has **no deliberate-answer sentinel**:
+  client's Appian tenant, so there is no lookup to fall back on, the same precedent the `iadc-tester`
+  plugin's own `/setup` already established. If they don't have it to hand, say so plainly and
+  move on; do not guess where in Appian it's found. Recorded here, seeding reads the UUID from
+  the configuration and never needs a live Appian connection. `Nicknames` is genuinely optional
+  and has **no deliberate-answer sentinel**:
   write the shorthands the team actually uses, and if they have none, leave that one line's
   placeholder standing rather than writing a word like `none` into it, which would only seed
   a fake nickname. Nothing nags about an unfilled `Nicknames`.

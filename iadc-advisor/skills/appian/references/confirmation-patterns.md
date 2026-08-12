@@ -297,25 +297,38 @@ Use Appian Designer's "Find Usages" feature:
 
 #### Step 6: Perform Structural Checks (When Applicable)
 
-**For Record Types:**
-- Relationships: getRecordType(uuid).relationships
-- Views: listRecordTypeViews(uuid)
-- Actions: listRecordTypeActions(uuid)
-- Data: listRecordData(uuid, limit=1)
+There is no Appian MCP `get*`/`list*` surface any more (IV-442). Some of this step's checks now
+run against the `iadc` graph; the rest have no graph equivalent and need a full-access build tool
+— say so plainly rather than guessing (`SKILL.md`'s posture note).
 
-**For Groups:**
-- Hierarchy: listGroups() filtered by parentGroupUuid
-- Members: listGroupMembers(uuid)
-- Constants: listConstants() filtered by type=GROUP, check values
+**For Record Types** — `record_model(session_id, record_type_id)` returns all three in one call:
+- Relationships: the `relationships` array
+- Views: the `views` array
+- Actions: the `actions` array
+- Data: **no graph counterpart** — the graph tracks design objects, not row data. Whether the
+  record type holds rows needs a build tool.
+
+**For Groups** — **no graph counterpart for either check.** Group hierarchy and membership are
+runtime security data, not design-object references the graph tracks. Both need a build tool.
+- Hierarchy: which group is this one's parent
+- Members: who belongs to this group
 
 **For Applications:**
-- Contained objects: listApplicationObjects(uuid)
+- Contained objects: the graph is seeded from exactly one application (see Step 5's
+  Application-scope boundary), so every node already in the session's graph *is* this
+  application's contained-object set — `list_nodes(session_id)` enumerates it (default
+  `limit=200`; check `truncated` and raise the limit for a large application), or `find_nodes`
+  to search by name; no separate per-application call is needed.
 
 **For Fields (record type fields):**
-- Relationships: Check if field is sourceRecordTypeFieldUuid or targetRecordTypeFieldUuid in getRecordType(recordTypeUuid).relationships
-- Title expression: Check if titleExpression in getRecordType(recordTypeUuid) references field UUID
-- Views: Check if field displayed in listRecordTypeViews(recordTypeUuid)
-- Note: Cannot check expression-based dependencies (fields referenced by name: recordType!RT.fields.fieldName, not by UUID)
+- Relationships: `record_model`'s `relationships` array — check whether the field's node id
+  appears as a relationship's source or target
+- Views: `record_model`'s `views` array — check whether the field is displayed in one
+- Title expression: **no graph counterpart** — `record_model` does not carry a record type's
+  title expression. Needs a build tool.
+- Note: this step's structural checks are separate from Step 5's expression check. Field-level
+  expression references (`recordType!RT.fields.fieldName`) **are** checkable — that is Step 5's
+  `uses_record_field` capability (see its Known Limitations below), not this step's
 
 ---
 

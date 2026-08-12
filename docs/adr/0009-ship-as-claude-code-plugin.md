@@ -65,6 +65,8 @@ ADR 0004's own IV-442 amendment for what it still carries.)**
 > [ADR 0009](https://github.com/teamignyte/IADC/blob/main/docs/adr/0009-umbrella-owns-per-project-state-convention.md)).
 > `.mcp.json` is excluded because its credentials follow a separate rule, owned by family
 > [ADR 0010](https://github.com/teamignyte/IADC/blob/main/docs/adr/0010-graph-plugin-owns-graph-configuration.md)
-> and not restated here: within it, `/setup` still writes only the `appian` and `context7`
-> entries — `/iadc-graph:setup` writes `iadc`. `/setup` still writes all four items above into
-> the app repo; only which of them the term "per-project state" names is corrected.
+> and not restated here: within it, `/setup` wrote (at IV-373) the `appian` and `context7`
+> entries — `/iadc-graph:setup` writes `iadc`. **Superseded by this file's own IV-442 amendment
+> above: `/setup` now writes only `context7`, and family ADR 0010's consequence line is marked
+> superseded (ADR 0013).** `/setup` still writes all four items above into the app repo; only
+> which of them the term "per-project state" names is corrected.
