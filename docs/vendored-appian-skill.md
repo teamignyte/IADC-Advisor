@@ -188,11 +188,20 @@ audit) still exist as carve-outs; what backs each one changed:
   all-clear branch. The same honesty framing reaches a *claim*, not just a count:
   `security-patterns.md`'s Group Deletion template softens "May be referenced in GROUP constants
   (will become invalid references)" to add "— manual verification needed; not automatically
-  checked, same as security expressions below" in its Dependency Checks list, and its Impact
-  section softens "GROUP constants referencing this group will contain invalid group names" to
-  "may contain invalid group names (not automatically verified — see Dependency Checks above)" —
+  checked, same as security expressions below", and its Impact section softens "GROUP constants
+  referencing this group will contain invalid group names" to "may contain invalid group names
+  (not automatically verified — see Dependency Checks above)" —
   the graph has no GROUP-constant representation at all, so a template can no longer assert this
-  as a checked certainty.
+  as a checked certainty. `record-types.md`'s Field Deletion template took the same collapse H3
+  gave Group Deletion: it no longer selects between "if field is in use" and "if field not in
+  use" branches — every one of a field's four dependency checks (relationships, title expression,
+  views, security expressions) already reads as unautomatable in the Dependency Checks list
+  immediately above it, so the selector was unevaluable and the "not in use" branch asserted an
+  absence nothing could establish. One unconditional template remains: the `[N]` relationship/view
+  counts and the bare "Title expression" claim are gone, replaced by the same "(not automatically
+  checked — no graph counterpart; needs a build tool)" qualifier `security-patterns.md:329`'s
+  member line uses, and the "not in use" branch is deleted outright rather than rescued with a
+  qualifier.
 - **Accessibility audits** — `references/accessibility-audit.md` reads the interface's SAIL
   with `find_nodes` + `get_sail` instead of `getInterface`/`listInterfaces`. This removes the
   render step **entirely, not just its tool**: all four references to `testInterface` are gone,

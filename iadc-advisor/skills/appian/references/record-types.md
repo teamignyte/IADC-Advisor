@@ -388,7 +388,7 @@ To confirm HIGH RISK operation, type: DELETE [Name]
 
 #### Field Deletion
 
-Field deletion is **HIGH risk** and requires Yes/No confirmation if the field is in use.
+Field deletion is **HIGH risk** and requires Yes/No confirmation.
 
 **Dependency checks:** no Appian MCP any more (IV-442) — none of a field's structural checks
 below have a graph counterpart (see `confirmation-patterns.md`'s Step 6 "For Fields" for why).
@@ -413,21 +413,17 @@ below have a graph counterpart (see `confirmation-patterns.md`'s Step 6 "For Fie
 4. **Check security expressions** (cannot detect automatically)
    - Warn user: "Manual verification needed if field used in security expressions"
 
-**Present to user if field is in use:**
+**Present to user:**
 ```
 You are about to DELETE field "[fieldName]" from record type "[RecordTypeName]".
 
-This field is currently used in:
-- [N] relationships (list relationship names)
-- Title expression
-- [N] record views
+This field may be used in:
+- Relationships (not automatically checked — no graph counterpart; needs a build tool)
+- The record type's title expression (not automatically checked — no graph counterpart; needs a build tool)
+- Record views (not automatically checked — no graph counterpart; needs a build tool)
+- Security expressions (manual verification needed)
 
-Deleting this field will break these references. Continue? (yes/no)
-```
-
-**If field not in use, proceed with lower-risk confirmation:**
-```
-Delete field "[fieldName]"? This field is not currently used in relationships, views, or title expression. Continue? (yes/no)
+Deleting this field may break any of these references. Continue? (yes/no)
 ```
 
 #### Relationship Deletion
