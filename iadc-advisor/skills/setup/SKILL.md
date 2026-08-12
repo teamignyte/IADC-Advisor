@@ -27,9 +27,10 @@ Read the current state; don't assume:
   **Redaction rule — it holds for the whole run, starting with this first read:** never print
   a credential value back into the transcript. Report the file's *shape* — server entries and
   key names, `••••` where a secret sits — never its secret contents. This matters most right
-  here: on a re-run the file you are reading is already filled in with live values. Every
-  later place this skill shows `.mcp.json` (the merge diff in step 3, the review in step 8)
-  means this rule.
+  here: on a re-run the file you are reading is already filled in with live values. This is a
+  property of the file, not a list of sites: **every** later place this skill shows any part of
+  `.mcp.json`, in any step, means this rule — a display site doesn't have to be named here to
+  inherit it.
 - `docs/agents/` — `advisor.md`, `advisor.local.md`, `issue-tracker.md`,
   `triage-labels.md`, `domain.md` — which exist from a prior run? A `project.md` or
   `project.local.md` here instead means an earlier version of this skill ran — step 2 offers to
@@ -286,7 +287,8 @@ personal working-tree edit from git, so clearing it may surface an edit the user
   explicit consent, the same as every other edit to this file in this step, never a silent
   removal: this file may hold other servers the team owns, so don't assume every entry in it is
   this plugin's to delete. Show the block you'd remove first. On **yes**, delete it and show the
-  diff — and say plainly that this removes the credential from the working file only: if
+  diff — both redacted per the redaction rule in step 1 — and say plainly that this removes the
+  credential from the working file only: if
   `.mcp.json` was ever committed with this entry present, that history still holds the username
   and password, so this removal is **necessary but not sufficient** — the credential should be
   rotated. On **no**, or no answer, leave it standing and say plainly what that means: its Appian
