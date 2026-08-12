@@ -368,7 +368,6 @@ Structural dependencies (confirmed):
 
 Database impact:
 - The database table [TABLE_NAME] will be PRESERVED
-- [N] data records remain in database but are no longer accessible via Appian
 
 What breaks if you proceed:
 - N interfaces will get "Unknown record type" errors
@@ -376,7 +375,6 @@ What breaks if you proceed:
 - N process models will have broken nodes/variables
 - N Web APIs will fail
 - Related record types will have broken relationships
-- [N] records become inaccessible (but data preserved in database)
 
 This action CANNOT be undone (record type metadata will be lost).
 

@@ -286,7 +286,10 @@ personal working-tree edit from git, so clearing it may surface an edit the user
   explicit consent, the same as every other edit to this file in this step, never a silent
   removal: this file may hold other servers the team owns, so don't assume every entry in it is
   this plugin's to delete. Show the block you'd remove first. On **yes**, delete it and show the
-  diff. On **no**, or no answer, leave it standing and say plainly what that means: its Appian
+  diff — and say plainly that this removes the credential from the working file only: if
+  `.mcp.json` was ever committed with this entry present, that history still holds the username
+  and password, so this removal is **necessary but not sufficient** — the credential should be
+  rotated. On **no**, or no answer, leave it standing and say plainly what that means: its Appian
   username and password remain in this file until it's removed, by hand or on a later run of
   this skill.
 - **`context7`** — HTTP docs search. Keyless works, which is why the template ships **no `headers` block** for it; add one carrying `CONTEXT7_API_KEY` only if the team has a key and wants the higher rate limits.

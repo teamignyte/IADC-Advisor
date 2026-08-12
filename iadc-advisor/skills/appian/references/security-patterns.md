@@ -458,12 +458,7 @@ Parent group deletion has cascading effects:
 ```
 You are about to DELETE parent group "[ParentName]".
 
-This group has [N] child groups:
-- [ChildGroup1]
-- [ChildGroup2]
-- [...]
-
-These child groups will be orphaned (lose parent relationship and inherited permissions).
+Child groups will be orphaned (lose parent relationship and inherited permissions).
 
 What would you like to do?
 1. Delete parent only (children become top-level groups)

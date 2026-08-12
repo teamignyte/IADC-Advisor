@@ -178,20 +178,21 @@ audit) still exist as carve-outs; what backs each one changed:
   `getRecordType(...).titleExpression`) that no longer exists. The loss is recorded in [ADR
   0013](adr/0013-drop-appian-mcp-route-through-graph.md)'s Consequences. Every *template* that
   would otherwise present one of these unobtainable counts to the user as a checked fact carries
-  the same qualifier inline, matching the wording above: `security-patterns.md`'s two Group
-  Deletion templates mark `[N] direct members` "(not automatically checked — no graph
+  the same qualifier inline, matching the wording above: `security-patterns.md`'s Group
+  Deletion template marks `[N] direct members` "(not automatically checked — no graph
   counterpart; needs a build tool)" rather than a bare count, and `confirmation-patterns.md`'s
   Record Type Delete Special Case template drops its data-record count line entirely (a slot for
-  a number nobody can obtain is not a qualifier away from honest, it has to go) and marks the
-  zero-dependency all-clear "row data not automatically checked" rather than folding it into a
-  clean "no relationships, views, actions, or data" claim. The same honesty framing reaches a
-  *claim*, not just a count: `security-patterns.md`'s two Group Deletion templates soften "May be
-  referenced in GROUP constants (will become invalid references)" to add "— manual verification
-  needed; not automatically checked, same as security expressions below", and the first
-  template's Impact section softens "GROUP constants referencing this group will contain invalid
-  group names" to "may contain invalid group names (not automatically verified — see Dependency
-  Checks above)" — the graph has no GROUP-constant representation at all, so a template can no
-  longer assert this as a checked certainty.
+  a number nobody can obtain is not a qualifier away from honest, it has to go) and states "Row
+  data not checked (no graph counterpart; needs a build tool)" as its own unconditional line
+  under Structural dependencies — printed on every path, not folded into the zero-dependency
+  all-clear branch. The same honesty framing reaches a *claim*, not just a count:
+  `security-patterns.md`'s Group Deletion template softens "May be referenced in GROUP constants
+  (will become invalid references)" to add "— manual verification needed; not automatically
+  checked, same as security expressions below" in its Dependency Checks list, and its Impact
+  section softens "GROUP constants referencing this group will contain invalid group names" to
+  "may contain invalid group names (not automatically verified — see Dependency Checks above)" —
+  the graph has no GROUP-constant representation at all, so a template can no longer assert this
+  as a checked certainty.
 - **Accessibility audits** — `references/accessibility-audit.md` reads the interface's SAIL
   with `find_nodes` + `get_sail` instead of `getInterface`/`listInterfaces`. This removes the
   render step **entirely, not just its tool**: all four references to `testInterface` are gone,
