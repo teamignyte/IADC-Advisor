@@ -40,9 +40,9 @@ Read the current state; don't assume:
 
 ### 2. Establish the ignore rules and the workspace
 
-**This step runs before anything writes a credential.** Step 3 puts a literal Appian password
-(and, if the team wants one, a context7 API key) into `.mcp.json` at the repo root; **the ignore
-rules must exist before any credential is written**, or a `git add -A` in the gap between the two
+**This step runs before anything writes a credential.** Step 3 may put a literal credential — a
+context7 API key, if the team wants one — into `.mcp.json` at the repo root; **the ignore rules
+must exist before any credential is written**, or a `git add -A` in the gap between the two
 stages the secret. That ordering is the reason this step comes first, not a formality.
 
 The plugin can't ship files into this repo, so create them here (idempotently — leave
@@ -208,20 +208,19 @@ in order, the tracked check **first**, before you write anything:
       `git restore --staged .mcp.json` to put it back, and run it only on their yes, like
       every other git change here.
   - **They decline** → **this step ends here for `.mcp.json`.** Write **no** credential value
-    into a tracked file — not the password, not an API key, not "just the URL and username".
-    Leave every `<placeholder>` standing exactly as it is. Then tell the user which values are
-    still needed, named one by one (`appian`: `command`, `--directory`, `LCP_URL`,
-    `LCP_USERNAME`, `LCP_PASSWORD`; `context7`: nothing unless they want a key), and that those
-    have to go wherever they told you their team keeps secrets — outside this repo. Skip only
-    the rest of this step's `.mcp.json` write-up (the merge bullet and the two server-value
-    bullets); **still walk the `iadc` bullet and the connector bullets** — Jira, Office, Slack —
-    with the user, since none of them write a credential into this file: `iadc` only points at
+    into a tracked file — not an API key, not any other secret. Leave every `<placeholder>`
+    standing exactly as it is. Then tell the user which values are still needed (`context7`:
+    nothing unless they want a key), and that any they do want have to go wherever they told
+    you their team keeps secrets — outside this repo. Skip only the rest of this step's
+    `.mcp.json` write-up (the merge bullet and the server-value bullet below); **still walk the
+    `iadc` bullet and the connector bullets** — Jira, Office, Slack — with the user, since
+    none of them write a credential into this file: `iadc` only points at
     `/iadc-graph:setup`. Office's deliberate `none` still gets recorded in step 4. Then move on
     to step 4. Step 9 will report `.mcp.json` as deliberately unconfigured; that is the
     correct outcome, not a failure to paper over.
 - **`.mcp.json` already exists** (and the check above cleared) → **merge, never overwrite**:
-  add or update only the `appian` and `context7` entries; preserve every other server the team
-  has configured — `iadc` included, since `/iadc-graph:setup` owns that entry and does its own
+  add or update only the `context7` entry; preserve every other server the team has
+  configured — `iadc` included, since `/iadc-graph:setup` owns that entry and does its own
   merge into this same file. Show the diff before writing, redacted per the redaction rule in
   step 1.
 
@@ -280,7 +279,15 @@ personal working-tree edit from git, so clearing it may surface an edit the user
 — say so before running it.
 
 - **`iadc`** (graph) — no longer configured here: tell the user to run `/iadc-graph:setup` (installed automatically — this plugin declares `iadc-graph` as a dependency), and say plainly that it can wait — before, during, or after this setup; the other skill runs fine mid-session, it's only its *connection* that needs a fresh session before it shows as live — since nothing below depends on it. That skill writes this entry and runs its own credential-safety sequence, and never silently overwrites a working entry — a repo that ran an older version of this skill keeps what it already has unless the user chooses otherwise. This skill neither writes that entry nor waits on the other one — mention it here and move on to the servers below.
-- **`appian`** (read-only) — stdio `lcp_mcp_server`. Fill `command`/`--directory` (paths to `uv` and the extracted server bundle), and the `env`: `LCP_URL`, `LCP_USERNAME`, `LCP_PASSWORD`. Keep **`LCP_TOOL_MODE: "readonly"`** — inspection only, no mutation.
+- **`appian`** — no longer written here (IV-442: this plugin holds no live Appian connection any
+  more; the vendored `appian` skill's live reads go through the `iadc` graph instead). **If
+  `.mcp.json` already carries an `appian` entry from an older install, offer to remove it** —
+  explicit consent, the same as every other edit to this file in this step, never a silent
+  removal: this file may hold other servers the team owns, so don't assume every entry in it is
+  this plugin's to delete. Show the block you'd remove first. On **yes**, delete it and show the
+  diff. On **no**, or no answer, leave it standing and say plainly what that means: its Appian
+  username and password remain in this file until it's removed, by hand or on a later run of
+  this skill.
 - **`context7`** — HTTP docs search. Keyless works, which is why the template ships **no `headers` block** for it; add one carrying `CONTEXT7_API_KEY` only if the team has a key and wants the higher rate limits.
 - **Jira** — connected as a **Claude connector** (the Atlassian connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. Jira is **human-first**: the architect reads via the connector and does only light, gated writes. the `jira` and `to-tickets` skills both go through this connector; the project key lives in `docs/agents/issue-tracker.md` (step 5), not an env var.
 - **Office / Microsoft 365** — connected as a **Claude connector** (the Microsoft 365 connector), not in `.mcp.json` and with no tokens or env vars to configure here. Point the user at their client's connector settings. This surface is **read-only**: the `office` skill finds and reads SharePoint/OneDrive documents and Teams/Outlook discussion to ground planning, and never sends, uploads, or edits. Optional — if the project has no SharePoint/M365 source docs, leave the connector alone and record the deliberate `none` answer in step 4, so `/iadc-advisor:office` stops asking. (Its pinned source-of-truth folder is a project value — step 4.)
@@ -356,13 +363,15 @@ never delete a line unless the template says to.
   single source of truth, so don't leave it to drift from a skill's fallback default.
 - **`Application`** — the Appian application the `iadc` graph is seeded from: its **full
   name** on `Application`, the team's shorthand on **`Nicknames`**, and the **`UUID`**.
-  Resolve the UUID via the `appian` MCP (`listApplications`) or take it from the user —
-  this is the one time a live lookup is worth it. Recorded here, seeding reads the UUID
-  from the configuration and never needs the Appian MCP again. `Nicknames` is genuinely
-  optional and has **no deliberate-answer sentinel**: write the shorthands the team actually
-  uses, and if they have none, leave that one line's placeholder standing rather than writing
-  a word like `none` into it, which would only seed a fake nickname. Nothing nags about an
-  unfilled `Nicknames`.
+  **Take the UUID from the user** (IV-442) — this plugin holds no live connection to the
+  client's Appian tenant, so there is no lookup to fall back on. If they don't have it to
+  hand, tell them where to find it: open the application in **Appian Designer** — the UUID is
+  visible in the browser's address bar and on the application's General properties panel.
+  Recorded here, seeding reads the UUID from the configuration and never needs a live Appian
+  connection. `Nicknames` is genuinely optional and has **no deliberate-answer sentinel**:
+  write the shorthands the team actually uses, and if they have none, leave that one line's
+  placeholder standing rather than writing a word like `none` into it, which would only seed
+  a fake nickname. Nothing nags about an unfilled `Nicknames`.
 - **`Office source of truth`** (+ **`Row`**, **`Active prospect`**) — the SharePoint/OneDrive
   **site** and **pinned folder** holding this project's requirements/design docs, so
   `/iadc-advisor:office` searches there first instead of the whole tenant. Keep the template's shipped
@@ -499,7 +508,18 @@ This is the payoff — confirm the configuration actually works, don't just writ
    `.gitignore` entry the explanation. If the user declined the ignore entries (step 2) or the `git
    rm --cached` (step 3), report `.mcp.json` as **deliberately unconfigured** with the list of
    values they still owe — don't call that a failure and don't quietly fill it in now.
-2. **Each MCP server handshakes** — list its tools (`iadc`, `appian`, `context7`). For `appian`, confirm it came up in **read-only** mode (mutating/test tools absent). For Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the Microsoft 365 connector is connected (e.g. a `get_me` call). For Slack (if used for escalation), confirm the Slack connector is connected. **Exception — if `.mcp.json` was deliberately left placeholder-valued (item 1), `appian` has no values to connect with *by design*:** report it as deliberately unconfigured, exactly as item 1 does, not as a failed handshake. (`context7` is keyless and should still come up.) **`iadc` is a separate case — this skill never writes that entry (step 3). If its tools are absent, that's not this skill's failed handshake, for any of several reasons: `/iadc-graph:setup` may not have run yet, may have run this same session (its write needs a fresh one to take effect), may have been declined inside it, or the key on file may be wrong (the graph service is fail-closed on it, so a bad key and no key look identical from here). Point the user at that command rather than diagnosing which.**
+2. **Each MCP server handshakes** — list its tools (`iadc`, `context7`). `context7` is keyless
+   and should always come up. **`iadc` is a separate case — this skill never writes that entry
+   (step 3). If its tools are absent, that's not this skill's failed handshake, for any of
+   several reasons: `/iadc-graph:setup` may not have run yet, may have run this same session
+   (its write needs a fresh one to take effect), may have been declined inside it, or the key
+   on file may be wrong (the graph service is fail-closed on it, so a bad key and no key look
+   identical from here). Point the user at that command rather than diagnosing which.** For
+   Jira, confirm the Atlassian connector is connected. For Office (if used), confirm the
+   Microsoft 365 connector is connected (e.g. a `get_me` call). For Slack (if used for
+   escalation), confirm the Slack connector is connected. **If a stale `appian` entry was found
+   and the user declined to remove it (step 3), don't handshake it** — it's dead configuration
+   this skill no longer wires to anything, not a server to verify.
 3. **The workspace is live** — `outputs/` exists and holds its `README.md` (unless that write
    was withheld: the user declined it, or step 2's ignore rules were declined and this skill
    held the README back on its own), and the ignore actually bites:
@@ -523,11 +543,10 @@ This is the payoff — confirm the configuration actually works, don't just writ
    real answer, with the two exceptions this file documents: `Project lead` stays a placeholder
    when `Escalation` is `hand-off`, and `Nicknames` stays one when the team has no shorthand
    (step 4). Any **other** `<...>` still standing means that field is genuinely unset — go back
-   and fill it rather than reporting success, with one further exception on the
-   deliberately-unconfigured path: with `.mcp.json` left placeholder-valued the `appian` MCP
-   can't run `listApplications`, so if the user doesn't know the `Application` `UUID` by hand
-   that placeholder stands for a reason — report it with the other values they still owe, not
-   as a failure to fix now. **That placeholder check alone misses a field with no line at
+   and fill it rather than reporting success, with one further exception: if the user doesn't
+   know the `Application` `UUID` by hand — this plugin has no live Appian connection to look it
+   up for them (step 4) — that placeholder stands for a reason, not a gap to fix now; report it
+   with the other values they still owe. **That placeholder check alone misses a field with no line at
    all** — re-apply step 4's field-label comparison, the same way, to
    **`docs/agents/advisor.md`** specifically (not `advisor.local.md`, named two sentences below:
    it's partial **by design** — step 4 says so — and would diff as several gaps for a reason

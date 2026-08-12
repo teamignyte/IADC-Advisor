@@ -85,10 +85,11 @@ for real delivery.
 2. **Ground before probing.** Look up the facts the questions will stand on — never ask
    what the environment can tell you, and let the grounding expose where the ticket's
    assumptions don't match reality:
-   - the live objects (`/iadc-advisor:appian`) and the dependency graph / blast radius (`/iadc-graph:iadc-graph`) — seed
-     the graph from the **application UUID in the Project configuration**, never from a
-     live `listApplications` lookup; when the blast radius is wide, render it as a fan-in diagram
-     with `/iadc-advisor:to-diagram` and keep it with the ticket's `decisions.md`;
+   - the application's dependency graph and blast radius (`/iadc-graph:iadc-graph`, applying
+     `/iadc-advisor:appian`'s domain guidance — there's no separate live Appian connection any
+     more) — seed the graph from the **application UUID in the Project configuration**, never
+     from a live `listApplications` lookup; when the blast radius is wide, render it as a fan-in
+     diagram with `/iadc-advisor:to-diagram` and keep it with the ticket's `decisions.md`;
    - **the project's own documentation (`/iadc-advisor:office`).** First read the documents the **ticket
      itself references** (the attachments and links from step 1). Then **also search SharePoint
      by the ticket number/key** (e.g. `<TICKET-KEY>`) — related design and spec docs are routinely

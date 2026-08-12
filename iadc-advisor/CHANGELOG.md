@@ -7,6 +7,36 @@ rewords the immediately preceding minor's own logic, with no further behavior ch
 **patch** (1.3.1, 1.4.1 below are both this: corrections to the minor just before them, each
 saying so and each ending in "no action needed").
 
+## 1.7.0 — 2026-08-12
+
+**Drop the `appian` MCP server; blast radius and accessibility audits read the `iadc` graph
+instead (IV-442).** `/iadc-advisor:setup` no longer writes an `appian` entry into `.mcp.json` —
+no client repo it configures holds a live Appian username, password, or tenant URL any more. The
+family's last live Appian credential is gone: after this release, the whole client credential
+surface is the one `iadc` graph entry.
+
+- The vendored `appian` skill's two live workflows are repointed: blast radius now calls
+  `reachable`/`get_in_edges`/`get_edge` against the graph instead of `getObjectDependents`, and
+  the accessibility audit reads SAIL via `find_nodes` + `get_sail` instead of `getInterface`. The
+  application-scope boundary (the graph only sees the seeded application) is stated where blast
+  radius is described, and one gap the old tool had is now closed: field-level dependencies
+  (`recordType!RT.fields.fieldName`) are visible via `uses_record_field`, which the old tool
+  documented it could not see.
+- **The Application UUID is now always a value the user provides**, recorded as per-project
+  state — the graph is seeded *from* that UUID, so it can never resolve it live. `/setup` tells
+  the user where to find it in Appian Designer if they don't have it to hand, and still finishes
+  without it if they don't.
+- **`/setup`, on re-run, detects a stale `appian` entry left by an older install and offers to
+  remove it** — explicit consent, never a silent edit of a file that may hold other servers the
+  team owns.
+- `README.md` and the SessionStart posture hook no longer ask for or mention an Appian
+  connection. See [ADR
+  0013](../docs/adr/0013-drop-appian-mcp-route-through-graph.md) for the full decision, and
+  `docs/vendored-appian-skill.md` for the vendored-tree patch.
+
+No action needed to pick this up on an already-configured repo — but re-run `/iadc-advisor:setup`
+to be offered removal of any leftover `appian` credentials.
+
 ## 1.6.1 — 2026-08-04
 
 Wording only, in the versioning paragraph just above: simplified how a patch release is

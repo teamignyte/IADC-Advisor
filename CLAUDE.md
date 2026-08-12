@@ -74,8 +74,10 @@ plugin as `enabled` in `claude plugin list` — verify there, not with `validate
 
 `iadc-advisor/skills/appian/` is vendored from <https://github.com/appian/dev-mcp-skills> and
 carries deliberate local patches — chiefly the ADR 0010 config relocation (upstream hardcodes
-`**Appian Version:** 26.6`; we read it from the ambient Project configuration) and repairs to 15
-citations upstream points at files that do not exist. **Never edit that tree without reading
+`**Appian Version:** 26.6`; we read it from the ambient Project configuration), repairs to 15
+citations upstream points at files that do not exist, and (since IV-442) repointing the skill's
+two live workflows — blast radius, accessibility audit — at the `iadc` graph instead of a live
+Appian MCP, which this plugin no longer configures at all. **Never edit that tree without reading
 [docs/vendored-appian-skill.md](docs/vendored-appian-skill.md) first** — it records every
 deliberate divergence, the refresh procedure, and the greps that catch a silent revert.
 Refreshed to upstream `0ab639c4` on 2026-07-27. **Adding a local patch means adding it to that

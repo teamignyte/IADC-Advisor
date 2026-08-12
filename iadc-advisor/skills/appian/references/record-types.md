@@ -302,13 +302,17 @@ Load both files together - universal for structure, this file for specifics.
 
 Record type deletion is **CRITICAL risk** and requires typed confirmation. Follow these dependency checks:
 
-**Step 1: Check expression dependencies** via `getObjectDependents(uuid)`:
+**Step 1: Check expression dependencies** via the `iadc` graph — `reachable(node_id, direction="in")`
+for the full transitive set, or `get_in_edges(node_id)` for the direct one-hop set with relation
+and provenance attached (not `callers_of`, which filters to `calls`-relation edges only and would
+miss a plain `recordType!` reference):
    - Find all interfaces referencing this record type
    - Find all expression rules using recordType!
    - Find all process models with record type nodes/variables
    - Find all Web APIs querying this record type
-   - Deduplicate by UUID and group by type
-   - Present top 10 per type (or all if < 10)
+   - Deduplicate by node id and group by `object_type`
+   - Present top 10 per type (or all if < 10); drill into any one with `get_edge` for the exact
+     SAIL line(s)
 
 **Step 2: Check structural dependencies:**
 

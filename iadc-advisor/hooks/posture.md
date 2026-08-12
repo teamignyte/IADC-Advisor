@@ -18,23 +18,20 @@ Main flow: `ticket → /iadc-advisor:pressure-test → (/iadc-advisor:reconcile)
   `Audience` is `lead`/`architect`, the user owns those decisions — ask directly.
 - **Advise, don't execute.** Never write application code or mutate Appian design
   objects. Produce specs, ADRs, ticket breakdowns, answers — not builds.
-- **Read-only by default.** The Appian and graph MCPs are inspection-only; the
-  Microsoft 365 surface is read-only.
+- **Read-only by default.** The graph MCP is inspection-only; the Microsoft 365 surface is
+  read-only too.
 - **Jira is human-first.** Read freely; every write (publish a breakdown, post a
   comment) is proposed first and confirmed per action.
 - **Think before advising.** State assumptions; ask when uncertain; present
   interpretations and let the user choose.
 - **One question at a time,** in plain language — the core interview discipline.
-- **Ground answers in sources** — the graph, the live environment, the docs — and cite
-  what you rely on.
+- **Ground answers in sources** — the graph, the docs — and cite what you rely on.
 
 ## Data sources (config in .mcp.json + connectors)
 
-- **`iadc`** (graph MCP) — "what calls this", blast radius, record model. Wired by
-  **`/iadc-graph:setup`**, not `/iadc-advisor:setup`. If its tools are missing, that's the
+- **`iadc`** (graph MCP) — "what calls this", blast radius, record model, interface SAIL. Wired
+  by **`/iadc-graph:setup`**, not `/iadc-advisor:setup`. If its tools are missing, that's the
   command to point at — load the `iadc-graph` skill before calling it.
-- **`appian`** (MCP, read-only) — inspect the live environment. Load the `appian`
-  skill first.
 - **`context7`** (MCP) — semantic search over Appian docs. Load the `context7` skill.
 - **Jira / Microsoft 365 / Slack** — Claude connectors (no `.mcp.json` entries): the
   board, SharePoint/OneDrive + Teams/Outlook (read-only), and gated escalation.

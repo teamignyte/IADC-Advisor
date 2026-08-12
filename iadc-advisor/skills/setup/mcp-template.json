@@ -1,18 +1,6 @@
 {
-  "_comment": "TEMPLATE — /iadc-advisor:setup asset. /iadc-advisor:setup writes the real .mcp.json (gitignored) into the app repo with LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json. Every _comment key is a note to /iadc-advisor:setup and is dropped from the file it writes. No `iadc` entry here: /iadc-graph:setup owns that block and carries its own template (family ADR 0010) — merge into whatever it already wrote, don't recreate it from this file.",
+  "_comment": "TEMPLATE — /iadc-advisor:setup asset. /iadc-advisor:setup writes the real .mcp.json (gitignored) into the app repo with LITERAL values, not ${VAR} — the Windows Desktop app does not reliably expand ${VAR} in .mcp.json. Every _comment key is a note to /iadc-advisor:setup and is dropped from the file it writes. No `iadc` entry here: /iadc-graph:setup owns that block and carries its own template (family ADR 0010) — merge into whatever it already wrote, don't recreate it from this file. No `appian` entry here either (IV-442): this plugin holds no live Appian connection any more — /iadc-advisor:setup instead offers to remove a stale `appian` block a prior version left behind.",
   "mcpServers": {
-    "appian": {
-      "type": "stdio",
-      "command": "<path-to-uv-executable>",
-      "args": ["run", "--directory", "<path-to-mcp-bundle-extracted>", "python", "-m", "lcp_mcp_server"],
-      "env": {
-        "LCP_URL": "https://<your-tenant>.appiancloud.com",
-        "LCP_USERNAME": "<your.appian.username>",
-        "LCP_PASSWORD": "<your-appian-password>",
-        "LCP_API_PATH": "/suite/plugins/servlet/stateless/lcp-api",
-        "LCP_TOOL_MODE": "readonly"
-      }
-    },
     "context7": {
       "type": "http",
       "url": "https://mcp.context7.com/mcp"
