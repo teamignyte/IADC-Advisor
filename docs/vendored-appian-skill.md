@@ -147,7 +147,14 @@ audit) still exist as carve-outs; what backs each one changed:
   `getObjectDependents`. **`get_in_edges`, not `callers_of`** — `callers_of` filters strictly to
   `calls`-relation edges and would silently drop `references`/`uses_record_field`/`secured_by`.
   The graph is scoped to one seeded application; a cross-application dependent is invisible to
-  it, silently — stated in each of the three files above.
+  it, silently — stated in each of the three files above. Resolving the target object to a node
+  id first — Step 2 of `confirmation-patterns.md`'s worked deletion Examples — calls
+  `find_nodes(session_id, query=..., kind="artifact", object_type=<Appian type, e.g.
+  "recordType"/"constant">)`. Both arguments are required: `kind` is the graph's own node-kind
+  axis, never the Appian object type, and passing the Appian type as `kind` alone matches zero
+  nodes silently (`{"nodes": [], ...}`, not an error) — reads at that step as "object does not
+  exist." A refresh reapplying this patch to fresh worked examples must reproduce the
+  `kind="artifact", object_type=...` pairing exactly, not just `kind=<Appian type>`.
 - **Structural checks (Step 6)** — `confirmation-patterns.md`'s structural-check block
   (relationships/views/actions, **for a record type**) now calls `record_model` in place of
   `getRecordType`/`listRecordTypeViews`/`listRecordTypeActions`; a record type's
@@ -162,7 +169,15 @@ audit) still exist as carve-outs; what backs each one changed:
   either — stated as needing a build tool rather than left routed through a tool
   (`listRecordData`, `listGroups`, `listGroupMembers`, `listConstants`,
   `getRecordType(...).titleExpression`) that no longer exists. The loss is recorded in [ADR
-  0013](adr/0013-drop-appian-mcp-route-through-graph.md)'s Consequences.
+  0013](adr/0013-drop-appian-mcp-route-through-graph.md)'s Consequences. Every *template* that
+  would otherwise present one of these unobtainable counts to the user as a checked fact carries
+  the same qualifier inline, matching the wording above: `security-patterns.md`'s two Group
+  Deletion templates mark `[N] direct members` "(not automatically checked — no graph
+  counterpart; needs a build tool)" rather than a bare count, and `confirmation-patterns.md`'s
+  Record Type Delete Special Case template drops its data-record count line entirely (a slot for
+  a number nobody can obtain is not a qualifier away from honest, it has to go) and marks the
+  zero-dependency all-clear "row data not automatically checked" rather than folding it into a
+  clean "no relationships, views, actions, or data" claim.
 - **Accessibility audits** — `references/accessibility-audit.md` reads the interface's SAIL
   with `find_nodes` + `get_sail` instead of `getInterface`/`listInterfaces`. There was never a
   `testInterface` to render a component tree with, Appian MCP or not, so the render-step
@@ -192,9 +207,10 @@ before IV-442, so the drop doesn't change it.
 
 ## 2. Everything else is upstream's
 
-As of the 2026-07-27 refresh we are at **parity with `0ab639c4`** apart from Patches A–D.
-There is no remaining local drift to protect: a prior audit reconstructed the original
-import and confirmed exactly 12 files ever carried local edits.
+As of the 2026-07-27 refresh we were at **parity with `0ab639c4`** apart from Patches A–D — a
+prior audit reconstructed the original import and confirmed exactly 12 files ever carried local
+edits, so there was no remaining local drift beyond those four. IV-442 added Patch E on top of
+that base: the current divergence from `0ab639c4` is Patches A–E, not A–D.
 
 If a future diff shows a difference in a file **not** listed in §1, it is upstream having
 moved on — **take upstream.**
@@ -217,7 +233,7 @@ git -C /tmp/appian-upstream rev-parse HEAD          # record this SHA
 1. **Copy** `/tmp/appian-upstream/skills/appian/` over `iadc-advisor/skills/appian/`,
    keeping `LICENSE`. Include non-`.md` assets — `registry/components-registry.json` is
    referenced by five files, and omitting it creates fresh dangling citations.
-2. **Reapply Patches A–D.** Read our pre-refresh version of each patched file first, then
+2. **Reapply Patches A–E.** Read our pre-refresh version of each patched file first, then
    reproduce the patch's *intent* on top of upstream's new prose — upstream may have
    rewritten the surrounding text, so do not paste old sentences in mechanically.
 3. **Check whether the patch scope grew.** Patch A in particular: grep every newly-added
@@ -392,8 +408,9 @@ the dogfooding recipe in the workshop `CLAUDE.md`.
 
 1. **Report Patch B upstream.** It is a genuine bug in their repo affecting all their
    users, and nothing about the fix is specific to us. Merged upstream, 15 citations stop
-   being our problem permanently — leaving Patches A and D, which are ours by design and
-   always will be.
+   being our problem permanently — leaving Patches A, D, and E, which are ours by design
+   and always will be (E most of all: it isn't an upstream bug at all, but our own choice
+   to run with no live Appian MCP).
 2. **Never patch a vendored file without adding it to §1 in the same commit.** See the
    warning at the top: this exact rule was broken once and cost a near-miss on the
    advisory posture.
