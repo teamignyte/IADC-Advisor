@@ -7,6 +7,21 @@ rewords the immediately preceding minor's own logic, with no further behavior ch
 **patch** (1.3.1, 1.4.1 below are both this: corrections to the minor just before them, each
 saying so and each ending in "no action needed").
 
+## 1.7.1 — 2026-08-12
+
+**Two surfaces still said this plugin reads the live app (IV-442 follow-up).** 1.7.0 removed the
+live Appian connection but left the claim standing in the plugin's own `description` — the string
+shown in `claude plugin list` and in the `ignyte` catalogue, so the first thing a client reads
+about this plugin described a capability the same release had removed — and in
+`pressure-test/SKILL.md`'s opening paragraph. Both now name the `iadc` graph, matching the
+wording 1.7.0 already gave `pressure-test`'s own frontmatter four lines above. No behavior
+change; no action needed.
+
+The catalogue duplicates the `description` rather than reading it from this manifest, so the
+matching edit ships in `IADC-Marketplace` as its own commit. A copy in another repo is why 1.7.0
+missed this: the release swept six files for the phrase and the seventh and eighth were a
+manifest and a catalogue.
+
 ## 1.7.0 — 2026-08-12
 
 **Drop the `appian` MCP server; blast radius and accessibility audits read the `iadc` graph

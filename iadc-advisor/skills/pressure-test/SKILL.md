@@ -9,7 +9,7 @@ Pressure-test is how you start when you've **picked up a specific ticket** and w
 *before* building. It runs a **relentless, one-question-at-a-time Socratic interview** — but
 unlike `/iadc-advisor:interrogating`, Pressure-test **does not propose answers**. It asks; *you* reason; it probes
 the next layer. The output is an approach you arrived at yourself and are ready to build,
-stress-tested against the live app and the ticket's own contradictions.
+stress-tested against the `iadc` graph and the ticket's own contradictions.
 
 **Who it's talking to.** By default the **developer who will build the ticket** — the `Audience`
 line in the ambient **Project configuration**, which reads `developer` unless configured
