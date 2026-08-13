@@ -302,30 +302,43 @@ Load both files together - universal for structure, this file for specifics.
 
 Record type deletion is **CRITICAL risk** and requires typed confirmation. Follow these dependency checks:
 
-**Step 1: Check expression dependencies** via `getObjectDependents(uuid)`:
+**Step 1: Check expression dependencies** via the `iadc` graph — `reachable(node_id, direction="in")`
+for the full transitive set, or `get_in_edges(node_id)` for the direct one-hop set with relation
+and provenance attached (not `callers_of`, which filters to `calls`-relation edges only and would
+miss a plain `recordType!` reference):
    - Find all interfaces referencing this record type
    - Find all expression rules using recordType!
    - Find all process models with record type nodes/variables
    - Find all Web APIs querying this record type
-   - Deduplicate by UUID and group by type
-   - Present top 10 per type (or all if < 10)
+   - Deduplicate by node id and group by `object_type`
+   - Present top 10 per type (or all if < 10); drill into any one with `get_edge` for the exact
+     SAIL line(s)
+   - **Application-scope boundary:** this only sees dependents *inside* the seeded application. A
+     record type in a *different* application that references this one is invisible here —
+     silently: no error, no truncation flag, just a smaller set than reality. A suspected
+     cross-application dependent needs seeding that other application too and reading
+     `get_in_edges` on the boundary node it points at (see `confirmation-patterns.md`'s Step 5
+     fallback) — this confirms a suspicion, it does not discover one you don't already have
 
-**Step 2: Check structural dependencies:**
+**Step 2: Check structural dependencies:** no Appian MCP any more (IV-442) —
+`record_model(session_id, record_type_id)` returns relationships, views, and actions in one call
+(see `confirmation-patterns.md`'s Step 6 "For Record Types").
 
-1. **Check relationships** via `listRecordTypeRelationships(uuid)`
+1. **Check relationships** via `record_model`'s `relationships` array
    - Count MANY_TO_ONE relationships (this RT depends on others)
    - Count ONE_TO_MANY relationships (other RTs depend on this one)
    - Each relationship that references this RT will break
 
-2. **Check views** via `listRecordTypeViews(uuid)`
+2. **Check views** via `record_model`'s `views` array
    - Each view will be deleted along with the record type
    - Views may be referenced in sites or interfaces
 
-3. **Check actions** via `listRecordTypeActions(uuid)`
+3. **Check actions** via `record_model`'s `actions` array
    - Each action will be deleted
    - Actions may be referenced in interfaces or process models
 
-4. **Check data** via `listRecordData(uuid, limit=1)`
+4. **Check data** — **no graph counterpart**. The graph tracks design objects, not row data;
+   whether the record type holds rows needs a build tool.
    - If any records exist, data will become inaccessible
    - Database table is PRESERVED (see confirmation-patterns.md for details)
 
@@ -355,7 +368,6 @@ Structural dependencies (confirmed):
 
 Database impact:
 - The database table [TABLE_NAME] will be PRESERVED
-- [N] data records remain in database but are no longer accessible via Appian
 
 What breaks if you proceed:
 - N interfaces will get "Unknown record type" errors
@@ -363,7 +375,6 @@ What breaks if you proceed:
 - N process models will have broken nodes/variables
 - N Web APIs will fail
 - Related record types will have broken relationships
-- [N] records become inaccessible (but data preserved in database)
 
 This action CANNOT be undone (record type metadata will be lost).
 
@@ -377,41 +388,42 @@ To confirm HIGH RISK operation, type: DELETE [Name]
 
 #### Field Deletion
 
-Field deletion is **HIGH risk** and requires Yes/No confirmation if the field is in use.
+Field deletion is **HIGH risk** and requires Yes/No confirmation.
 
-**Dependency checks:**
+**Dependency checks:** no Appian MCP any more (IV-442) — none of a field's structural checks
+below have a graph counterpart (see `confirmation-patterns.md`'s Step 6 "For Fields" for why).
 
-1. **Check relationships** via `listRecordTypeRelationships(uuid)`
+1. **Check relationships** — **no graph counterpart**. `record_model`'s `relationships` array
+   carries no `source` key and its `target` is the target record type, never a field; no relation
+   in the graph connects a `recordRelationship` to a `recordField`. Needs a build tool.
    - Is this field used as `sourceRecordTypeFieldUuid`? (FK field in MANY_TO_ONE)
    - Is this field used as `targetRecordTypeFieldUuid`? (PK field in relationship)
    - If yes, relationship must be deleted first
 
-2. **Check title expression** via `getRecordType(uuid)`
+2. **Check title expression** — **no graph counterpart**. `record_model` does not carry a record
+   type's title expression. Needs a build tool.
    - Does `titleExpression` reference this field's UUID?
    - If yes, title expression will break
 
-3. **Check views** via `listRecordTypeViews(uuid)`
+3. **Check views** — **no graph counterpart**. `record_model`'s `views` array is a compact record
+   with no field list, so it cannot say whether a given field is displayed. Needs a build tool.
    - Review each view's displayed fields
    - If field is displayed, view will show empty column
 
 4. **Check security expressions** (cannot detect automatically)
    - Warn user: "Manual verification needed if field used in security expressions"
 
-**Present to user if field is in use:**
+**Present to user:**
 ```
 You are about to DELETE field "[fieldName]" from record type "[RecordTypeName]".
 
-This field is currently used in:
-- [N] relationships (list relationship names)
-- Title expression
-- [N] record views
+This field may be used in:
+- Relationships (not automatically checked — no graph counterpart; needs a build tool)
+- The record type's title expression (not automatically checked — no graph counterpart; needs a build tool)
+- Record views (not automatically checked — no graph counterpart; needs a build tool)
+- Security expressions (manual verification needed)
 
-Deleting this field will break these references. Continue? (yes/no)
-```
-
-**If field not in use, proceed with lower-risk confirmation:**
-```
-Delete field "[fieldName]"? This field is not currently used in relationships, views, or title expression. Continue? (yes/no)
+Deleting this field may break any of these references. Continue? (yes/no)
 ```
 
 #### Relationship Deletion

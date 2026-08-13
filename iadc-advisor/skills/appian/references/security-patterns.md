@@ -283,7 +283,7 @@ This section covers group-specific patterns for when to ask users for confirmati
 
 **When to use:** Before deleting a group.
 
-**Risk level:** CRITICAL if group has dependencies, HIGH otherwise
+**Risk level:** CRITICAL
 
 **Cross-reference:** `confirmation-patterns.md` → Universal Workflow 1 (Delete Confirmation)
 
@@ -305,7 +305,8 @@ Before deleting a group, check for these dependencies:
    - Common pattern: `PREFIX_ADMIN_GROUP`, `PREFIX_MANAGERS_GROUP`
    - Warn user: "If this group is referenced in constants, those constants will break. Manual verification needed."
 
-2. **Child groups** via `listGroups()` filter by `parentGroupName`
+2. **Child groups** — **no graph counterpart** (no Appian MCP any more, IV-442). Group hierarchy
+   is runtime security data, not a design-object reference the graph tracks. Needs a build tool.
    - If this group is a parent, deleting it orphans child groups
    - Child groups lose hierarchy structure
    - Child groups lose inherited permissions
@@ -313,29 +314,28 @@ Before deleting a group, check for these dependencies:
 3. **Security expressions** (cannot detect automatically)
    - Warn user: "This group may be used in security expressions on record types, interfaces, or process models. Manual verification needed via Appian Designer."
 
-4. **Direct members** via `listGroupMembers(groupName)`
+4. **Direct members** — **no graph counterpart**. Group membership is runtime security data, not
+   a design-object reference the graph tracks. Needs a build tool.
    - Count how many users are direct members
    - Members will lose permissions granted by this group
 
-**Present to user based on findings:**
+**Present to user:**
 
-**If child groups exist (CRITICAL risk):**
 ```
 You are about to DELETE group "[GroupName]".
 
 This group has dependencies:
-- [N] child groups (will become orphaned)
-  - [ChildGroup1]
-  - [ChildGroup2]
-  - [...]
-- [N] direct members
-- May be referenced in GROUP constants (will become invalid references)
+- [N] child groups (will become orphaned) (not automatically checked — no graph counterpart; needs a build tool)
+- [N] direct members (not automatically checked — no graph counterpart; needs a build tool)
+- May be referenced in GROUP constants (will become invalid references — manual verification
+  needed; not automatically checked, same as security expressions below)
 - May be used in security expressions (manual verification needed)
 
 Impact:
 - Child groups lose hierarchy structure and inherited permissions
 - Direct members lose permissions granted by this group
-- GROUP constants referencing this group will contain invalid group names
+- GROUP constants referencing this group may contain invalid group names (not automatically
+  verified — see Dependency Checks above)
 - Security expressions using this group will break
 
 Recommendation: Delete or reassign child groups first, or delete entire hierarchy top-down.
@@ -343,18 +343,6 @@ Recommendation: Delete or reassign child groups first, or delete entire hierarch
 This action CANNOT be undone.
 
 To confirm, type: DELETE [GroupName]
-```
-
-**If no children (HIGH risk):**
-```
-You are about to DELETE group "[GroupName]".
-
-This group has:
-- [N] direct members
-- May be referenced in GROUP constants (will become invalid references)
-- May be used in security expressions (manual verification needed)
-
-Continue? (yes/no)
 ```
 
 ### Group Rename
@@ -470,12 +458,7 @@ Parent group deletion has cascading effects:
 ```
 You are about to DELETE parent group "[ParentName]".
 
-This group has [N] child groups:
-- [ChildGroup1]
-- [ChildGroup2]
-- [...]
-
-These child groups will be orphaned (lose parent relationship and inherited permissions).
+Child groups will be orphaned (lose parent relationship and inherited permissions).
 
 What would you like to do?
 1. Delete parent only (children become top-level groups)

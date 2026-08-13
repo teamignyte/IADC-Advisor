@@ -1,15 +1,27 @@
 ## Purpose
 
-This skill enables programmatic accessibility auditing of Appian interfaces by inspecting the SAIL component tree returned by `testInterface`. It covers the SAIL Testing checks that can be performed by examining SAIL parameters rather than requiring manual browser testing or screen reader verification.
+This skill enables accessibility auditing of Appian interfaces done **from source** — reading the
+SAIL expression itself, since there is no live Appian connection here to render a component tree
+with. It covers the SAIL Testing checks that can be performed by examining SAIL parameters rather
+than requiring manual browser testing or screen reader verification.
 
 ## How It Works
 
-1. **Retrieve the interface** — use `getInterface` to get the SAIL expression source
-2. **Evaluate the interface** — use `testInterface` to render the component tree with test inputs
-3. **Inspect the component tree** — walk the rendered output looking for accessibility violations against the rules in `component-checks.md`
-4. **Report findings** — list each violation with the component path, the rule violated, and the fix
+1. **Find the interface** — use `find_nodes(session_id, query=<name>)` (or `list_nodes` filtered
+   to `kind="artifact", object_type="interface"`) against the `iadc` graph to resolve its `node_id`
+2. **Retrieve the SAIL source** — `get_sail(session_id, node_id)` returns the interface's own
+   `sail_strings`, in source order
+3. **Evaluate the source directly** — walk the SAIL, parameter by parameter, checking each
+   component against the rules in `component-checks.md`. There is no rendered component tree to
+   inspect (never was, with or without a live Appian connection) — every check here works from
+   the SAIL text itself
+4. **Report findings** — list each violation with the component path (as written in the SAIL),
+   the rule violated, and the fix
 
-When auditing, evaluate the interface with representative test inputs so that conditional components are rendered. If the interface has multiple states (create vs. edit, expanded vs. collapsed), evaluate each state separately.
+When auditing, read every conditional branch of the SAIL — the `if()`/`a!match()` cases and the
+`showWhen` guards — so a component that only renders in one state (create vs. edit, expanded vs.
+collapsed) isn't missed. There is no way to evaluate a state and see only what that state renders,
+the way rendering would; reading the source means reading every branch by hand.
 
 ## Rule Categories
 
@@ -48,17 +60,17 @@ The complete rules with Rule IDs, applicable components, and specific checks are
 
 ### Full Interface Audit
 
-1. Get the interface UUID (from `listInterfaces` or provided by the user)
-2. Get the interface definition with `getInterface` to read the SAIL source
-3. Call `testInterface` with representative inputs to get the rendered component tree
-4. Walk the component tree and check each component against the rules in `component-checks.md`
-5. For interfaces with multiple states, call `testInterface` multiple times with different inputs
-6. Compile findings into a table: Rule ID | Component Path | Issue | Recommended Fix
+1. Resolve the interface's `node_id` (`find_nodes` against the `iadc` graph, or provided by the user)
+2. Retrieve its SAIL source with `get_sail`
+3. Walk the SAIL source and check each component against the rules in `component-checks.md` —
+   read every conditional branch by hand (see "How It Works" above); there is no rendered tree
+   that would show you only what one state renders
+4. Compile findings into a table: Rule ID | Component Path | Issue | Recommended Fix
 
 ### Quick Checks (Single Component Type)
 
 When the user asks about a specific component or rule:
-1. Search the rendered tree for that component type
+1. Search the SAIL source for that component type
 2. Check only the relevant rules from the component-checks reference
 3. Report pass/fail with specifics
 

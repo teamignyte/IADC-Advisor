@@ -59,6 +59,9 @@ package".
 > [ADR 0009](https://github.com/teamignyte/IADC/blob/main/docs/adr/0009-umbrella-owns-per-project-state-convention.md)).
 > `.mcp.json` is excluded because its credentials follow a separate rule, owned by family
 > [ADR 0010](https://github.com/teamignyte/IADC/blob/main/docs/adr/0010-graph-plugin-owns-graph-configuration.md)
-> and not restated here: within it, `/setup` still writes only the `appian` and `context7`
-> entries — `/iadc-graph:setup` writes `iadc`. What `/setup` writes into the app repo is
-> unchanged; only which of it the term "per-project state" names is corrected.
+> and not restated here: within it, `/setup` wrote (at IV-373) the `appian` and `context7`
+> entries — `/iadc-graph:setup` writes `iadc`. **Superseded by [ADR
+> 0013](0013-drop-appian-mcp-route-through-graph.md): `/setup` now writes only `context7`, and
+> family ADR 0010's consequence line is marked superseded there.** What `/setup` writes into the
+> app repo is otherwise unchanged; only which of it the term "per-project state" names is
+> corrected.

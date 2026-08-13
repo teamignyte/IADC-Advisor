@@ -105,36 +105,49 @@ Apply this workflow before ANY DELETE operation:
 
 ---
 
-### Tool Capabilities (Updated 2026-07-02)
+### Tool Capabilities (Updated 2026-08-12, IV-442)
 
-✅ **Expression-based dependency detection now available** via `getObjectDependents` MCP tool.
+✅ **Expression-based dependency detection** via the `iadc` graph — `reachable`, `get_in_edges`,
+`get_edge` — not a live Appian MCP call; there is no Appian MCP here.
 
 **What we CAN check:**
 
 1. **Structural dependencies:**
    - Record type relationships (MANY_TO_ONE, ONE_TO_MANY)
    - Record type views, actions, user filters
-   - Record data existence
-   - Group hierarchy and members
    - Application contained objects
 
 2. **Expression-based dependencies:**
    - Which expressions reference a constant (cons!)
    - Which rules/interfaces/Web APIs call an expression rule (rule!)
    - Which objects reference a record type (recordType!)
+   - Which objects reference a record **field** by name (recordType!RT.fields.fieldName) — a
+     gain over the old live check, which tracked object-level dependencies by UUID only and
+     documented that it could not see this
    - Which process models use record types in nodes/variables
    - Which sites use interfaces as pages
-   - Exact line numbers where references occur
+   - Exact line, column, and literal reference text for any one dependency (via `get_edge`)
 
 **How it works:**
-- `getObjectDependents(uuid)` returns all design objects referencing the target
-- Response includes: dependent UUID, type, name, and breadcrumb showing exact location
-- Supports: Constants, Expression Rules, Record Types, Interfaces, Process Models, Web APIs, Sites, Connected Systems
-- Same object can appear multiple times (one entry per reference location)
-- Performance: < 2 seconds for 300+ dependents
+- `reachable(session_id, node_id, direction="in")` returns the full transitive set of
+  dependents — everything that would need re-checking, not just direct callers
+- `get_in_edges(session_id, node_id)` returns the direct one-hop set, each with `relation` and
+  `occurrence_count` attached — use this instead of `reachable(depth=1)` when you want the
+  relation breakdown. **Not `callers_of`**: it filters strictly to `calls`-relation edges and
+  silently drops `references`, `uses_record_field`, `secured_by`, and the rest
+- `get_edge(session_id, source, target, relation)` returns the full `occurrences` list for one
+  edge — file location (`sail_field`, `sail_line`, `sail_col`) and the literal reference text —
+  `reachable`/`get_in_edges` give you the set, `get_edge` gives you the breadcrumb
+- **Scope boundary:** the graph is one seeded application. A dependent that lives in a
+  *different* application is not in this graph at all — `reachable` under-reports it silently,
+  with no error and no truncation flag. Confirming a *suspected* cross-application dependent
+  means seeding that other application too and reading `get_in_edges` on the boundary node it
+  points at; this is not a way to discover one you don't already suspect
+- **Freshness:** the graph is a point-in-time snapshot from when the session was seeded, not a
+  live read. If the target (or anything near it) has been edited in Appian since, re-seed or
+  `report_changes` before trusting the result — a stale blast radius is worse than a slow one
 
 **What we still CANNOT check:**
-- Field-level dependencies (fields referenced by name, not UUID)
 - Hard-coded string references (group names, status values)
 - Document/folder references in expressions
 - Integration configurations
@@ -160,7 +173,7 @@ Apply this workflow before ANY DELETE operation:
 ⚠️ **IMPORTANT:** Steps 4-6 describe your internal process. Only Step 7's output is shown to the user.
 
 **What user sees:** Final dependency presentation (Step 7 template)  
-**What user does NOT see:** "Step 4:", "✓ getObjectDependents()", "Calling...", processing details
+**What user does NOT see:** "Step 4:", "✓ reachable()", "Calling...", processing details
 
 ---
 
@@ -214,40 +227,63 @@ Determine what kind of operation is being attempted:
 
 #### Step 5: Check Expression Dependencies
 
-**CRITICAL: ALWAYS call `getObjectDependents` first. Do NOT skip to manual fallback unless the tool call fails.**
+**CRITICAL: ALWAYS check the `iadc` graph first. Do NOT skip to manual fallback unless the graph
+call itself errors.** There is no Appian MCP `getObjectDependents` any more (IV-442) — this check
+runs against the graph, in the session already seeded for this application.
 
 **Process:**
 
-1. **Call `getObjectDependents(uuid)` - MANDATORY FIRST STEP**
-   - Returns list of dependents with uuid, type, name, breadcrumb
-   - Same object may appear multiple times (one per reference location)
-   - Supported for: constants, expression rules, interfaces, process models, Web APIs, connected systems, record types, applications, sites
+1. **Call `reachable(session_id, node_id, direction="in")` — MANDATORY FIRST STEP.** `node_id` is
+   the target object's graph id — resolve it with `find_nodes` first if you only have a name or a
+   UUID. Returns the full transitive set of dependents (everything that would need re-checking,
+   not just direct callers); pass `depth=1` for one-hop-only if that's genuinely what's being
+   asked.
+   - Returns compact node records only: `id`, `kind`, `node_label`, `object_type` — no relation,
+     no provenance, no line numbers. Get those per dependent with `get_in_edges`/`get_edge` (step
+     3 below)
+   - **Application-scope boundary:** this only sees dependents *inside* the seeded application.
+     An object in a *different* application that references this one is invisible here —
+     silently: no error, no truncation flag, just a smaller set than reality
+   - Check `truncated` on the result — default `limit=200` — and raise it before concluding the
+     impact is small
 
 2. Deduplicate and group:
-   - Group by `type` (APPLICATION, CONSTANT, FREEFORM_RULE, INTERFACE, OUTBOUND_INTEGRATION, PROCESS_MODEL, RECORD_TYPE, SITE, WEB_API)
-   - Within each type, deduplicate by `uuid` to count unique objects
-   - Keep first 5 breadcrumbs per object for presentation
+   - Nodes are already deduplicated by `id` in the result
+   - Group by `object_type` (`rule`, `interface`, `decision`, `constant`, `outboundIntegration`,
+     `recordType`, `processModel`, `site`, `portal`, ... — the graph's own vocabulary, not a
+     fixed enum)
 
 3. Present:
    - If < 10 unique objects per type: show all
    - If 10+ unique objects per type: show first 10 returned + "...and N more (type 'details' for full list)"
-   - Breadcrumb format: "Interface Definition: Lines 19, 180, 186, 108, 109..." (first 5, then "...")
-   - Note: Tool returns objects in arbitrary order (not sorted by reference count)
+   - For a dependent's exact source location(s): take its edge from `get_in_edges(node_id)` and
+     call `get_edge(session_id, source, target, relation)` on that triple — `occurrences` gives
+     `sail_field`/`sail_line`/`sail_col`/`raw_ref`, the breadcrumb the old tool gave you for free.
+     `reachable` alone doesn't carry this — don't call `get_edge` on every dependent by default,
+     it's a follow-up call per edge; drill into the ones that matter to the question being asked
+   - Note: `reachable`'s result is sorted by `(node_label, id)`, not by reference count
 
-**ONLY if getObjectDependents call fails or returns an error:**
+**ONLY if the graph call errors, or a dependent is suspected to live outside the seeded
+application:**
 
-Use manual verification fallback below. Do NOT use this fallback if the tool call succeeded (even if it returned zero dependencies).
+Use manual verification fallback below. Do NOT use this fallback just because the result came
+back small or empty — a small, real result is not a failure.
 
-**Manual Verification Fallback (ONLY if getObjectDependents fails):**
+**Manual Verification Fallback (ONLY if the graph call errors, or for a suspected
+cross-application dependent):**
 
 ```
-⚠️ Automatic dependency check failed.
+⚠️ Automatic dependency check unavailable [error, or outside this application's graph].
 
 Manual verification required:
 1. Search expression rules for "[OBJECT_NAME]" or "cons!CONSTANT_NAME"
 2. Search interfaces for hard-coded references
 3. Search process models for script task expressions
 4. Check Web APIs for usage in request/response expressions
+
+For a suspected cross-application dependent: seed the `iadc` graph for that other application
+too, and read `get_in_edges` on the boundary node it points at. This confirms a suspicion — it
+is not a way to discover a cross-application dependent you didn't already suspect.
 
 Use Appian Designer's "Find Usages" feature:
 - Open object in Designer
@@ -259,25 +295,45 @@ Use Appian Designer's "Find Usages" feature:
 
 #### Step 6: Perform Structural Checks (When Applicable)
 
-**For Record Types:**
-- Relationships: getRecordType(uuid).relationships
-- Views: listRecordTypeViews(uuid)
-- Actions: listRecordTypeActions(uuid)
-- Data: listRecordData(uuid, limit=1)
+There is no Appian MCP `get*`/`list*` surface any more (IV-442). Some of this step's checks now
+run against the `iadc` graph; the rest have no graph equivalent and need a full-access build tool
+— say so plainly rather than guessing (`SKILL.md`'s posture note).
 
-**For Groups:**
-- Hierarchy: listGroups() filtered by parentGroupUuid
-- Members: listGroupMembers(uuid)
-- Constants: listConstants() filtered by type=GROUP, check values
+**For Record Types** — `record_model(session_id, record_type_id)` returns all three in one call:
+- Relationships: the `relationships` array
+- Views: the `views` array
+- Actions: the `actions` array
+- Data: **no graph counterpart** — the graph tracks design objects, not row data. Whether the
+  record type holds rows needs a build tool.
+
+**For Groups** — **no graph counterpart for any of the three checks.** Group hierarchy,
+membership, and constant references are runtime security data, not design-object references the
+graph tracks. All three need a build tool.
+- Hierarchy: which group is this one's parent
+- Members: who belongs to this group
+- Constants: which `GROUP`-typed constants hold this group's UUID as their value
 
 **For Applications:**
-- Contained objects: listApplicationObjects(uuid)
+- Contained objects: the graph is seeded from exactly one application (see Step 5's
+  Application-scope boundary), so `list_nodes(session_id)` (default `limit=200`; check
+  `truncated` and raise the limit for a large application) or `find_nodes` (to search by name)
+  enumerates it — but the result is a **superset**, not an exact match: it also returns every
+  `recordField`/`recordView`/`recordAction`/`recordRelationship` sub-node, every
+  `appian_builtin`, and the three boundary kinds (`external`/`dangling`/`unknown`). Filter by
+  `kind`/`object_type` to the design-object kinds you actually want; no separate per-application
+  call is needed either way.
 
 **For Fields (record type fields):**
-- Relationships: Check if field is sourceRecordTypeFieldUuid or targetRecordTypeFieldUuid in getRecordType(recordTypeUuid).relationships
-- Title expression: Check if titleExpression in getRecordType(recordTypeUuid) references field UUID
-- Views: Check if field displayed in listRecordTypeViews(recordTypeUuid)
-- Note: Cannot check expression-based dependencies (fields referenced by name: recordType!RT.fields.fieldName, not by UUID)
+- Relationships: **no graph counterpart** — `record_model`'s `relationships` array carries no
+  `source` key and its `target` is the target record type, never a field; no relation in the
+  graph connects a `recordRelationship` to a `recordField`. Needs a build tool.
+- Views: **no graph counterpart** — `record_model`'s `views` array is a compact record with no
+  field list, so it cannot say whether a given field is displayed. Needs a build tool.
+- Title expression: **no graph counterpart** — `record_model` does not carry a record type's
+  title expression. Needs a build tool.
+- Note: this step's structural checks are separate from Step 5's expression check. Field-level
+  expression references (`recordType!RT.fields.fieldName`) **are** checkable — that is Step 5's
+  `uses_record_field` capability (see its Known Limitations below), not this step's
 
 ---
 
@@ -287,7 +343,7 @@ Present the final result using templates below. This is what the USER sees.
 
 **Do NOT show to user:**
 - Step numbers ("Step 5:", "Step 6:")
-- Tool calls ("✓ getObjectDependents(uuid) →", "Calling getRecordType...")
+- Tool calls ("✓ reachable(node, direction='in') →", "Calling record_model...")
 - Processing details ("Deduplicating...", "Checking...")
 
 **DO show to user:**
@@ -355,9 +411,9 @@ Structural dependencies:
 ❌ 15,432 existing records
 ```
 
-**If getObjectDependents fails:**
+**If the graph check fails:**
 ```
-⚠️ Automatic dependency check unavailable: getObjectDependents tool failed.
+⚠️ Automatic dependency check unavailable: graph query failed.
 
 Falling back to manual verification:
 1. Search expression rules for "[OBJECT_NAME]"
@@ -462,34 +518,37 @@ Error: [error message from tool]
 
 ### Known Limitations
 
-**getObjectDependents cannot detect:**
+**The graph blast-radius check (`reachable`/`get_in_edges`/`get_edge`) cannot detect:**
 
-1. **Field-level dependencies**
-   - Fields are referenced by name in expressions: `recordType!RT.fields.fieldName`
-   - Tool tracks object-level dependencies by UUID only
-   - Use structural checks (relationships, views, title expression) + manual verification
-
-2. **Parameter-level dependencies**
+1. **Parameter-level dependencies**
    - Cannot determine which parameters are passed to rule calls
-   - Tool shows "rule X calls rule Y" but not which parameters are used
+   - `get_edge`'s `occurrences` carry the literal reference text (`raw_ref`), not the
+     surrounding call expression's arguments
    - Required for "remove rule input" operations → use manual fallback
 
-3. **Hard-coded string references**
+2. **Hard-coded string references**
    - Group names in text: `"PMS Administrators"`
    - Status values: `"Open"`, `"Closed"`
    - These are data values, not design object references
 
-4. **Integration expression properties**
-   - Integrations appear as dependents of connected systems (OUTBOUND_INTEGRATION type)
+3. **Integration expression properties**
+   - Integrations appear as dependents of connected systems (`uses_connected_system`)
    - But expressions inside integration properties may not be tracked
    - Not yet validated - Phase 1B testing required
 
-5. **Document/folder expression references**
+4. **Document/folder expression references**
    - Documents and folders may be referenced in expressions
    - Not yet validated as tracked dependency types
 
+**One thing it CAN detect that the old live check couldn't: field-level dependencies.**
+`recordType!RT.fields.fieldName` references get their own edge (`uses_record_field`, target the
+leaf `recordField` node) — the old tool tracked object-level dependencies by UUID only and
+documented this as a gap. `get_in_edges` on a field's `recordField` node (find it via
+`find_nodes`, `kind="recordField"`) returns every reference to that field directly, where the old
+workaround was structural checks + manual verification alone.
+
 **For these limitations, use:**
-- Manual verification fallback (if getObjectDependents fails)
+- Manual verification fallback (if the graph check errors)
 - Structural checks (when applicable)
 - record-types.md: Field deletion specific checks
 
@@ -506,12 +565,12 @@ These show what users see after you complete internal checks. Do NOT show "Step 
 **Your internal process (NOT shown to user):**
 ```
 1. Receive request: "Delete PMS Status record type"
-2. Verify: getRecordType(uuid) → exists
+2. Verify: find_nodes(session_id, query="PMS Status", kind="artifact", object_type="recordType") → exists, resolve node id
 3. Extract: name, type, app context
 4. Identify: Delete record type → Expression + Structural
-5. Check expression deps: getObjectDependents(uuid) → 47 dependents
+5. Check expression deps: reachable(node_id, direction="in") → 47 dependents
 6. Deduplicate → 5 unique interfaces, 2 unique rules, 1 unique PM
-7. Check structural: getRecordType(uuid) → 2 relationships, listRecordTypeViews → 1 view, listRecordData → 4 records
+7. Check structural: record_model(session_id, record_type_id) → 2 relationships, 1 view; row data has no graph counterpart (needs a build tool)
 8. Present using Record Type Delete Special Case template
 ```
 
@@ -566,12 +625,11 @@ What would you like to do? (1/2/3)
 **Your internal process (NOT shown to user):**
 ```
 1. Receive request: "Delete constant CM_CASE_CONST"
-2. Verify: getConstant(uuid) → exists
+2. Verify: find_nodes(session_id, query="CM_CASE_CONST", kind="artifact", object_type="constant") → exists, resolve node id
 3. Extract: name (CM_CASE_CONST), type (RECORD_TYPE), value (uuid)
 4. Identify: Delete constant → Expression deps
-5. Check expression deps: getObjectDependents(uuid) → 2 dependents (1 APPLICATION, 1 FREEFORM_RULE)
-6. Deduplicate → filter out APPLICATION → 1 unique rule
-7. Present using Constant Delete Special Case template
+5. Check expression deps: reachable(node_id, direction="in") → 1 dependent (1 rule)
+6. Present using Constant Delete Special Case template
 ```
 
 **What user sees:**
@@ -616,7 +674,7 @@ Type 'DELETE CM_CASE_CONST' to confirm HIGH RISK operation.
 **PRESENTATION TEMPLATE - Used by Universal Workflow 1 Step 7**
 
 This is a template, not a workflow. Universal Workflow 1 handles:
-- ✅ Calling `getObjectDependents` (Step 5)
+- ✅ Checking the graph (Step 5)
 - ✅ Performing structural checks (Step 6)
 - ✅ Deduplicating and grouping results (Step 5)
 - ✅ Choosing this template (Step 7)
@@ -632,7 +690,7 @@ Your job: Present dependency results using the format below.
 ```
 ⚠️ You are about to DELETE record type "[Name]" (UUID: [uuid])
 
-Expression dependencies (automated check via getObjectDependents):
+Expression dependencies (automated check via the graph):
 [ONLY show object types that were actually returned. If zero of a type, skip it entirely.]
 
 [If any interfaces found:]
@@ -659,12 +717,11 @@ Structural dependencies (from Step 6 structural checks):
 [If any relationships:] ❌ N relationships to other record types: [list names]
 [If any views:] ❌ N record views: [list names]
 [If any actions:] ❌ N record actions: [list names]
-[If any data:] ❌ N existing data records
-[If zero structural dependencies:] ✅ No relationships, views, actions, or data records
+[If zero relationships, views, and actions found:] ✅ No relationships, views, or actions found (checked automatically)
+⚠️ Row data not checked (no graph counterpart; needs a build tool)
 
 Database impact:
 ⚠️ The database table [TABLE_NAME] will be PRESERVED
-[If data exists:] ⚠️ N data records remain in database but will no longer be accessible via Appian
 ⚠️ To drop the table, manual database administration is required
 
 Impact:
@@ -674,7 +731,6 @@ Impact:
 [If process models found:] - N process models will have broken nodes/variables
 [If relationships found:] - N relationships will break
 [If views found:] - N views will fail to load
-[If data found:] - N records become inaccessible (table preserved)
 
 Options:
 1. Cancel (recommended - remove dependencies first)
@@ -686,9 +742,9 @@ Type 'DELETE [Name]' to confirm HIGH RISK operation.
 
 **IMPORTANT:** 
 - Do NOT add "Manual verification required" text
-- Do NOT list object types that getObjectDependents didn't return
-- If getObjectDependents found 0 expression dependencies, say "✅ No design objects reference this record type"
-- Still show structural dependencies (relationships/views/actions/data) - these come from Step 6
+- Do NOT list object types the graph didn't return
+- If the graph found 0 expression dependencies, say "✅ No design objects reference this record type"
+- Still show structural dependencies (relationships/views/actions) - these come from Step 6
 
 **Why this matters:**
 - User expectations: clarifies that data is preserved
@@ -703,7 +759,7 @@ Type 'DELETE [Name]' to confirm HIGH RISK operation.
 **PRESENTATION TEMPLATE - Used by Universal Workflow 1 Step 7**
 
 This is a template, not a workflow. Universal Workflow 1 handles:
-- ✅ Calling `getObjectDependents` (Step 5)
+- ✅ Checking the graph (Step 5)
 - ✅ Deduplicating and grouping results (Step 5)
 - ✅ Choosing this template (Step 7)
 
@@ -725,7 +781,7 @@ Constant details:
 - Description: "[description]"
 - UUID: [uuid]
 
-Design object dependencies (automated check via getObjectDependents):
+Design object dependencies (automated check via the graph):
 [ONLY show object types that were actually returned. If zero of a type, skip it entirely.]
 
 ❌ Expression Rules: N unique (M references)
@@ -772,9 +828,9 @@ Type 'DELETE [Name]' to confirm HIGH RISK operation.
 
 **IMPORTANT:** 
 - Do NOT add "Manual verification required" text
-- Do NOT suggest checking for types that getObjectDependents didn't return
-- If getObjectDependents found 1 expression rule and 0 of everything else, ONLY show expression rules section
-- Trust the tool - it checks ALL design objects automatically
+- Do NOT suggest checking for types the graph didn't return
+- If the graph found 1 expression rule and 0 of everything else, ONLY show expression rules section
+- Trust the graph - it checks the whole seeded application automatically
 
 **If NO dependencies found:**
 ```
@@ -813,7 +869,7 @@ Proceed with delete? (yes/no)
 **PRESENTATION TEMPLATE - Used by Universal Workflow 1 Step 7**
 
 This is a template, not a workflow. Universal Workflow 1 handles:
-- ✅ Calling `getObjectDependents` (Step 5)
+- ✅ Checking the graph (Step 5)
 - ✅ Deduplicating and grouping results (Step 5)
 - ✅ Choosing this template (Step 7)
 
@@ -834,7 +890,7 @@ Rule details:
 - Description: "[description]"
 - UUID: [uuid]
 
-Design object dependencies (automated check via getObjectDependents):
+Design object dependencies (automated check via the graph):
 [ONLY show object types that were actually returned. If zero of a type, skip it entirely.]
 
 [If any calling expression rules found:]
@@ -880,8 +936,8 @@ Type 'DELETE [RuleName]' to confirm HIGH RISK operation.
 
 **IMPORTANT:** 
 - Do NOT add "Manual verification required" text
-- Do NOT suggest checking for types that getObjectDependents didn't return
-- Trust the tool - it checks ALL design objects automatically
+- Do NOT suggest checking for types the graph didn't return
+- Trust the graph - it checks the whole seeded application automatically
 
 **If NO dependencies found:**
 ```
@@ -919,7 +975,7 @@ Proceed with delete? (yes/no)
 **PRESENTATION TEMPLATE - Used by Universal Workflow 1 Step 7**
 
 This is a template, not a workflow. Universal Workflow 1 handles:
-- ✅ Calling `getObjectDependents` (Step 5)
+- ✅ Checking the graph (Step 5)
 - ✅ Deduplicating and grouping results (Step 5)
 - ✅ Choosing this template (Step 7)
 
@@ -1023,7 +1079,7 @@ Impact:
 ### Cross-References
 
 For object-specific dependency checks, see:
-- Applications: `references/applications.md` (listApplicationObjects)
+- Applications: `references/applications.md` (contained objects via `list_nodes`/`find_nodes`)
 - Record Types: `references/record-types.md` (fields, relationships, views, actions)
 - Process Models: `references/process-models.md` (nodes, start forms)
 

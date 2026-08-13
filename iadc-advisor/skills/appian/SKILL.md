@@ -1,20 +1,50 @@
 ---
 name: "appian"
-description: "MANDATORY skill for Appian MCP tool usage. Provides critical domain knowledge (naming conventions, relationship rules, data modeling patterns, dependency order, UUID handling) that MCP tool schemas cannot express. Load this skill BEFORE calling any Appian MCP tools. Covers: record types, interfaces, expression rules, process models, sites, Web APIs, data modeling, relationships, SAIL expressions, security, accessibility auditing, change planning."
+description: "MANDATORY skill for advising on Appian design work. Provides critical domain knowledge (naming conventions, relationship rules, data modeling patterns, dependency order, UUID handling) that a full-access build tool's own schemas cannot express. Load this skill before advising on Appian objects, and before calling the graph's blast-radius or interface-SAIL tools for one — there is no Appian MCP here to gate on any more. Covers: record types, interfaces, expression rules, process models, sites, Web APIs, data modeling, relationships, SAIL expressions, security, accessibility auditing, change planning."
 ---
 
 ## Posture: read-only / advisory
 
-This is an **architect-in-a-box**, not a builder. The Appian MCP runs in **read-only mode** (`LCP_TOOL_MODE=readonly`), so only inspection tools (`list*`, `get*`) are exposed. Not available, by design: the mutating tools (`create*`, `update*`, `delete*`) **and the environment-touching test tools — `testInterface`, `testRule`, `validateExpression`**. If a workflow below tells you to call one of those, it is describing what a full-access builder would do; you do the read-only equivalent instead (see the accessibility note below) or say plainly that the check needs a build tool.
+This is an **architect-in-a-box**, not a builder. This skill has no Appian MCP server behind it
+any more (IV-442) — nothing here calls `list*`/`get*`/`create*`/`update*`/`delete*` against a
+live Appian tenant, and the environment-touching test tools (`testInterface`, `testRule`,
+`validateExpression`) were never available even when it did. If a workflow below tells you to
+call one of those, it is describing what a full-access builder would do; you do the read-only
+equivalent instead (see the two live checks below) or say plainly that the check needs a build
+tool.
 
 That means the **create, update, delete, validate and verify** workflows in this skill are **advisory reference**: they are the domain knowledge you use to give correct advice and to spot a design that would break — "here's how you'd build this record type, and here's what would go wrong" — not a set of actions you take. Execution happens with a full-access build tool, outside this plugin. Two consequences worth stating, because the emphatic framing further down does not:
 
-- **The deletion workflow's dependency check is live and is your blast-radius tool.** You cannot delete anything, but `getObjectDependents` is a `get*` tool and it works. When someone asks "what breaks if we remove this?", that check plus the structural review around it is exactly the right answer — run it.
-- **Accessibility audits are in scope and are done from source.** `testInterface` does not exist here, so do not try to render a component tree. Read the interface's SAIL expression with `getInterface` and evaluate it against `references/component-checks.md` and `references/accessibility-reference.md` — both are lookup tables that work fine against source. Only the render step is unavailable; the audit itself is squarely advisory work.
+- **The deletion workflow's dependency check is live and is your blast-radius tool — through the
+  `iadc` graph now, not the Appian MCP.** `reachable(direction="in")` gives the full transitive
+  set of what depends on an object; `get_in_edges` gives the one-hop set with relation and
+  provenance attached — **not `callers_of`**, which filters strictly to `calls`-relation edges
+  and silently drops `references`, `uses_record_field`, `secured_by`, and the rest, so it
+  under-reports for this purpose; `get_edge` gives the exact SAIL occurrence(s) — field, line,
+  column — behind any one edge you need to drill into. When someone asks "what breaks if we
+  remove this?", that check plus the structural review around it (Step 6 in
+  `confirmation-patterns.md` — a record type's relationships/views/actions are graph-backed via
+  `record_model`; row data, a group's hierarchy/membership/constant references, a field's
+  relationship/view membership, and a record type's title expression still need a build tool) is
+  exactly the right answer — run it. **Scope boundary:** the graph is one
+  seeded application, so this only sees dependents *inside* that application; an object in
+  another application that references this one is invisible to `reachable` **silently** — no
+  error, no truncation flag, just a smaller set. Confirming a *suspected* cross-application
+  dependent means seeding that other application too and reading `get_in_edges` on the boundary
+  node it points at — this can confirm a suspicion, not discover one you don't already have. One
+  genuine gain over the old live check: it tracked dependencies by object UUID only, and
+  documented that it could not see field-level dependencies — the graph tracks those too
+  (`uses_record_field`).
+- **Accessibility audits are in scope and are done from source.** There was never a
+  `testInterface` here to render a component tree with, Appian MCP or not. Resolve the
+  interface's node with `find_nodes`, then read its SAIL expression with `get_sail`, and
+  evaluate it against `references/component-checks.md` and `references/accessibility-reference.md`
+  — both are lookup tables that work fine against source. Only the render step is unavailable;
+  the audit itself is squarely advisory work.
 
-## CRITICAL: Read This Before Using Appian MCP Tools
+## CRITICAL: Read This Before Reasoning About Any Appian Object
 
-**Stop.** Before you reason about Appian objects (record types, relationships, interfaces, etc.) — whether inspecting the live environment or advising how one would be built — you MUST load the relevant reference files from this skill first.
+**Stop.** Before you reason about Appian objects (record types, relationships, interfaces, etc.) — whether reading the application through the graph or advising how one would be built — you MUST load the relevant reference files from this skill first.
 
 **Why this matters:**
 
@@ -30,7 +60,7 @@ MCP tool schemas describe **parameters** (what fields exist), but not **domain r
 - Create objects in wrong order (dependency failures)
 - Fabricate UUIDs (silent data corruption)
 
-**Before calling ANY Appian MCP tool, follow the loading strategy below.**
+**Before calling any graph tool for a live read, or advising how an Appian object would be built, follow the loading strategy below.**
 
 ---
 
@@ -62,9 +92,12 @@ Set **the Appian version** via `/iadc-advisor:setup` (or edit `docs/agents/advis
 
 ## Tool Surface
 
-Appian MCP tools have names like `createApplication`, `createRecordType`, `addRecordTypeRelationship`, `listInterfaces`, `getProcessModel`. If you see these in your tool list (regardless of prefix), this skill is MANDATORY.
-
-Tool schemas are self-describing for parameter structure. Load `references/tools-mcp.md` for usage patterns, UUID handling, and non-obvious behaviors the schemas don't communicate.
+This skill's domain knowledge covers the tool surface a full-access build tool's Appian MCP
+exposes — `createApplication`, `createRecordType`, `addRecordTypeRelationship`, `listInterfaces`,
+`getProcessModel`, and the rest — even though this plugin has no such server of its own to call.
+Tool schemas are self-describing for parameter structure; they don't communicate naming
+conventions, relationship rules, or non-obvious behaviors. Load `references/tools-mcp.md` for
+those, whenever you're advising on how one of those tools should be used.
 
 ---
 
@@ -99,8 +132,8 @@ After loading confirmation-patterns.md, follow all 10 steps IN ORDER:
 
 - **Steps 1-3:** Receive request, verify object, extract details
 - **Step 4:** Identify operation type (determines which dependency checks apply)
-- **Step 5:** Check expression dependencies using `getObjectDependents` tool ← MANDATORY
-- **Step 6:** Perform structural checks (relationships, views, data, hierarchy)
+- **Step 5:** Check expression dependencies via the `iadc` graph (`reachable`/`get_in_edges`) ← MANDATORY
+- **Step 6:** Perform structural checks (relationships, views)
 - **Step 7:** Present dependencies to user (use templates — NOT your own format)
 - **Step 8:** Offer resolution strategies
 - **Step 9:** Get user confirmation ← MANDATORY, NEVER SKIP THIS
@@ -118,7 +151,7 @@ The templates in confirmation-patterns.md show EXACTLY what users should see:
 - ✅ Clean dependency lists grouped by type
 - ✅ Impact statements ("N objects will break")
 - ✅ Action options (Cancel / Proceed / Details)
-- ❌ NO tool call details ("getObjectDependents(uuid) →")
+- ❌ NO tool call details ("reachable(node_id, direction='in') →")
 - ❌ NO step numbers ("Step 2: Expression dependencies")
 - ❌ NO processing details ("Deduplicating by UUID...")
 
@@ -140,10 +173,10 @@ The templates in confirmation-patterns.md show EXACTLY what users should see:
 
 | Operation | Files to Load | Workflow Steps |
 |-----------|---------------|----------------|
-| Delete constant | confirmation-patterns.md + supporting-objects.md | Steps 1-4 → Step 5 (getObjectDependents) → Step 7 (present) → Step 9 (confirm) → Step 10 (execute) |
-| Delete expression rule | confirmation-patterns.md + expression-rules.md | Steps 1-4 → Step 5 (getObjectDependents) → Step 7 (present) → Step 9 (confirm) → Step 10 (execute) |
-| Delete record type | confirmation-patterns.md + record-types.md | Steps 1-4 → Step 5 (getObjectDependents) + Step 6 (structural) → Step 7 (present) → Step 9 (confirm) → Step 10 (execute) |
-| Delete interface | confirmation-patterns.md + interfaces.md | Steps 1-4 → Step 5 (getObjectDependents) → Step 7 (present) → Step 9 (confirm) → Step 10 (execute) |
+| Delete constant | confirmation-patterns.md + supporting-objects.md | Steps 1-4 → Step 5 (graph blast radius) → Step 7 (present) → Step 9 (confirm) → Step 10 (execute) |
+| Delete expression rule | confirmation-patterns.md + expression-rules.md | Steps 1-4 → Step 5 (graph blast radius) → Step 7 (present) → Step 9 (confirm) → Step 10 (execute) |
+| Delete record type | confirmation-patterns.md + record-types.md | Steps 1-4 → Step 5 (graph blast radius) + Step 6 (structural) → Step 7 (present) → Step 9 (confirm) → Step 10 (execute) |
+| Delete interface | confirmation-patterns.md + interfaces.md | Steps 1-4 → Step 5 (graph blast radius) → Step 7 (present) → Step 9 (confirm) → Step 10 (execute) |
 | Delete group | confirmation-patterns.md + supporting-objects.md | Steps 1-4 → Step 6 (structural: hierarchy, members) → Step 7 (present) → Step 9 (confirm) → Step 10 (execute) |
 
 **Non-negotiable:** Load confirmation-patterns.md for ALL deletion operations, no exceptions.
@@ -203,7 +236,7 @@ Load the relevant reference(s) for your task:
 
 ### MANDATORY Loading Strategy
 
-**Before calling any Appian MCP tools, load reference files in this order:**
+**Before reasoning about any Appian object — live graph read or advisory build guidance — load reference files in this order:**
 
 #### Step 1: ALWAYS Load Universal Patterns First
 ```

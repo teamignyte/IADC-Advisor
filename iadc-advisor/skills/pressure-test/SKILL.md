@@ -1,6 +1,6 @@
 ---
 name: pressure-test
-description: "The dialectic. Pressure-test and sharpen the approach to a specific ticket or work item through a relentless, one-question-at-a-time Socratic interview — questions only, NO proposed answers, so the builder does the reasoning. Launch this whenever the user says they're working on / picked up / were assigned a ticket, or wants to verify or sharpen an approach before building. Grounds every question in the live app (the Jira ticket, the iadc graph, the Appian environment, the project's own docs) and captures the resulting glossary and decisions to the gitignored outputs workspace. Verbs: I'm working on a ticket, just got assigned, picking up a ticket, help me think through this ticket, verify my approach, pressure-test my plan, dialectic, socratic, gumby."
+description: "The dialectic. Pressure-test and sharpen the approach to a specific ticket or work item through a relentless, one-question-at-a-time Socratic interview — questions only, NO proposed answers, so the builder does the reasoning. Launch this whenever the user says they're working on / picked up / were assigned a ticket, or wants to verify or sharpen an approach before building. Grounds every question in the Jira ticket, the iadc graph, and the project's own docs, and captures the resulting glossary and decisions to the gitignored outputs workspace. Verbs: I'm working on a ticket, just got assigned, picking up a ticket, help me think through this ticket, verify my approach, pressure-test my plan, dialectic, socratic, gumby."
 ---
 
 # Pressure-test — the dialectic
@@ -85,10 +85,11 @@ for real delivery.
 2. **Ground before probing.** Look up the facts the questions will stand on — never ask
    what the environment can tell you, and let the grounding expose where the ticket's
    assumptions don't match reality:
-   - the live objects (`/iadc-advisor:appian`) and the dependency graph / blast radius (`/iadc-graph:iadc-graph`) — seed
-     the graph from the **application UUID in the Project configuration**, never from a
-     live `listApplications` lookup; when the blast radius is wide, render it as a fan-in diagram
-     with `/iadc-advisor:to-diagram` and keep it with the ticket's `decisions.md`;
+   - the application's dependency graph and blast radius (`/iadc-graph:iadc-graph`, applying
+     `/iadc-advisor:appian`'s domain guidance — there's no separate live Appian connection any
+     more) — seed the graph from the **application UUID in the Project configuration**, never
+     from a live `listApplications` lookup; when the blast radius is wide, render it as a fan-in
+     diagram with `/iadc-advisor:to-diagram` and keep it with the ticket's `decisions.md`;
    - **the project's own documentation (`/iadc-advisor:office`).** First read the documents the **ticket
      itself references** (the attachments and links from step 1). Then **also search SharePoint
      by the ticket number/key** (e.g. `<TICKET-KEY>`) — related design and spec docs are routinely

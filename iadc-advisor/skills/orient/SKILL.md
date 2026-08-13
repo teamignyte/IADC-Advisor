@@ -1,6 +1,6 @@
 ---
 name: orient
-description: Get oriented in an Appian application when you have NO ticket or build in view — you just need to understand what the app does and how it does it. Composes the dependency graph, the live environment, the Jira board, and the domain docs (the glossary + ADRs) into one cited briefing. Use this for a new developer landing on the app, for catching up on an unfamiliar area ("what is the Claims record model", "how does billing hang together"), or for a single-object dossier. Do NOT use it when you have a ticket or a defined task in hand — that's /iadc-advisor:pressure-test, which orients you *toward a build*.
+description: Get oriented in an Appian application when you have NO ticket or build in view — you just need to understand what the app does and how it does it. Composes the dependency graph, the Jira board, and the domain docs (the glossary + ADRs) into one cited briefing. Use this for a new developer landing on the app, for catching up on an unfamiliar area ("what is the Claims record model", "how does billing hang together"), or for a single-object dossier. Do NOT use it when you have a ticket or a defined task in hand — that's /iadc-advisor:pressure-test, which orients you *toward a build*.
 disable-model-invocation: true
 argument-hint: "an area or object to orient on, or nothing for the whole app"
 ---
@@ -23,7 +23,7 @@ Orient is the *packaged, narrated* form of what `/iadc-graph:iadc-graph` + `/iad
 
 ## Read-only, always
 
-Everything here inspects. The graph and Appian MCPs are read-only by nature; Jira is read-only for orientation (no comments, no writes — orientation is not a board action). The only thing orient writes on its own is the briefing it hands back to you; any diagram it draws (via `/iadc-advisor:to-diagram`) is *presented*, and saved to `outputs/` only if you approve — so orientation stays a read-only act.
+Everything here inspects. The graph MCP is read-only by nature; Jira is read-only for orientation (no comments, no writes — orientation is not a board action). The only thing orient writes on its own is the briefing it hands back to you; any diagram it draws (via `/iadc-advisor:to-diagram`) is *presented*, and saved to `outputs/` only if you approve — so orientation stays a read-only act.
 
 ## Scope the ask first
 

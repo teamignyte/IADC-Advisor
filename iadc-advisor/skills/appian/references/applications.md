@@ -173,7 +173,11 @@ This section covers application-specific patterns for when to ask users for conf
 
 Before deleting an application, check what objects it contains:
 
-1. **List contained objects** via `listApplicationObjects(uuid)`
+1. **List contained objects** via `list_nodes(session_id)`/`find_nodes` — no Appian MCP any more
+   (IV-442). The graph is seeded from exactly this application, so every node already in the
+   session is a candidate, but it's a superset (sub-object and boundary nodes included); filter
+   by `kind`/`object_type` to get design-object counts (see `confirmation-patterns.md`'s Step 6
+   "For Applications").
    - Returns counts and lists of: record types, interfaces, expression rules, process models, constants, sites, etc.
    
 2. **Present findings to user** with clear warning about preservation:

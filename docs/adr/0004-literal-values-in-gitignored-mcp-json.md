@@ -34,3 +34,16 @@ template shipped inside the plugin".
 The plugin manifest deliberately declares **no** `mcpServers`: these servers span per-app
 (graph URL, `LCP_URL`), per-person (Appian credentials), and per-machine (`uv` path) values,
 which `userConfig` — one value per machine across all projects — cannot express.
+
+## Amended by IV-442
+
+The `appian` server named above (opening sentence, and `LCP_URL` in the per-app/per-person/
+per-machine breakdown just above) no longer exists — Advisor dropped it entirely; no client
+repo holds a live Appian credential any more. The underlying decision is unaffected: whatever
+secret *does* land in `.mcp.json` still gets a **literal value, not `${VAR}`**, for the same
+Windows Desktop reason. What changed is which servers that reaches: today it's an optional
+`context7` API key (written by this plugin, keyless by default) and the `iadc` graph's
+URL/key (written by the separate `/iadc-graph:setup` skill this ADR doesn't own). The
+per-app/per-person/per-machine framing narrows with it — `LCP_URL` and the `uv` path are gone,
+and Appian credentials were the only per-person value this plugin ever wrote into this file;
+there is none left. `iadc`'s URL and key remain the per-app case the framing still needs.

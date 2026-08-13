@@ -4,7 +4,7 @@ An **Appian architect, in a box.** This is a Claude Code plugin that turns Claud
 
 It's built for two audiences:
 
-- **Developers building tickets** — the day-to-day path. Start from a ticket or a described task and work out *how* to implement it in this app: where it lives, what it touches, the Appian patterns to use, a sharpened approach, and a short implementation note. Answers are drawn from the live environment, the application's dependency graph, the Jira board, the team's documents, and the official Appian docs.
+- **Developers building tickets** — the day-to-day path. Start from a ticket or a described task and work out *how* to implement it in this app: where it lives, what it touches, the Appian patterns to use, a sharpened approach, and a short implementation note. Answers are drawn from the application's dependency graph, the Jira board, the team's documents, and the official Appian docs.
 - **Architects and leads** — pressure-test a design before anyone builds it, shape net-new work into specs and tickets, break big foggy efforts into a resolvable map of decisions, and keep the plan grounded in how the application actually works.
 
 The architect **advises and plans**; your developers build. It reads and reasons; it doesn't ship code.
@@ -15,9 +15,8 @@ The architect **advises and plans**; your developers build. It reads and reasons
 - **Interrogate a plan** relentlessly, one question at a time, until the thinking is sharp — capturing the resulting glossary and decisions as `CONTEXT.md` and ADRs.
 - **Turn a conversation into a spec**, then split the spec into tracer-bullet tickets with proper blocking edges, published to your tracker.
 - **Chart the way through a huge, foggy effort** as a shared map of decision tickets, resolved one at a time.
-- **Answer "how does our app work"** — with `/iadc-advisor:orient`, a single cited briefing that composes the dependency graph, the live environment, the Jira board, and your domain docs into the shape of the app, its data model, the decisions behind it, and what's in flight. Ideal for onboarding a new developer or catching up on an unfamiliar area. (Or go straight to the raw graph — what calls this, what breaks if I change it, how these objects relate.)
+- **Answer "how does our app work"** — with `/iadc-advisor:orient`, a single cited briefing that composes the dependency graph, the Jira board, and your domain docs into the shape of the app, its data model, the decisions behind it, and what's in flight. Ideal for onboarding a new developer or catching up on an unfamiliar area. (Or go straight to the raw graph — what calls this, what breaks if I change it, how these objects relate.)
 - **Answer "how does Appian work"** with semantic search over the Appian documentation, confirmed against the official docs at your environment's version.
-- **Inspect your Appian environment** directly (read-only) to ground advice in the real configuration.
 - **Read your requirements and design documents** from SharePoint / OneDrive, and pull context from Teams and Outlook — through the Microsoft 365 connector, so an answer rests on what the spec actually says and cites the document it came from. `/iadc-advisor:setup` can pin the project's source-of-truth folder so searches start there instead of the whole tenant. (Read-only: it finds, reads, and cites — it never sends, uploads, or edits.)
 - **Read your Jira board for context** — what's planned, in flight, decided, blocked, or already tracked — so the architect's planning and answers are grounded in the work your team is actually tracking. (Jira stays human-first; the architect reads, and writes only light comments on request.)
 - **Research a question** against primary sources in the background, leaving a cited Markdown file in the repo.
@@ -26,18 +25,15 @@ The architect **advises and plans**; your developers build. It reads and reasons
 
 `/iadc-advisor:setup` (step 4 below) asks for these and can't finish without them, so have them to hand:
 
-- **The Appian MCP server** — a path to the **`uv`** executable on this machine, and a path to
-  the **extracted LCP MCP server bundle** (you'll be given the zip; unpack it somewhere stable
-  first — `/iadc-advisor:setup` needs the folder, not the archive).
-- **Your Appian environment** — the tenant URL (e.g. `https://<your-tenant>.appiancloud.com`)
-  and **your own Appian username and password**. They're personal, and they stay in a
-  gitignored file (see Configuration & secrets).
+- **Your Appian application's identity** — its full name, the team's shorthand for it (if any),
+  and its **UUID**. This plugin holds no live connection to your Appian tenant, so
+  `/iadc-advisor:setup` can't look the UUID up for you — have it to hand.
+  - Don't have it yet? `/iadc-advisor:setup` still finishes without it — it records what you owe
+    and asks again next time.
+- **Your Appian version** (e.g. `26.6`), for version-exact documentation lookups.
 - **Connectors enabled in your Claude client** — **Jira** (the Atlassian connector) and
   **Microsoft 365**; **Slack** too if architectural gaps should be escalated there. These
   connect via OAuth in your client's settings, so there's nothing to put on disk.
-
-The Appian documentation search needs no key. `/iadc-advisor:setup` can look up your application's UUID for
-you once the Appian server is connected.
 
 Separately, have **the `iadc` graph's URL and `appian-api-key`** to hand too — `/iadc-advisor:setup`
 doesn't ask for them. `/iadc-graph:setup` does (step 5 below), any time before or after this one.
@@ -72,8 +68,8 @@ why.)
    to trust the folder — accept, and it installs the repo's declared plugin in the
    background, with nothing else to configure. (Decline the trust prompt and the plugin is
    silently skipped.)
-4. **Run `/iadc-advisor:setup`** in that repo. It generates the gitignored `.mcp.json` (Appian,
-   docs — literal values, no secrets tracked), writes the project configuration
+4. **Run `/iadc-advisor:setup`** in that repo. It generates the gitignored `.mcp.json` (docs
+   search — no secret required, unless you want a higher-rate-limit key), writes the project configuration
    (`docs/agents/advisor.md` — Appian version, application UUID, audience, escalation),
    points the Jira/Microsoft 365 connectors, lays out the tracker + domain docs and the
    `outputs/` workspace — then verifies everything connects. It points you at `/iadc-graph:setup`

@@ -36,7 +36,7 @@ overwritten.
 
 ## 1. The local patches — these must survive every refresh
 
-Upstream fixed none of these as of `0ab639c4`; assume all four still apply.
+Upstream fixed none of these as of `0ab639c4`; assume all five still apply.
 
 ### Patch A — no per-project config in skill files ([ADR 0010](adr/0010-no-config-in-skill-files.md))
 
@@ -105,20 +105,21 @@ to `references/…`.
 ### Patch D — the advisory posture block ← easiest to lose
 
 `SKILL.md` carries a local `## Posture: read-only / advisory` section stating that this is
-an **architect, not a builder**; that the Appian MCP runs with `LCP_TOOL_MODE=readonly` so
-`create*`/`update*`/`delete*` **and the test tools** (`testInterface`, `testRule`,
-`validateExpression`) are not exposed; and — the load-bearing part — that the skill's
-**create, update, delete, validate and verify** workflows are **advisory reference for
-giving correct advice**, not a set of actions to take.
+an **architect, not a builder**; that (since IV-442, Patch E below) there is no Appian MCP
+behind it at all — no `list*`/`get*` either, not just no `create*`/`update*`/`delete*`/test
+tools; and — the load-bearing part — that the skill's **create, update, delete, validate and
+verify** workflows are **advisory reference for giving correct advice**, not a set of actions
+to take.
 
-It also carries two carve-outs that a blanket "this is all reference" would get wrong:
+It also carries two carve-outs that a blanket "this is all reference" would get wrong. The
+carve-out itself — these two checks are live, not reference — is Patch D's and predates
+IV-442; **which tool backs each one is Patch E's, below:**
 
-- **`getObjectDependents` is live** — you cannot delete, but the deletion workflow's
-  dependency check is a `get*` tool and is exactly the right answer to "what breaks if we
-  remove this?"
-- **Accessibility audits are in scope, done from source** — `testInterface` is absent, so
-  read the SAIL with `getInterface` and evaluate against `component-checks.md` /
-  `accessibility-reference.md`. Only the render step is unavailable.
+- **The deletion workflow's dependency check is live** — you cannot delete, but it's exactly
+  the right answer to "what breaks if we remove this?"
+- **Accessibility audits are in scope, done from source** — there's never been a way to render
+  a component tree here, Appian MCP or not, so read the SAIL directly and evaluate against
+  `component-checks.md` / `accessibility-reference.md`. Only the render step is unavailable.
 
 **Upstream has nothing like this**, because upstream's skill is written for people who do
 build. Losing it flips the plugin's most-loaded skill against the product's premise.
@@ -134,13 +135,126 @@ advisory work the product genuinely wants to do, depending on a tool that isn't 
 
 **Verify it by name after every refresh** — see the checks in §4.
 
+### Patch E — the two live carve-outs read the `iadc` graph, not an Appian MCP (IV-442)
+
+Advisor dropped the `appian` MCP server entirely — no client repo holds a live Appian
+credential any more. The two live carve-outs Patch D established (blast radius, accessibility
+audit) still exist as carve-outs; what backs each one changed:
+
+- **Blast radius** — `SKILL.md`'s posture note, `references/confirmation-patterns.md` Step 5
+  (Universal Workflow 1), and `references/record-types.md`'s record-type-deletion Step 1 now
+  call `reachable`/`get_in_edges`/`get_edge` against the `iadc` graph instead of
+  `getObjectDependents`. **`get_in_edges`, not `callers_of`** — `callers_of` filters strictly to
+  `calls`-relation edges and would silently drop `references`/`uses_record_field`/`secured_by`.
+  The graph is scoped to one seeded application; a cross-application dependent is invisible to
+  it, silently — stated in each of the three files above. Resolving the target object to a node
+  id first — Step 2 of `confirmation-patterns.md`'s worked deletion Examples — calls
+  `find_nodes(session_id, query=..., kind="artifact", object_type=<Appian type, e.g.
+  "recordType"/"constant">)`. Both arguments are required: `kind` is the graph's own node-kind
+  axis, never the Appian object type, and passing the Appian type as `kind` alone matches zero
+  nodes silently (`{"nodes": [], ...}`, not an error) — reads at that step as "object does not
+  exist." A refresh reapplying this patch to fresh worked examples must reproduce the
+  `kind="artifact", object_type=...` pairing exactly, not just `kind=<Appian type>`. **The graph
+  is also a point-in-time snapshot, not a live read** — re-seed, or call `report_changes`, before
+  trusting a result if the target (or anything near it) has been edited in Appian since the
+  session was seeded; a stale blast radius is worse than a slow one. Both `reachable` (this step)
+  and `list_nodes`/`find_nodes` (the Applications structural check below) default to `limit=200`
+  and set `truncated` on the result when they hit it — check it and raise the limit before
+  concluding an impact, or an application's contents, is small.
+- **Structural checks (Step 6)** — `confirmation-patterns.md`'s structural-check block
+  (relationships/views/actions, **for a record type**) now calls `record_model` in place of
+  `getRecordType`/`listRecordTypeViews`/`listRecordTypeActions`; an **application's**
+  contained-object check (and `references/applications.md`'s own copy of it) calls
+  `list_nodes`/`find_nodes` in place of `listApplicationObjects` (the graph *is* the seeded
+  application, so enumerating it is free,
+  though the result is a superset needing a `kind`/`object_type` filter). A **field's**
+  relationship and view checks are not repointed to anything — `record_model`'s `relationships`
+  array carries no `source` key and its `views` array carries no field list, so neither can
+  identify a field endpoint; both are stated as needing a build tool, the same treatment the
+  block already gave a field's title expression. Row data; a group's hierarchy, membership, and
+  constant references; and a record type's title expression have no graph representation at all
+  either — stated as needing a build tool rather than left routed through a tool
+  (`listRecordData`, `listGroups`, `listGroupMembers`, `listConstants`,
+  `getRecordType(...).titleExpression`) that no longer exists. The loss is recorded in [ADR
+  0013](adr/0013-drop-appian-mcp-route-through-graph.md)'s Consequences. Every *template* that
+  would otherwise present one of these unobtainable counts to the user as a checked fact carries
+  the same qualifier inline, matching the wording above: `security-patterns.md`'s Group
+  Deletion template marks `[N] direct members` "(not automatically checked — no graph
+  counterpart; needs a build tool)" rather than a bare count, and `confirmation-patterns.md`'s
+  Record Type Delete Special Case template drops its data-record count line entirely (a slot for
+  a number nobody can obtain is not a qualifier away from honest, it has to go) and states "Row
+  data not checked (no graph counterpart; needs a build tool)" as its own unconditional line
+  under Structural dependencies — printed on every path, not folded into the zero-dependency
+  all-clear branch. The same honesty framing reaches a *claim*, not just a count:
+  `security-patterns.md`'s Group Deletion template softens "May be referenced in GROUP constants
+  (will become invalid references)" to add "— manual verification needed; not automatically
+  checked, same as security expressions below", and its Impact section softens "GROUP constants
+  referencing this group will contain invalid group names" to "may contain invalid group names
+  (not automatically verified — see Dependency Checks above)" —
+  the graph has no GROUP-constant representation at all, so a template can no longer assert this
+  as a checked certainty. `record-types.md`'s Field Deletion template took the same collapse H3
+  gave Group Deletion: it no longer selects between "if field is in use" and "if field not in
+  use" branches — every one of a field's four dependency checks (relationships, title expression,
+  views, security expressions) already reads as unautomatable in the Dependency Checks list
+  immediately above it, so the selector was unevaluable and the "not in use" branch asserted an
+  absence nothing could establish. One unconditional template remains: the `[N]` relationship/view
+  counts and the bare "Title expression" claim are gone, replaced by the same "(not automatically
+  checked — no graph counterpart; needs a build tool)" qualifier `security-patterns.md:329`'s
+  member line uses, and the "not in use" branch is deleted outright rather than rescued with a
+  qualifier.
+- **Accessibility audits** — `references/accessibility-audit.md` reads the interface's SAIL
+  with `find_nodes` + `get_sail` instead of `getInterface`/`listInterfaces`. This removes the
+  render step **entirely, not just its tool**: all four references to `testInterface` are gone,
+  and "Full Interface Audit" drops from six steps to four because the two steps that called it —
+  rendering a component tree, then re-rendering it once per state for a multi-state interface —
+  are deleted, not repointed. "Purpose" and "How It Works" now describe auditing done from the
+  SAIL source directly; "Quick Checks" step 1 changed from "Search the rendered tree" to "Search
+  the SAIL source"; and the multi-state instruction ("call `testInterface` multiple times with
+  different inputs") became "read every conditional branch (`if()`/`a!match()`/`showWhen`) by
+  hand" — there is no render step left to show only what one state produces. The render-step
+  *limitation* predates IV-442 and is unchanged; the workflow's *text* is not — every sentence
+  that assumed a render step existed had to be rewritten around its absence, and a refresh that
+  reapplies only "route `getInterface`/`listInterfaces` through `find_nodes`/`get_sail`" would
+  reinstate the two deleted `testInterface` steps.
+- **The mandatory-loading gate re-reads as "reasoning about any Appian object," not "calling
+  Appian MCP tools."** `SKILL.md`'s `## CRITICAL: Read This Before …` heading, the sentence
+  introducing it ("Before calling any graph tool for a live read, or advising how an Appian
+  object would be built, follow the loading strategy below"), and the "MANDATORY Loading
+  Strategy" intro ("Before reasoning about any Appian object — live graph read or advisory build
+  guidance — load reference files in this order") all dropped their "Appian MCP tool" framing,
+  because there is no Appian MCP tool left to gate on, live or otherwise. A refresh that pastes
+  back the old "Before calling ANY Appian MCP tool…" wording would leave the gate grammatically
+  fine and functionally dead — re-attached to a precondition (an Appian MCP tool call) that can
+  never fire, silently disabling the mandatory-loading discipline for advisory-only reasoning.
+
+| File | Patch |
+|---|---|
+| `SKILL.md` | Posture note's two carve-outs, the "Tool Surface" section, the Deletion Operations Workflow's Step-5 references, the frontmatter `description`, the structural-check loss enumeration, the mandatory-loading gate's heading and intro sentences |
+| `references/confirmation-patterns.md` | "Tool Capabilities", Universal Workflow 1 Step 5, Step 6 (structural checks), "Known Limitations", the Example 1/2 worked processes, and every presentation-template mention of the removed tool's name |
+| `references/record-types.md` | Record Type Deletion Steps 1–2, Field Deletion |
+| `references/security-patterns.md` | Group Deletion Dependency Checks |
+| `references/applications.md` | Application Deletion Dependency Checks |
+| `references/accessibility-audit.md` | "How It Works", "Full Interface Audit", "Quick Checks" |
+
+**One capability gain, not just parity:** the old tool documented that it could not see
+field-level dependencies (`recordType!RT.fields.fieldName`); the graph's `uses_record_field`
+relation does. Stated in `confirmation-patterns.md`'s "Known Limitations".
+
+**Everything else in the vendored tree that names `getObjectDependents`/`getInterface`/
+`listInterfaces`/`listApplications` is untouched** — the create/update/delete workflow's
+*other* templates (Universal Workflow 2/3, `applications.md`'s create-order guidance, and the
+rest of the delete-confirmation special-case templates' structural content), all advisory
+reference for a full-access build tool outside this plugin. That prose was never live here even
+before IV-442, so the drop doesn't change it.
+
 ---
 
 ## 2. Everything else is upstream's
 
-As of the 2026-07-27 refresh we are at **parity with `0ab639c4`** apart from Patches A–D.
-There is no remaining local drift to protect: a prior audit reconstructed the original
-import and confirmed exactly 12 files ever carried local edits.
+As of the 2026-07-27 refresh we were at **parity with `0ab639c4`** apart from Patches A–D — a
+prior audit reconstructed the original import and confirmed exactly 12 files ever carried local
+edits, so there was no remaining local drift beyond those four. IV-442 added Patch E on top of
+that base: the current divergence from `0ab639c4` is Patches A–E, not A–D.
 
 If a future diff shows a difference in a file **not** listed in §1, it is upstream having
 moved on — **take upstream.**
@@ -163,7 +277,7 @@ git -C /tmp/appian-upstream rev-parse HEAD          # record this SHA
 1. **Copy** `/tmp/appian-upstream/skills/appian/` over `iadc-advisor/skills/appian/`,
    keeping `LICENSE`. Include non-`.md` assets — `registry/components-registry.json` is
    referenced by five files, and omitting it creates fresh dangling citations.
-2. **Reapply Patches A–D.** Read our pre-refresh version of each patched file first, then
+2. **Reapply Patches A–E.** Read our pre-refresh version of each patched file first, then
    reproduce the patch's *intent* on top of upstream's new prose — upstream may have
    rewritten the surrounding text, so do not paste old sentences in mechanically.
 3. **Check whether the patch scope grew.** Patch A in particular: grep every newly-added
@@ -260,7 +374,7 @@ computed from stdout alone, so one stale name silently turned the true 5 back in
 6. The test module removes that failure mode structurally by asserting on each of the six names
 individually — a missing or renamed skill is reported by name, not folded into a count.
 
-**Deliberately left unasserted:** Patch D's two carve-outs (`getObjectDependents` is live;
+**Deliberately left unasserted:** Patch D's two carve-outs (the dependency check is live;
 accessibility audits are in scope) have no check of their own — not because a keyword grep is
 defeated by a polarity flip (it isn't: an exact-phrase `grep -c` does go 1→0 when "is live"
 becomes "is NOT live", verified by direct test). The real reason is §3 step 2: it tells a
@@ -269,9 +383,11 @@ back verbatim. A phrase anchor tight enough to catch a revert fires on a faithfu
 that words the same intent differently; loosened enough to survive rewording, it stops catching
 the revert it was meant to. Either way it asserts a sentence, not the invariant §1 actually cares
 about — and the live text doesn't even hand you a clean sentence to anchor to: `SKILL.md` reads
-"the deletion workflow's dependency check is live … `getObjectDependents` is a `get*` tool and it
-works", not "`getObjectDependents` is live" — §1's own paraphrase above is already not a literal
-quote of it. The posture-heading count above is the part of Patch D that *is* safe to assert this
+"the deletion workflow's dependency check is live and is your blast-radius tool — through the
+`iadc` graph now, not the Appian MCP", not "the dependency check is live" — §1's own paraphrase
+above is already not a literal quote of it (and, since Patch E, `getObjectDependents` no longer
+appears in that sentence at all — a phrase anchor built on the pre-IV-442 wording would already
+be stale). The posture-heading count above is the part of Patch D that *is* safe to assert this
 way; the carve-outs still need the line-by-line read on every refresh that the rest of this
 section exists to make unnecessary.
 
@@ -336,8 +452,9 @@ the dogfooding recipe in `docs/dogfooding.md`.
 
 1. **Report Patch B upstream.** It is a genuine bug in their repo affecting all their
    users, and nothing about the fix is specific to us. Merged upstream, 15 citations stop
-   being our problem permanently — leaving Patches A and D, which are ours by design and
-   always will be.
+   being our problem permanently — leaving the rest of §1's patches to maintain across every
+   future refresh (E most of all: it isn't an upstream bug at all, but our own choice to run
+   with no live Appian MCP).
 2. **Never patch a vendored file without adding it to §1 in the same commit.** See the
    warning at the top: this exact rule was broken once and cost a near-miss on the
    advisory posture.
