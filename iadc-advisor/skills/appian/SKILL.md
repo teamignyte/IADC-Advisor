@@ -17,10 +17,10 @@ That means the **create, update, delete, validate and verify** workflows in this
 
 - **The deletion workflow's dependency check is live and is your blast-radius tool — through the
   `iadc` graph now, not the Appian MCP.** `reachable(direction="in")` gives the full transitive
-  set of what depends on an object; `get_in_edges` gives the one-hop set with relation and
-  provenance attached — **not `callers_of`**, which filters strictly to `calls`-relation edges
-  and silently drops `references`, `uses_record_field`, `secured_by`, and the rest, so it
-  under-reports for this purpose; `get_edge` gives the exact SAIL occurrence(s) — field, line,
+  set of what depends on an object; `get_edges(direction="in")` gives the one-hop set with
+  relation and provenance attached — leave `relation` unset, since a dependent can reach the
+  object through `references` or a structural relation such as `secured_by`; `get_edge`
+  gives the exact SAIL occurrence(s) — field, line,
   column — behind any one edge you need to drill into. When someone asks "what breaks if we
   remove this?", that check plus the structural review around it (Step 6 in
   `confirmation-patterns.md` — a record type's relationships/views/actions are graph-backed via
@@ -30,11 +30,11 @@ That means the **create, update, delete, validate and verify** workflows in this
   seeded application, so this only sees dependents *inside* that application; an object in
   another application that references this one is invisible to `reachable` **silently** — no
   error, no truncation flag, just a smaller set. Confirming a *suspected* cross-application
-  dependent means seeding that other application too and reading `get_in_edges` on the boundary
+  dependent means seeding that other application too and reading `get_edges(direction="in")` on the boundary
   node it points at — this can confirm a suspicion, not discover one you don't already have. One
   genuine gain over the old live check: it tracked dependencies by object UUID only, and
   documented that it could not see field-level dependencies — the graph tracks those too
-  (`uses_record_field`).
+  (a `references` edge whose target is a `recordField` node).
 - **Accessibility audits are in scope and are done from source.** There was never a
   `testInterface` here to render a component tree with, Appian MCP or not. Resolve the
   interface's node with `find_nodes`, then read its SAIL expression with `get_sail`, and
@@ -132,7 +132,7 @@ After loading confirmation-patterns.md, follow all 10 steps IN ORDER:
 
 - **Steps 1-3:** Receive request, verify object, extract details
 - **Step 4:** Identify operation type (determines which dependency checks apply)
-- **Step 5:** Check expression dependencies via the `iadc` graph (`reachable`/`get_in_edges`) ← MANDATORY
+- **Step 5:** Check expression dependencies via the `iadc` graph (`reachable`/`get_edges`) ← MANDATORY
 - **Step 6:** Perform structural checks (relationships, views)
 - **Step 7:** Present dependencies to user (use templates — NOT your own format)
 - **Step 8:** Offer resolution strategies

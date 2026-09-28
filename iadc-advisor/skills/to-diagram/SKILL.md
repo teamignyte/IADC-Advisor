@@ -181,7 +181,7 @@ When the source is the dependency graph (`/iadc-graph:iadc-graph`), the return s
 draw from what the graph returns, not from memory:
 
 - `record_model` → `erDiagram`
-- `reachable` / `callers_of` / `get_neighbors` / `get_in_edges` → `flowchart` (blast radius, dependencies)
+- `reachable` / `get_edges` → `flowchart` (blast radius, dependencies)
 - `shortest_path` → a `flowchart` chain, or a `sequenceDiagram` if you're narrating a call traversal
 
 Resolve object names to real node ids in the graph first, then render.

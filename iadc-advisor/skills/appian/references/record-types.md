@@ -303,9 +303,8 @@ Load both files together - universal for structure, this file for specifics.
 Record type deletion is **CRITICAL risk** and requires typed confirmation. Follow these dependency checks:
 
 **Step 1: Check expression dependencies** via the `iadc` graph — `reachable(node_id, direction="in")`
-for the full transitive set, or `get_in_edges(node_id)` for the direct one-hop set with relation
-and provenance attached (not `callers_of`, which filters to `calls`-relation edges only and would
-miss a plain `recordType!` reference):
+for the full transitive set, or `get_edges(node_id, direction="in")` for the direct one-hop set
+with relation and provenance attached:
    - Find all interfaces referencing this record type
    - Find all expression rules using recordType!
    - Find all process models with record type nodes/variables
@@ -317,7 +316,7 @@ miss a plain `recordType!` reference):
      record type in a *different* application that references this one is invisible here —
      silently: no error, no truncation flag, just a smaller set than reality. A suspected
      cross-application dependent needs seeding that other application too and reading
-     `get_in_edges` on the boundary node it points at (see `confirmation-patterns.md`'s Step 5
+     `get_edges(direction="in")` on the boundary node it points at (see `confirmation-patterns.md`'s Step 5
      fallback) — this confirms a suspicion, it does not discover one you don't already have
 
 **Step 2: Check structural dependencies:** no Appian MCP any more (IV-442) —

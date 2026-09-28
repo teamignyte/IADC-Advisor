@@ -143,9 +143,9 @@ audit) still exist as carve-outs; what backs each one changed:
 
 - **Blast radius** — `SKILL.md`'s posture note, `references/confirmation-patterns.md` Step 5
   (Universal Workflow 1), and `references/record-types.md`'s record-type-deletion Step 1 now
-  call `reachable`/`get_in_edges`/`get_edge` against the `iadc` graph instead of
-  `getObjectDependents`. **`get_in_edges`, not `callers_of`** — `callers_of` filters strictly to
-  `calls`-relation edges and would silently drop `references`/`uses_record_field`/`secured_by`.
+  call `reachable`/`get_edges(direction="in")`/`get_edge` against the `iadc` graph instead of
+  `getObjectDependents`, with `relation` left unset — a dependent reaches the object through
+  `references` or a structural relation such as `secured_by`, and a filter keeps only one.
   The graph is scoped to one seeded application; a cross-application dependent is invisible to
   it, silently — stated in each of the three files above. Resolving the target object to a node
   id first — Step 2 of `confirmation-patterns.md`'s worked deletion Examples — calls
@@ -237,8 +237,8 @@ audit) still exist as carve-outs; what backs each one changed:
 | `references/accessibility-audit.md` | "How It Works", "Full Interface Audit", "Quick Checks" |
 
 **One capability gain, not just parity:** the old tool documented that it could not see
-field-level dependencies (`recordType!RT.fields.fieldName`); the graph's `uses_record_field`
-relation does. Stated in `confirmation-patterns.md`'s "Known Limitations".
+field-level dependencies (`recordType!RT.fields.fieldName`); the graph's `references` edges
+to `recordField` nodes do. Stated in `confirmation-patterns.md`'s "Known Limitations".
 
 **Everything else in the vendored tree that names `getObjectDependents`/`getInterface`/
 `listInterfaces`/`listApplications` is untouched** — the create/update/delete workflow's

@@ -49,7 +49,7 @@ A newcomer needs the handful of objects that *run* the app, not an alphabetized 
 - Rank by **node degree** to surface the **hubs** (high fan-in / fan-out objects) — these are what to learn first.
 - `list_nodes` on entry-point kinds (**sites, portals**) for the **user-facing surfaces** — the top of the call chains, where the app is actually used. `shortest_path` from a surface down to a hub shows how a click reaches the core.
 
-For a scoped or single-object ask, resolve a starting `node_id` with `find_nodes` — the graph holds the whole application, so it resolves its own nodes by name — and traverse out from there with `reachable` / `get_neighbors` instead of surveying the whole graph.
+For a scoped or single-object ask, resolve a starting `node_id` with `find_nodes` — the graph holds the whole application, so it resolves its own nodes by name — and traverse out from there with `reachable` / `get_edges` instead of surveying the whole graph.
 
 ### 4. Draw the data model
 
@@ -78,6 +78,6 @@ Close the graph session, then hand back a single narrated document, top-down:
 
 Offer the natural next move rather than stopping cold:
 
-- **Zoom into one object** — the single-object dossier: attributes (`get_node`), who calls it (`callers_of`), what it reaches (`reachable`), and the platform mechanics behind it (`/iadc-advisor:context7`). This is just orient re-run at object scope.
+- **Zoom into one object** — the single-object dossier: attributes (`get_node`), what references it (`get_edges(direction="in")`), what it reaches (`reachable`), and the platform mechanics behind it (`/iadc-advisor:context7`). This is just orient re-run at object scope.
 - **Go deeper on the Appian platform** — `/iadc-advisor:context7` + `/iadc-advisor:appian` for how the platform itself works.
 - **A build has emerged** — if orientation surfaced a concrete task, that's the handoff to **`/iadc-advisor:pressure-test`** (then `/iadc-advisor:to-spec`).

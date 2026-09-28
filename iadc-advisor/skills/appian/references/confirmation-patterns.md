@@ -107,7 +107,7 @@ Apply this workflow before ANY DELETE operation:
 
 ### Tool Capabilities (Updated 2026-08-12, IV-442)
 
-✅ **Expression-based dependency detection** via the `iadc` graph — `reachable`, `get_in_edges`,
+✅ **Expression-based dependency detection** via the `iadc` graph — `reachable`, `get_edges`,
 `get_edge` — not a live Appian MCP call; there is no Appian MCP here.
 
 **What we CAN check:**
@@ -131,18 +131,18 @@ Apply this workflow before ANY DELETE operation:
 **How it works:**
 - `reachable(session_id, node_id, direction="in")` returns the full transitive set of
   dependents — everything that would need re-checking, not just direct callers
-- `get_in_edges(session_id, node_id)` returns the direct one-hop set, each with `relation` and
-  `occurrence_count` attached — use this instead of `reachable(depth=1)` when you want the
-  relation breakdown. **Not `callers_of`**: it filters strictly to `calls`-relation edges and
-  silently drops `references`, `uses_record_field`, `secured_by`, and the rest
+- `get_edges(session_id, node_id, direction="in")` returns the direct one-hop set, each with
+  `relation` and `occurrence_count` attached — use this instead of `reachable(depth=1)` when you
+  want the relation breakdown. Leave `relation` unset: a dependent reaches the object through
+  `references` or a structural relation such as `secured_by`, and a filter keeps only one
 - `get_edge(session_id, source, target, relation)` returns the full `occurrences` list for one
   edge — file location (`sail_field`, `sail_line`, `sail_col`) and the literal reference text —
-  `reachable`/`get_in_edges` give you the set, `get_edge` gives you the breadcrumb
+  `reachable`/`get_edges` give you the set, `get_edge` gives you the breadcrumb
 - **Scope boundary:** the graph is one seeded application. A dependent that lives in a
   *different* application is not in this graph at all — `reachable` under-reports it silently,
   with no error and no truncation flag. Confirming a *suspected* cross-application dependent
-  means seeding that other application too and reading `get_in_edges` on the boundary node it
-  points at; this is not a way to discover one you don't already suspect
+  means seeding that other application too and reading `get_edges(direction="in")` on the
+  boundary node it points at; this is not a way to discover one you don't already suspect
 - **Freshness:** the graph is a point-in-time snapshot from when the session was seeded, not a
   live read. If the target (or anything near it) has been edited in Appian since, re-seed or
   `report_changes` before trusting the result — a stale blast radius is worse than a slow one
@@ -239,7 +239,7 @@ runs against the graph, in the session already seeded for this application.
    not just direct callers); pass `depth=1` for one-hop-only if that's genuinely what's being
    asked.
    - Returns compact node records only: `id`, `kind`, `node_label`, `object_type` — no relation,
-     no provenance, no line numbers. Get those per dependent with `get_in_edges`/`get_edge` (step
+     no provenance, no line numbers. Get those per dependent with `get_edges`/`get_edge` (step
      3 below)
    - **Application-scope boundary:** this only sees dependents *inside* the seeded application.
      An object in a *different* application that references this one is invisible here —
@@ -256,7 +256,7 @@ runs against the graph, in the session already seeded for this application.
 3. Present:
    - If < 10 unique objects per type: show all
    - If 10+ unique objects per type: show first 10 returned + "...and N more (type 'details' for full list)"
-   - For a dependent's exact source location(s): take its edge from `get_in_edges(node_id)` and
+   - For a dependent's exact source location(s): take its edge from `get_edges(node_id, direction="in")` and
      call `get_edge(session_id, source, target, relation)` on that triple — `occurrences` gives
      `sail_field`/`sail_line`/`sail_col`/`raw_ref`, the breadcrumb the old tool gave you for free.
      `reachable` alone doesn't carry this — don't call `get_edge` on every dependent by default,
@@ -282,7 +282,7 @@ Manual verification required:
 4. Check Web APIs for usage in request/response expressions
 
 For a suspected cross-application dependent: seed the `iadc` graph for that other application
-too, and read `get_in_edges` on the boundary node it points at. This confirms a suspicion — it
+too, and read `get_edges(direction="in")` on the boundary node it points at. This confirms a suspicion — it
 is not a way to discover a cross-application dependent you didn't already suspect.
 
 Use Appian Designer's "Find Usages" feature:
@@ -333,7 +333,7 @@ graph tracks. All three need a build tool.
   title expression. Needs a build tool.
 - Note: this step's structural checks are separate from Step 5's expression check. Field-level
   expression references (`recordType!RT.fields.fieldName`) **are** checkable — that is Step 5's
-  `uses_record_field` capability (see its Known Limitations below), not this step's
+  field-reference capability (see its Known Limitations below), not this step's
 
 ---
 
@@ -518,7 +518,7 @@ Error: [error message from tool]
 
 ### Known Limitations
 
-**The graph blast-radius check (`reachable`/`get_in_edges`/`get_edge`) cannot detect:**
+**The graph blast-radius check (`reachable`/`get_edges`/`get_edge`) cannot detect:**
 
 1. **Parameter-level dependencies**
    - Cannot determine which parameters are passed to rule calls
@@ -541,9 +541,9 @@ Error: [error message from tool]
    - Not yet validated as tracked dependency types
 
 **One thing it CAN detect that the old live check couldn't: field-level dependencies.**
-`recordType!RT.fields.fieldName` references get their own edge (`uses_record_field`, target the
-leaf `recordField` node) — the old tool tracked object-level dependencies by UUID only and
-documented this as a gap. `get_in_edges` on a field's `recordField` node (find it via
+`recordType!RT.fields.fieldName` references get their own edge (`references`, target the leaf
+`recordField` node) — the old tool tracked object-level dependencies by UUID only and documented
+this as a gap. `get_edges(direction="in")` on a field's `recordField` node (find it via
 `find_nodes`, `kind="recordField"`) returns every reference to that field directly, where the old
 workaround was structural checks + manual verification alone.
 
