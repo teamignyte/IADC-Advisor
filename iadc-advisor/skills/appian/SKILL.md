@@ -24,7 +24,7 @@ That means the **create, update, delete, validate and verify** workflows in this
   column — behind any one edge you need to drill into. When someone asks "what breaks if we
   remove this?", that check plus the structural review around it (Step 6 in
   `confirmation-patterns.md` — a record type's relationships/views/actions are graph-backed via
-  `record_model`; row data, a group's hierarchy/membership/constant references, a field's
+  `record_model`; row data, a group's hierarchy/membership, a field's
   relationship/view membership, and a record type's title expression still need a build tool) is
   exactly the right answer — run it. **Scope boundary:** the graph is one
   seeded application, so this only sees dependents *inside* that application; an object in

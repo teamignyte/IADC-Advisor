@@ -306,12 +306,14 @@ run against the `iadc` graph; the rest have no graph equivalent and need a full-
 - Data: **no graph counterpart** — the graph tracks design objects, not row data. Whether the
   record type holds rows needs a build tool.
 
-**For Groups** — **no graph counterpart for any of the three checks.** Group hierarchy,
-membership, and constant references are runtime security data, not design-object references the
-graph tracks. All three need a build tool.
+**For Groups** — hierarchy and membership have **no graph counterpart**: they are runtime security
+data, not design-object references the graph tracks, and need a build tool. Constants are
+graph-backed.
 - Hierarchy: which group is this one's parent
 - Members: who belongs to this group
-- Constants: which `GROUP`-typed constants hold this group's UUID as their value
+- Constants: which `GROUP`-typed constants hold this group's UUID as their value —
+  `reachable(session_id, <group node_id>, direction="in", depth=1)`, keeping the
+  `object_type` `constant` nodes (constants in the seeded application only)
 
 **For Applications:**
 - Contained objects: the graph is seeded from exactly one application (see Step 5's

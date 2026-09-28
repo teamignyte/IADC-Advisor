@@ -171,11 +171,15 @@ audit) still exist as carve-outs; what backs each one changed:
   relationship and view checks are not repointed to anything — `record_model`'s `relationships`
   array carries no `source` key and its `views` array carries no field list, so neither can
   identify a field endpoint; both are stated as needing a build tool, the same treatment the
-  block already gave a field's title expression. Row data; a group's hierarchy, membership, and
-  constant references; and a record type's title expression have no graph representation at all
+  block already gave a field's title expression. Row data; a group's hierarchy and membership;
+  and a record type's title expression have no graph representation at all
   either — stated as needing a build tool rather than left routed through a tool
-  (`listRecordData`, `listGroups`, `listGroupMembers`, `listConstants`,
-  `getRecordType(...).titleExpression`) that no longer exists. The loss is recorded in [ADR
+  (`listRecordData`, `listGroups`, `listGroupMembers`,
+  `getRecordType(...).titleExpression`) that no longer exists. A group's constant references
+  are graph-backed since IADC-Core IV-669: `confirmation-patterns.md`'s Groups block and
+  `security-patterns.md`'s Group Deletion check 1 read them with
+  `reachable(direction="in", depth=1)` filtered to `constant` nodes, scoped to the seeded
+  application, and that template's constants line is a count. The loss is recorded in [ADR
   0013](adr/0013-drop-appian-mcp-route-through-graph.md)'s Consequences. Every *template* that
   would otherwise present one of these unobtainable counts to the user as a checked fact carries
   the same qualifier inline, matching the wording above: `security-patterns.md`'s Group
@@ -185,14 +189,7 @@ audit) still exist as carve-outs; what backs each one changed:
   a number nobody can obtain is not a qualifier away from honest, it has to go) and states "Row
   data not checked (no graph counterpart; needs a build tool)" as its own unconditional line
   under Structural dependencies — printed on every path, not folded into the zero-dependency
-  all-clear branch. The same honesty framing reaches a *claim*, not just a count:
-  `security-patterns.md`'s Group Deletion template softens "May be referenced in GROUP constants
-  (will become invalid references)" to add "— manual verification needed; not automatically
-  checked, same as security expressions below", and its Impact section softens "GROUP constants
-  referencing this group will contain invalid group names" to "may contain invalid group names
-  (not automatically verified — see Dependency Checks above)" —
-  the graph has no GROUP-constant representation at all, so a template can no longer assert this
-  as a checked certainty. `record-types.md`'s Field Deletion template took the same collapse H3
+  all-clear branch. `record-types.md`'s Field Deletion template took the same collapse H3
   gave Group Deletion: it no longer selects between "if field is in use" and "if field not in
   use" branches — every one of a field's four dependency checks (relationships, title expression,
   views, security expressions) already reads as unautomatable in the Dependency Checks list

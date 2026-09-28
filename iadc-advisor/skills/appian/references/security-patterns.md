@@ -300,10 +300,10 @@ This section covers group-specific patterns for when to ask users for confirmati
 
 Before deleting a group, check for these dependencies:
 
-1. **Constants referencing the group** (cannot detect automatically)
-   - Search for constants of type GROUP
+1. **Constants referencing the group** — `reachable(session_id, <group node_id>, direction="in",
+   depth=1)`, keeping the `object_type` `constant` nodes (constants in the seeded application only)
    - Common pattern: `PREFIX_ADMIN_GROUP`, `PREFIX_MANAGERS_GROUP`
-   - Warn user: "If this group is referenced in constants, those constants will break. Manual verification needed."
+   - Warn user: "These constants will break."
 
 2. **Child groups** — **no graph counterpart** (no Appian MCP any more, IV-442). Group hierarchy
    is runtime security data, not a design-object reference the graph tracks. Needs a build tool.
@@ -327,15 +327,13 @@ You are about to DELETE group "[GroupName]".
 This group has dependencies:
 - [N] child groups (will become orphaned) (not automatically checked — no graph counterpart; needs a build tool)
 - [N] direct members (not automatically checked — no graph counterpart; needs a build tool)
-- May be referenced in GROUP constants (will become invalid references — manual verification
-  needed; not automatically checked, same as security expressions below)
+- [N] GROUP constants (will become invalid references) (constants in the seeded application only)
 - May be used in security expressions (manual verification needed)
 
 Impact:
 - Child groups lose hierarchy structure and inherited permissions
 - Direct members lose permissions granted by this group
-- GROUP constants referencing this group may contain invalid group names (not automatically
-  verified — see Dependency Checks above)
+- GROUP constants referencing this group will contain invalid group names
 - Security expressions using this group will break
 
 Recommendation: Delete or reassign child groups first, or delete entire hierarchy top-down.
