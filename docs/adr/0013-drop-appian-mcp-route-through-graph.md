@@ -1,5 +1,7 @@
 # Drop the `appian` MCP; blast radius and accessibility audits read the `iadc` graph instead
 
+Superseded in part by IADC-Core [ADR 0050](https://github.com/teamignyte/IADC-Core/blob/main/docs/adr/0050-one-reference-relation-intent-on-the-occurrence.md) and [ADR 0051](https://github.com/teamignyte/IADC-Core/blob/main/docs/adr/0051-graph-mcp-tool-surface.md): blast radius is `reachable`/`get_edges(direction="in")`/`get_edge`, and a field-level dependency is a `references` edge to a `recordField` node.
+
 `/iadc-advisor:setup` wrote an `appian` MCP entry into every client's `.mcp.json`: a stdio
 `lcp_mcp_server` process needing the client's own Appian tenant URL, username, and password. The
 vendored `appian` skill used it for exactly two live reads: `getObjectDependents` for blast
