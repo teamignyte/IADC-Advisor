@@ -312,7 +312,7 @@ graph-backed.
 - Hierarchy: which group is this one's parent
 - Members: who belongs to this group
 - Constants: which `GROUP`-typed constants hold this group's UUID as their value —
-  `reachable(session_id, <group node_id>, direction="in", depth=1)`, keeping the
+  `reachable(session_id, <group node_id>, direction="in", depth=1, limit=0)`, keeping the
   `object_type` `constant` nodes (constants in the seeded application only)
 
 **For Applications:**
