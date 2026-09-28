@@ -7,6 +7,16 @@ rewords the immediately preceding minor's own logic, with no further behavior ch
 **patch** (1.3.1, 1.4.1 below are both this: corrections to the minor just before them, each
 saying so and each ending in "no action needed").
 
+## 1.8.0 — 2026-09-28
+
+**The skills name the `iadc` graph's 15-tool surface (IV-685, paired with IADC-Core).** The graph
+now labels every reference edge `references`, with what was referenced read from the target
+node's type and the per-reference detail on each occurrence. Its three one-hop edge tools and
+`callers_of` became one `get_edges(node_id, direction, relation)`. `appian`, `orient` and
+`to-diagram` now read blast radius and field dependencies through `reachable`,
+`get_edges(direction="in")` and `get_edge`, and name no removed tool or relation. It needs the
+`iadc-graph` plugin refreshed to the same server, which ships first. No action needed.
+
 ## 1.7.1 — 2026-08-12
 
 **Two surfaces still said this plugin reads the live app (IV-442 follow-up).** 1.7.0 removed the
