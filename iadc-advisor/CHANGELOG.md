@@ -7,6 +7,16 @@ rewords the immediately preceding minor's own logic, with no further behavior ch
 **patch** (1.3.1, 1.4.1 below are both this: corrections to the minor just before them, each
 saying so and each ending in "no action needed").
 
+## 1.9.0 — 2026-09-29
+
+**A group's constant references are graph-backed (IV-669, paired with IADC-Core).** The graph now
+links each object-reference constant to the object its value names. The group checks in `appian`
+(confirmation patterns, Group Deletion) count the `GROUP` constants holding a group through
+`reachable(direction="in", depth=1, limit=0)` rather than calling for a build tool. That count
+covers constants in the seeded application only. Hierarchy and membership still need a build
+tool. It needs the `iadc-graph` plugin refreshed to the same server, which ships first. No action
+needed.
+
 ## 1.8.0 — 2026-09-28
 
 **The skills name the `iadc` graph's 15-tool surface (IV-685, paired with IADC-Core).** The graph
